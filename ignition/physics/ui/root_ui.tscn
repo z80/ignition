@@ -7,15 +7,15 @@
 [ext_resource path="res://physics/ui/time_dilation/time_dilation.tscn" type="PackedScene" id=5]
 [ext_resource path="res://physics/ui/esc_menu/esc_menu.tscn" type="PackedScene" id=6]
 [ext_resource path="res://physics/ui/edge_buttons/edge_buttons.tscn" type="PackedScene" id=7]
-[ext_resource path="res://wiki_handler/assets/help.png" type="Texture" id=8]
+[ext_resource path="res://wiki_handler/assets/help.png" type="Texture2D" id=8]
 [ext_resource path="res://physics/ui/root_ui.gd" type="Script" id=9]
 
-[sub_resource type="ShortCut" id=1]
+[sub_resource type="Shortcut" id=1]
 
 [node name="RootUi" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = 4.0
+offset_right = 4.0
 mouse_filter = 2
 script = ExtResource( 9 )
 __meta__ = {
@@ -29,16 +29,16 @@ __meta__ = {
 [node name="NavBall" parent="." instance=ExtResource( 2 )]
 anchor_left = 0.994
 anchor_right = 0.994
-margin_left = -199.672
-margin_top = -206.855
-margin_right = 0.32843
-margin_bottom = -6.85516
+offset_left = -199.672
+offset_top = -206.855
+offset_right = 0.32843
+offset_bottom = -6.85516
 
 [node name="CtrlGroups" parent="." instance=ExtResource( 3 )]
-margin_left = -128.378
-margin_top = 45.3445
-margin_right = -5.37842
-margin_bottom = 304.344
+offset_left = -128.378
+offset_top = 45.3445
+offset_right = -5.37842
+offset_bottom = 304.344
 
 [node name="UiSaveLoad" parent="." instance=ExtResource( 4 )]
 visible = false
@@ -46,25 +46,25 @@ anchor_left = 0.182
 anchor_top = 1.0
 anchor_right = 0.182
 anchor_bottom = 1.0
-margin_left = 16.632
-margin_top = -75.0
-margin_right = 94.632
-margin_bottom = -9.0
+offset_left = 16.632
+offset_top = -75.0
+offset_right = 94.632
+offset_bottom = -9.0
 
 [node name="TimeDilation" parent="." instance=ExtResource( 5 )]
 anchor_left = 1.0
 anchor_bottom = 0.0
-margin_left = -349.361
-margin_top = 1.21281
-margin_right = -3.36133
-margin_bottom = 49.2128
+offset_left = -349.361
+offset_top = 1.21281
+offset_right = -3.36133
+offset_bottom = 49.2128
 
 [node name="EscMenu" parent="." instance=ExtResource( 6 )]
 visible = false
 
 [node name="Help" type="TextureButton" parent="."]
-margin_right = 73.0
-margin_bottom = 17.0
+offset_right = 73.0
+offset_bottom = 17.0
 shortcut = SubResource( 1 )
 texture_normal = ExtResource( 8 )
 texture_pressed = ExtResource( 8 )

@@ -1,18 +1,18 @@
 #tool
-extends ImmediateGeometry
+extends ImmediateMesh
 
 const DEBUG: bool = true
 
-export var period: float = 20.0 setget set_period, get_period
-export var persistence: float = 0.3 setget set_persistence, get_persistence
-export var lacunarity: float = 0.4 setget set_lacunarity, get_lacunarity
-export var octaves: int = 4 setget set_octaves, get_octaves
-export var size: float = 100.0 setget set_size, get_size
-export var resolution: int = 32 setget set_resolution, get_resolution
+@export var period: float = 20.0: get = get_period, set = set_period
+@export var persistence: float = 0.3: get = get_persistence, set = set_persistence
+@export var lacunarity: float = 0.4: get = get_lacunarity, set = set_lacunarity
+@export var fractal_octaves: int = 4: get = get_octaves, set = set_octaves
+@export var size: float = 100.0: get = get_size, set = set_size
+@export var resolution: int = 32: get = get_resolution, set = set_resolution
 
-export var height: float = 1.0 setget set_height, get_height
+@export var height: float = 1.0: get = get_height, set = set_height
 
-var _noise = OpenSimplexNoise.new()
+var _noise = FastNoiseLite.new()
 var _image: Image = null
 
 var _b_x: int = 0
@@ -47,13 +47,13 @@ func _ready():
 
 
 func _block_x():
-	var v: Vector3 = translation
+	var v: Vector3 = position
 	var xf: float = v.x / size
 	var xi: int = int( round( xf ) )
 	return xi
 
 func _block_y():
-	var v: Vector3 = translation
+	var v: Vector3 = position
 	var yf: float = v.z / size
 	var yi: int = int( round( yf ) )
 	return yi
@@ -86,12 +86,12 @@ func get_lacunarity():
 	return lacunarity
 
 func set_octaves( o: int ):
-	octaves = o
+	fractal_octaves = o
 	if DEBUG:
 		_rebuild()
 	
 func get_octaves():
-	return octaves
+	return fractal_octaves
 
 func set_size( sz: float ):
 	size = sz
@@ -137,10 +137,10 @@ func _color( h: float ):
 func _rebuild():
 	if not _noise:
 		return
-	if _color_map.empty():
+	if _color_map.is_empty():
 		return
 	
-	var v: Vector3 = translation
+	var v: Vector3 = position
 	var bx: int = _block_x()
 	var by: int = _block_y()
 	var dx: float = v.x - bx*size - size*0.5
@@ -150,7 +150,7 @@ func _rebuild():
 	_noise.period = period
 	_noise.persistence = persistence
 	_noise.lacunarity  = lacunarity
-	_noise.octaves     = octaves
+	_noise.fractal_octaves     = fractal_octaves
 	_image = _noise.get_image( resolution, resolution )
 	
 	var positions = []

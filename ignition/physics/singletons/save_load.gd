@@ -1,12 +1,12 @@
 
 
 static func saved_files():
-	var dir = Directory.new()
+	var dir = DirAccess.new()
 	ensure_save_folder_exists( dir )
 	dir.change_dir( Constants.SAVE_DIR_NAME )
 	
 	var ret: Array = []
-	dir.list_dir_begin( true, true )
+	dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name: String = dir.get_next()
 	while file_name != "":
 		if not dir.current_is_dir():
@@ -16,7 +16,7 @@ static func saved_files():
 	return ret
 
 
-static func ensure_save_folder_exists( dir: Directory ):
+static func ensure_save_folder_exists( dir: DirAccess ):
 	var exists: bool = dir.dir_exists( Constants.SAVE_DIR_NAME )
 	if not exists:
 		var err: int = dir.make_dir( Constants.SAVE_DIR_NAME )
@@ -288,7 +288,7 @@ static func deserialize_bodies( n: Node, bodies_data: Dictionary ):
 		var parentpath: String = all_data.parentpath
 		var name: String = all_data.name
 		var B = load( filename )
-		var b = B.instance()
+		var b = B.instantiate()
 		b.name = name
 		var p: Node = n.get_node( parentpath )
 		p.add_child( b )

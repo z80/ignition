@@ -5,7 +5,7 @@ code = "shader_type spatial;
 render_mode unshaded;
 
 // Light parameters
-uniform vec4  light_color: hint_color = vec4( 1.0, 0.988, 0.871, 1.0 );
+uniform vec4  light_color: source_color = vec4( 1.0, 0.988, 0.871, 1.0 );
 uniform vec3  light_dir     = vec3(1.0, -0.5, 0.0);
 uniform float light_size    = 0.05;
 uniform float glow_size     = 0.1;
@@ -96,10 +96,10 @@ void vertex()
 
 void fragment()
 {
-	vec3 ray = -(CAMERA_MATRIX * vec4(VIEW, 0.0)).xyz;
+	vec3 ray = -(INV_VIEW_MATRIX * vec4(VIEW, 0.0)).xyz;
 	ray = ray / length(ray);
 	
-	vec3 sun_dir_local = -(INV_CAMERA_MATRIX * vec4(light_dir, 0.0)).xyz;
+	vec3 sun_dir_local = -(VIEW_MATRIX * vec4(light_dir, 0.0)).xyz;
 	
 	vec4 c = sun_color( VIEW, sun_dir_local );
 	vec4 rc = rays_color( VIEW, sun_dir_local );
@@ -111,7 +111,7 @@ void fragment()
 }
 "
 
-[sub_resource type="OpenSimplexNoise" id=2]
+[sub_resource type="FastNoiseLite" id=2]
 octaves = 1
 period = 15.7
 persistence = 0.15

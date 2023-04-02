@@ -2,7 +2,7 @@
 extends Node
 
 
-var camera: Camera = null
+var camera: Camera3D = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -12,7 +12,7 @@ func _ready():
 	var sun = get_node( "Sun" )
 	
 	var rf = RefFramePhysics.new()
-	camera = Camera.new()
+	camera = Camera3D.new()
 	var camera_script = preload( "res://assets/maujoe.camera_control/scripts/camera_control.gd" )
 	camera.script = camera_script
 	
@@ -23,7 +23,7 @@ func _ready():
 	
 	rf.init_physics()
 	
-	var t: Transform = Transform.IDENTITY
+	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = Vector3( 0.0, 0.0, -50.0 )
 	rf.transform = t
 	

@@ -11,7 +11,7 @@ func get_class():
 
 
 func _notification( what ):
-	if (what == NOTIFICATION_PARENTED) or (what == NOTIFICATION_PATH_CHANGED):
+	if (what == NOTIFICATION_PARENTED) or (what == NOTIFICATION_PATH_RENAMED):
 		if (_first_se3 == null) or ( not is_instance_valid(_first_parent) ):
 			_init_first_parent()
 		

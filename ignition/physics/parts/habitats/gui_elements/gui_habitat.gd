@@ -39,8 +39,8 @@ func _update_from_object():
 	if character != null:
 		var b: Button = Button.new()
 		b.text = "Let in"
-		b.rect_min_size = Vector2( 70, 20 )
-		b.connect( "pressed", self, "_get_inside_pressed", [character] )
+		b.custom_minimum_size = Vector2( 70, 20 )
+		b.connect("pressed", Callable(self, "_get_inside_pressed").bind(character))
 		container.add_child( b )
 	
 	
@@ -54,7 +54,7 @@ func _update_from_object():
 		ind += 1
 		var b: Button = Button.new()
 		b.text = stri
-		b.connect( "pressed", self, "_get_outside_pressed", [b] )
+		b.connect("pressed", Callable(self, "_get_outside_pressed").bind(b))
 		container.add_child( b )
 		_buttons.push_back( b )
 
@@ -102,7 +102,7 @@ func _characters_for_boarding():
 	var characters = _target_obj.characters_for_boarding()
 	if characters == null:
 		return null
-	if characters.empty():
+	if characters.is_empty():
 		return null
 	
 	return characters[0]

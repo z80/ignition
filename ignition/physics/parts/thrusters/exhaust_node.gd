@@ -1,5 +1,5 @@
 
-extends Spatial
+extends Node3D
 class_name ExhaustNode
 
 
@@ -9,17 +9,17 @@ enum ExhaustType {
 	C = 2
 }
 
-export(ExhaustType) var exhaust_type = ExhaustType.A
-export(float) var exhaust_radius = 1.0
-export(float) var pressure_low: float     = 0.0
-export(float) var pressure_optimal: float = 0.8e5
-export(float) var pressure_high: float    = 1.0e5
+@export var exhaust_type: ExhaustType = ExhaustType.A
+@export var exhaust_radius: float = 1.0
+@export var pressure_low: float: float     = 0.0
+@export var pressure_optimal: float: float = 0.8e5
+@export var pressure_high: float: float    = 1.0e5
 
-var _relative_to_owner: Transform = Transform.IDENTITY
+var _relative_to_owner: Transform3D = Transform3D.IDENTITY
 
-var _exhaust: Spatial = null
+var _exhaust: Node3D = null
 
-export(Resource) var exhausts = preload( "res://physics/parts/thrusters/exhausts/resource_exhausts.tres" )
+@export var exhausts: Resource = preload( "res://physics/parts/thrusters/exhausts/resource_exhausts.tres" )
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -29,23 +29,23 @@ func _ready():
 
 func compute_relative_to_owner():
 	var p: Node = self
-	var t: Transform = Transform.IDENTITY
-	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
+	var t: Transform3D = Transform3D.IDENTITY
+	var ret: Transform3D = _compute_relative_to_owner_recursive( p, t )
 	return ret
 
 
 
-func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
-	var s: Spatial = n as Spatial
+func _compute_relative_to_owner_recursive( n: Node, t: Transform3D ):
+	var s: Node3D = n as Node3D
 	if s != null:
-		var ct: Transform = s.transform
+		var ct: Transform3D = s.transform
 		t = t * ct
 	var ow: Node = self.owner
 	if n == ow:
 		return t
 	
 	var p: Node = get_parent()
-	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
+	var ret: Transform3D = _compute_relative_to_owner_recursive( p, t )
 	return ret
 
 
@@ -56,7 +56,7 @@ func _create_exhaust():
 	var Exhaust = load( path )
 	if Exhaust == null:
 		return
-	_exhaust = Exhaust.instance()
+	_exhaust = Exhaust.instantiate()
 	add_child( _exhaust )
 	_exhaust.scale = Vector3( exhaust_radius, exhaust_radius, exhaust_radius )
 	_exhaust.pressure_low     = pressure_low
@@ -77,6 +77,6 @@ func set_exhaust( enabled: bool, power: float, pressure: float ):
 
 func thrust_direction():
 	var v: Vector3 = Vector3.UP
-	v = _relative_to_owner.basis.xform( v )
+	v = _relative_to_owner.basis * (v)
 	return v
 

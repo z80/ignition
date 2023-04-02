@@ -2,10 +2,10 @@
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel/surface_sources/test_planet/foliage_sources/tree_leaves/tree_raw.tscn" type="PackedScene" id=1]
 
-[node name="TreeLeaves" type="Spatial"]
+[node name="TreeLeaves" type="Node3D"]
 
-[node name="Spatial" type="Spatial" parent="."]
-transform = Transform( 5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 1.22593, 0 )
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D( 5, 0, 0, 0, 5, 0, 0, 0, 5, 0, 1.22593, 0 )
 
-[node name="tree_00" parent="Spatial" instance=ExtResource( 1 )]
-transform = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, -0.265789, 1.12783 )
+[node name="tree_00" parent="Node3D" instance=ExtResource( 1 )]
+transform = Transform3D( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, -0.265789, 1.12783 )

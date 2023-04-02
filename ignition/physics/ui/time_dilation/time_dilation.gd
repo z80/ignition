@@ -17,7 +17,7 @@ func _ready():
 		var data: Dictionary = _controls[key]
 		var node: Node     = data.node
 		var method: String = data.method
-		var _err_code: int = node.connect( "pressed", self, method )
+		var _err_code: int = node.connect("pressed", Callable(self, method))
 
 
 func _input(event):
@@ -26,7 +26,7 @@ func _input(event):
 		#print( "pressed: ", pressed )
 		if not key_pressed:
 			return
-		var key_code: int = event.scancode
+		var key_code: int = event.keycode
 		var has: bool = _controls.has( key_code )
 		if not has:
 			return

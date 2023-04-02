@@ -1,21 +1,21 @@
-tool
+@tool
 extends MarginContainer
 
 # Palette list
-onready var refresh_list_button = $HBoxContainer/ColorPaletteContainer/OptionsContainer/RefreshList
-onready var palette_list = $HBoxContainer/ColorPaletteContainer/PaletteListScroll/PaletteList
+@onready var refresh_list_button = $HBoxContainer/ColorPaletteContainer/OptionsContainer/RefreshList
+@onready var palette_list = $HBoxContainer/ColorPaletteContainer/PaletteListScroll/PaletteList
 # Options
-onready var palette_dir_le = $HBoxContainer/ColorPaletteContainer/OptionsContainer/PaletteDirectory
-onready var new_palette_name_le = $HBoxContainer/ColorPaletteContainer/OptionsContainer/NewPaletteName
-onready var new_palette_button = $HBoxContainer/ColorPaletteContainer/OptionsContainer/NewPalette
-onready var open_palette_dir_button = $HBoxContainer/ColorPaletteContainer/OptionsContainer/OpenPaletteDirectory
+@onready var palette_dir_le = $HBoxContainer/ColorPaletteContainer/OptionsContainer/PaletteDirectory
+@onready var new_palette_name_le = $HBoxContainer/ColorPaletteContainer/OptionsContainer/NewPaletteName
+@onready var new_palette_button = $HBoxContainer/ColorPaletteContainer/OptionsContainer/NewPalette
+@onready var open_palette_dir_button = $HBoxContainer/ColorPaletteContainer/OptionsContainer/OpenPaletteDirectory
 # Color Editor
-onready var color_picker = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/ColorPicker
-onready var color_preview_rect = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/HBoxContainer/SelectedColorRect
-onready var color_preview_label = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/SelectedColorLabel
-onready var apply_color_changed_button = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/HBoxContainer/ApplyChanges
-onready var new_color_rect = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/HBoxContainer/NewColorRect
-onready var new_color_button = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/HBoxContainer/AddNewColor
+@onready var color_picker = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/ColorPicker
+@onready var color_preview_rect = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/HBoxContainer/SelectedColorRect
+@onready var color_preview_label = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/SelectedColorLabel
+@onready var apply_color_changed_button = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/HBoxContainer/ApplyChanges
+@onready var new_color_rect = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/HBoxContainer/NewColorRect
+@onready var new_color_button = $HBoxContainer/ColorEditorContainer/Margin/Scroll/ColorPickerContainer/HBoxContainer/AddNewColor
 
 var palette_container = preload("res://addons/color-palette/ColorPaletteContainer.tscn")
 
@@ -27,12 +27,12 @@ var selected_color_index: int
 
 func _ready():
 	refresh_palettes()
-	refresh_list_button.connect("pressed", self, "refresh_palettes")
-	apply_color_changed_button.connect("pressed", self, "_apply_new_color_to_selected_palette")
-	new_palette_button.connect("pressed", self, "_create_new_palette")
-	color_picker.connect("color_changed", new_color_rect, "set_frame_color")
-	new_color_button.connect("pressed", self, "_add_color_to_selected_palette")
-	open_palette_dir_button.connect("pressed", self, "_open_dir_in_file_manager")
+	refresh_list_button.connect("pressed", Callable(self, "refresh_palettes"))
+	apply_color_changed_button.connect("pressed", Callable(self, "_apply_new_color_to_selected_palette"))
+	new_palette_button.connect("pressed", Callable(self, "_create_new_palette"))
+	color_picker.connect("color_changed", Callable(new_color_rect, "set_color"))
+	new_color_button.connect("pressed", Callable(self, "_add_color_to_selected_palette"))
+	open_palette_dir_button.connect("pressed", Callable(self, "_open_dir_in_file_manager"))
 
 # Clear the palette list, load the gpl files and populate the list again
 func refresh_palettes():
@@ -50,14 +50,14 @@ func refresh_palettes():
 		palettes.append(PaletteImporter.import_gpl(i))
 	
 	for p in palettes:
-		var pc = palette_container.instance()
+		var pc = palette_container.instantiate()
 		pc.palette = p
 		pc.undoredo = undoredo
 		if selected_palette:
 			pc.selected = true if pc.palette.name == selected_palette.name else false
-		pc.connect("palette_updated", self, "refresh_palettes")
-		pc.connect("palette_color_selected", self, "_on_palette_color_selected")
-		pc.connect("container_selected", self, "_on_palette_container_selected")
+		pc.connect("palette_updated", Callable(self, "refresh_palettes"))
+		pc.connect("palette_color_selected", Callable(self, "_on_palette_color_selected"))
+		pc.connect("container_selected", Callable(self, "_on_palette_container_selected"))
 		palette_list.add_child(pc)
 
 
@@ -119,7 +119,7 @@ func _add_color_to_selected_palette() -> void:
 
 
 func _open_dir_in_file_manager():
-	var dir := Directory.new()
+	var dir := DirAccess.new()
 	var path = ProjectSettings.globalize_path(palette_dir_le.text)
 	if dir.dir_exists(path):
 		OS.shell_open(path)

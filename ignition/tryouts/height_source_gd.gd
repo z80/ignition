@@ -2,14 +2,14 @@
 extends Object
 
 
-var noise_rough: OpenSimplexNoise = null
+var noise_rough: FastNoiseLite = null
 
 
 # Called when the node enters the scene tree for the first time.
 func _init():
-	noise_rough = OpenSimplexNoise.new()
+	noise_rough = FastNoiseLite.new()
 	noise_rough.seed = 0
-	noise_rough.octaves = 4
+	noise_rough.fractal_octaves = 4
 	noise_rough.period = 2.0 * 0.1
 	noise_rough.persistence = 0.8
 	noise_rough.lacunarity = 0.7

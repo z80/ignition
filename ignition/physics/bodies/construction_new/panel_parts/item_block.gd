@@ -1,7 +1,7 @@
 
 extends TextureButton
 
-export(Resource) var block_desc = null setget _set_block_desc
+@export var block_desc: Resource = null: set = _set_block_desc
 
 signal block_picked( desc )
 
@@ -17,7 +17,7 @@ func _set_block_desc( c: Resource ):
 	self.texture_focused  = icon
 	
 	var hint: String  = block_desc.brief_description
-	self.hint_tooltip = hint
+	self.tooltip_text = hint
 
 
 # Called when the node enters the scene tree for the first time.

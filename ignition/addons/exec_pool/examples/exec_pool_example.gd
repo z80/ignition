@@ -1,7 +1,7 @@
 extends Node
 
 
-onready var pool: ExecPool = get_node( "ExecPool" )
+@onready var pool: ExecPool = get_node( "ExecPool" )
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

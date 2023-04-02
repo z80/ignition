@@ -1,5 +1,5 @@
 
-extends RigidBody
+extends RigidBody3D
 class_name CharacterPhysicalBase
 
 

@@ -3,10 +3,10 @@
 [ext_resource path="res://physics/bodies/construction/assets/launch_pad/launch_pad_01/launch_pad_01_Cube001.mesh" type="ArrayMesh" id=1]
 [ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=2]
 
-[node name="Visual" type="MeshInstance"]
+[node name="Visual" type="MeshInstance3D"]
 mesh = ExtResource( 1 )
 material/0 = null
 
-[node name="InteractionNode" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.99418, 0 )
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.99418, 0 )
 script = ExtResource( 2 )

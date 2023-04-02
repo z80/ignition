@@ -11,13 +11,13 @@ var _rf: RefFrameNode = null
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_sun_position = get_node( "SunPosition" )
-	_camera = get_node( "SunPosition/Planet/Camera" )
+	_camera = get_node( "SunPosition/Planet/Camera3D" )
 	_camera.map_mode = true
-	var atm: Node = _camera.get_node( "Camera/Atmosphere" )
+	var atm: Node = _camera.get_node( "Camera3D/Atmosphere" )
 	atm.visible = false
 
 	
-	var t: Transform = Transform.IDENTITY
+	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = Vector3( 0.0, 0.0, 15000000.0 )
 	_camera.transform = t
 	

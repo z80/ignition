@@ -1,7 +1,7 @@
 
 extends RefFrameRotationNode
 
-export(PackedScene) var collision_surface_scene = null
+@export var collision_surface_scene: PackedScene = null
 
 var _collision_surfaces: Dictionary = {}
 
@@ -44,7 +44,7 @@ func _child_entered( child_ref_frame: RefFrameNode ):
 	var surface_source: Resource = all_surfs.get_surface_source()
 
 	var env: Node = phys.get_physics_environment()
-	var collision_surf: Node = collision_surface_scene.instance()
+	var collision_surf: Node = collision_surface_scene.instantiate()
 	
 	env.add_child( collision_surf )
 	collision_surf.rebuild_surface( phys, self, surface_source )
@@ -80,7 +80,7 @@ func _create_collision_surfaces():
 			continue
 		
 		var env: Node = phys.get_physics_environment()
-		var collision_surf: Node = collision_surface_scene.instance()
+		var collision_surf: Node = collision_surface_scene.instantiate()
 		
 		env.add_physics_body( collision_surf )
 		collision_surf.rebuild_surface( phys, self, surface_source )

@@ -1,9 +1,9 @@
 
-extends Spatial
+extends Node3D
 
 
-var solid: MeshInstance = null
-var liquid: MeshInstance = null
+var solid: MeshInstance3D = null
+var liquid: MeshInstance3D = null
 
 
 # Called when the node enters the scene tree for the first time.

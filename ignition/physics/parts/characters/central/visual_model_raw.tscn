@@ -35,7 +35,7 @@ blend_point_4/pos = Vector2( -1, 0 )
 script = ExtResource( 2 )
 
 [node name="Armature" parent="." index="0"]
-transform = Transform( -0.7, 0, -6.11959e-08, 0, 0.7, 0, 6.11959e-08, 0, -0.7, 0, 0.65, 0 )
+transform = Transform3D( -0.7, 0, -6.11959e-08, 0, 0.7, 0, 6.11959e-08, 0, -0.7, 0, 0.65, 0 )
 
 [node name="AnimationTree" type="AnimationTree" parent="." index="2"]
 tree_root = SubResource( 7 )
@@ -43,15 +43,15 @@ anim_player = NodePath("../AnimationPlayer")
 active = true
 parameters/blend_position = Vector2( -0.000808418, 0 )
 
-[node name="Sphere" type="MeshInstance" parent="." index="3"]
+[node name="Sphere" type="MeshInstance3D" parent="." index="3"]
 visible = false
 
-[node name="target_fps" type="Spatial" parent="." index="4"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15116, -0.599606 )
+[node name="target_fps" type="Node3D" parent="." index="4"]
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15116, -0.599606 )
 
-[node name="target_tps" type="Spatial" parent="." index="5"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38217, -0.0942358 )
+[node name="target_tps" type="Node3D" parent="." index="5"]
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38217, -0.0942358 )
 
-[node name="InteractionNode" type="Spatial" parent="." index="6"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.839893, -0.0666171 )
+[node name="InteractionNode" type="Node3D" parent="." index="6"]
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.839893, -0.0666171 )
 script = ExtResource( 1 )

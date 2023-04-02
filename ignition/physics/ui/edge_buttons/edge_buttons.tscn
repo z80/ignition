@@ -7,10 +7,10 @@ anchor_left = 0.471
 anchor_top = 1.0
 anchor_right = 0.471
 anchor_bottom = 1.0
-margin_left = -154.304
-margin_top = -34.0
-margin_right = 153.696
-margin_bottom = -1.0
+offset_left = -154.304
+offset_top = -34.0
+offset_right = 153.696
+offset_bottom = -1.0
 mouse_filter = 2
 script = ExtResource( 1 )
 __meta__ = {
@@ -18,11 +18,11 @@ __meta__ = {
 }
 
 [node name="CtrlGroups" type="Button" parent="."]
-margin_left = 106.526
-margin_top = 5.41895
-margin_right = 201.526
-margin_bottom = 30.4189
-hint_tooltip = "Toggle control groups visibility."
+offset_left = 106.526
+offset_top = 5.41895
+offset_right = 201.526
+offset_bottom = 30.4189
+tooltip_text = "Toggle control groups visibility."
 toggle_mode = true
 pressed = true
 text = "Ctrl groups"
@@ -31,11 +31,11 @@ __meta__ = {
 }
 
 [node name="NavBall" type="Button" parent="."]
-margin_left = 209.454
-margin_top = 4.94166
-margin_right = 304.454
-margin_bottom = 29.9417
-hint_tooltip = "Toggle nav. ball visibility on/off."
+offset_left = 209.454
+offset_top = 4.94166
+offset_right = 304.454
+offset_bottom = 29.9417
+tooltip_text = "Toggle nav. ball visibility on/off."
 toggle_mode = true
 pressed = true
 text = "Nav ball"
@@ -44,11 +44,11 @@ __meta__ = {
 }
 
 [node name="TrajParams" type="Button" parent="."]
-margin_left = 3.65462
-margin_top = 4.63229
-margin_right = 99.6546
-margin_bottom = 29.6323
-hint_tooltip = "Trajectory parameters on/off."
+offset_left = 3.65462
+offset_top = 4.63229
+offset_right = 99.6546
+offset_bottom = 29.6323
+tooltip_text = "Trajectory parameters on/off."
 toggle_mode = true
 pressed = true
 text = "Traj params"

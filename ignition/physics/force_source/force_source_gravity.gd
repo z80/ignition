@@ -2,7 +2,7 @@
 extends ForceSource
 class_name ForceSourceGravity
 
-export(float) var GM = 1.0
+@export var GM: float = 1.0
 
 
 func compute_force( body: RefFrameNode, se3: Se3Ref ):

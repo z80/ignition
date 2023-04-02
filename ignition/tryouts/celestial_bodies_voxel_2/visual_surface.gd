@@ -1,12 +1,12 @@
-tool
+@tool
 extends Node
 
-export(PackedScene) var VisualSurfaceOne = null
-export(Resource) var layer_config = null
-export(Resource) var surface_source = null
-export(Resource) var drop_foliage_source_here = null setget _set_foliage_source, _get_foliage_source
+@export var VisualSurfaceOne: PackedScene = null
+@export var layer_config: Resource = null
+@export var surface_source: Resource = null
+@export var drop_foliage_source_here: Resource = null: get = _get_foliage_source, set = _set_foliage_source
 
-export(Array) var foliage_sources = []
+@export var foliage_sources: Array = []
 
 var visual_cells: Dictionary = {}
 
@@ -60,7 +60,7 @@ func _create_volume_surface():
 func _create_cells():
 	var rotation: RefFrameRotationNode = get_parent()
 	for i in range(27):
-		var cell: Node = VisualSurfaceOne.instance()
+		var cell: Node = VisualSurfaceOne.instantiate()
 		rotation.add_child( cell )
 		visual_cells[i] = cell
 
@@ -77,7 +77,7 @@ func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 		rebuild_needed = rebuild_needed or _requested_rebuild
 		if rebuild_needed:
 			_requested_rebuild = false
-			_rebuild_start( source_se3, view_point_se3 )
+			_rebuild_start(Callable(source_se3, view_point_se3))
 	
 
 
@@ -93,7 +93,7 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 		return
 	
 	var nodes_to_rebuild: Array = _pick_nodes_to_rebuild( view_point_se3 )
-	var empty: bool = nodes_to_rebuild.empty()
+	var empty: bool = nodes_to_rebuild.is_empty()
 	if empty:
 		return
 	_running = true
@@ -191,7 +191,7 @@ func _set_foliage_source( c: Resource ):
 	if c != null:
 		foliage_sources.push_back( c )
 	drop_foliage_source_here = null
-	property_list_changed_notify()
+	notify_property_list_changed()
 
 
 func _get_foliage_source():

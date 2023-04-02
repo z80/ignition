@@ -1,8 +1,8 @@
+@tool
 
-tool
 extends SurfaceSourceBase
 
-export(Material) var override_material = null
+@export var override_material: Material = null
 
 var _source_solid: VolumeSourceScriptGd = null
 

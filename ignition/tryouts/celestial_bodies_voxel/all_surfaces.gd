@@ -1,14 +1,14 @@
 
-extends Spatial
+extends Node3D
 
-export(bool) var update_disabled = false
-export(bool) var wireframe = false
+@export var update_disabled: bool = false
+@export var wireframe: bool = false
 
 # Properties used to initialize strategies.
-export(float) var rebuild_dist              = 100.0
-export(float) var rescale_close_dist        = 10.0
-export(float) var rescale_far_tangent       = 10.0 / 180.0 * 3.14
-export(float) var rescale_depth_rel_tangent = 1.0 / 180.0 * 3.14
+@export var rebuild_dist: float              = 100.0
+@export var rescale_close_dist: float        = 10.0
+@export var rescale_far_tangent: float       = 10.0 / 180.0 * 3.14
+@export var rescale_depth_rel_tangent: float = 1.0 / 180.0 * 3.14
 
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
 var _node_size_strategy: VolumeNodeSizeStrategyGd = null
@@ -82,7 +82,7 @@ func update_source_se3( source_se3: Se3Ref ):
 	
 	_update_material_properties( source_se3, scaler )
 	
-	var t: Transform = surface.get_root_se3( source_se3, scaler )
+	var t: Transform3D = surface.get_root_se3( source_se3, scaler )
 	transform = t
 
 
@@ -176,7 +176,7 @@ func _async_rebuild_worker_finished( ad: AsyncData ):
 		var se3_at_in_source: Se3Ref = source_se3.inverse()
 		var at_in_source: Vector3 = se3_at_in_source.r
 		
-		surf.lock()
+		false # surf.lock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed
 		
 		var foliage_data = _foliage.async_update_population_prepare( source_se3, at_in_source, scaler )
 		ad.foliage_data = foliage_data
@@ -184,7 +184,7 @@ func _async_rebuild_worker_finished( ad: AsyncData ):
 		_foliage.async_populate_node_worker( foliage_data )
 		_foliage.async_populate_node_worker_finished( foliage_data )
 		
-		surf.unlock()
+		false # surf.unlock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed
 	
 	if _async_workers_qty == 0:
 		_async_rescale_start( ad.se3 )
@@ -213,7 +213,7 @@ func _async_rescale_start( source_se3: Se3Ref ):
 	var local_point_se3: Se3Ref = source_se3.inverse()
 	
 	# Shouldn't have any rotation.
-	local_point_se3.q = Quat.IDENTITY
+	local_point_se3.q = Quaternion.IDENTITY
 	
 	var dist: float = local_point_se3.r.length()
 	if dist > radius:

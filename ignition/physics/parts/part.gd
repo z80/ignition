@@ -21,22 +21,22 @@ var PartControlGroups = preload( "res://physics/parts/part_control_groups.gd" )
 
 # If instant velocity change is greater than this, 
 # the part should be destroyed.
-export(float) var destruction_dv = 5.0
+@export var destruction_dv: float = 5.0
 var _last_vel: Vector3 = Vector3.ZERO
 var _last_vel_initialized: bool = false
 var _force_destroy: bool = false
 
-export(PartClass) var part_class = PartClass.THRUSTER
-export(bool) var allows_surface_attachments=true
-export(bool) var allows_y_radial_symmetry=true
-export(bool) var allows_x_mirror_symmetry=true
-export(bool) var conducts_liquid_fuel=true
-export(bool) var conducts_solid_fuel=true
-export(bool) var conducts_electricity=true
-export(bool) var conducts_air=true
+@export var part_class: PartClass = PartClass.THRUSTER
+@export var allows_surface_attachments: bool=true
+@export var allows_y_radial_symmetry: bool=true
+@export var allows_x_mirror_symmetry: bool=true
+@export var conducts_liquid_fuel: bool=true
+@export var conducts_solid_fuel: bool=true
+@export var conducts_electricity: bool=true
+@export var conducts_air: bool=true
 # Dry mass of the part. For fuel tanks there should be a separate thing 
 # For computing total mass.
-export(float) var mass = 1.0
+@export var mass: float = 1.0
 
 var stacking_nodes: Array = []
 var surface_nodes: Array  = []
@@ -65,7 +65,7 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 	if p == null:
 		return
 	
-	var s: Spatial = p as Spatial
+	var s: Node3D = p as Node3D
 	if s != null:
 		var stacking_node: CouplingNode = s as CouplingNode
 		var is_stacking_node: bool = (stacking_node != null)
@@ -82,7 +82,7 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 
 
 func process_inner( _delta ):
-	.process_inner( _delta )
+	super.process_inner( _delta )
 	
 	if (body_state == BodyState.CONSTRUCTION) or (body_state == BodyState.KINEMATIC):
 		_process_coupling_nodes()
@@ -152,7 +152,7 @@ func activate( root_call: bool = true ):
 	if is_activated:
 		return
 	
-	.activate( root_call )
+	super.activate( root_call )
 	
 	# Assign mass
 	if _physical != null:
@@ -188,7 +188,7 @@ func activate( root_call: bool = true ):
 
 
 func deactivate( root_call: bool = true ):
-	.deactivate(root_call)
+	super.deactivate(root_call)
 	
 	deactivate_nodes( true )
 	
@@ -247,7 +247,7 @@ func set_show_node_visuals( en: bool ):
 
 func remove_physical():
 	deactivate_nodes( false )
-	.remove_physical()
+	super.remove_physical()
 
 
 
@@ -372,8 +372,8 @@ func couple_surface():
 		# x2 because of sphere diameter is x2 of its radius. 
 		var sz: float   = own_node.snap_size() * 2.0
 		var a: Vector3  = Vector3( 0.0, sz, 0.0 )
-		var q: Quat     = se3.q
-		a = q.xform( a )
+		var q: Quaternion     = se3.q
+		a = q * (a)
 		var end_r: Vector3 = start_r + a
 		
 		# Returns the closest intersection in the format: 
@@ -415,10 +415,10 @@ func couple_surface():
 	var other_part: Part = other_octree_mesh.get_parent()
 	
 	var se3: Se3Ref = other_part.get_se3()
-	var inv_q0: Quat = se3.q.inverse()
+	var inv_q0: Quaternion = se3.q.inverse()
 	var r0: Vector3  = se3.r
-	at   = inv_q0.xform( at - r0 )
-	norm = inv_q0.xform( norm )
+	at   = inv_q0 * (at - r0)
+	norm = inv_q0 * (norm)
 	
 	var si: float = sqrt(norm.x*norm.x + norm.z*norm.z)
 	if si > 1.0:
@@ -433,8 +433,8 @@ func couple_surface():
 	var rot_axis: Vector3 = Vector3( norm.z, 0.0, -norm.x )
 	rot_axis = rot_axis.normalized()
 	
-	var q: Quat = Quat( rot_axis.x*si_2, rot_axis.y*si_2, rot_axis.z*si_2, co_2 )
-	var t: Transform = Transform.IDENTITY
+	var q: Quaternion = Quaternion( rot_axis.x*si_2, rot_axis.y*si_2, rot_axis.z*si_2, co_2 )
+	var t: Transform3D = Transform3D.IDENTITY
 	t.basis  = q
 	t.origin = at
 	
@@ -500,7 +500,7 @@ func is_coupled_with( part: Part ):
 
 
 func update_physics_from_state():
-	.update_physics_from_state()
+	super.update_physics_from_state()
 	
 #	var t: Transform = self.transform
 #	var atts: Array = get_attachments()
@@ -513,21 +513,21 @@ func update_physics_from_state():
 
 
 func init():
-	.init()
+	super.init()
 	_traverse_coupling_nodes()
 
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	._ready()
+	super._ready()
 	_create_sound_source()
 
 
 func on_delete():
 	on_delete_rescue_camera()
 	decouple_all()
-	.on_delete()
+	super.on_delete()
 
 
 
@@ -587,7 +587,7 @@ static func _dfs( part: Part, parts: Array ):
 
 
 func gui_classes( mode: Array ):
-	var classes: Array = .gui_classes( mode )
+	var classes: Array = super.gui_classes( mode )
 	if not mode.has( "construction_editing" ):
 		# Append with control group selection.
 		var gui_control_group = preload( "res://physics/parts/gui_elements/gui_control_group.tscn" )
@@ -626,7 +626,7 @@ func process_user_input_2( input: Dictionary ):
 	var do_process: bool = control_group_active( input )
 	if do_process:
 		process_user_input_group( input )
-	.process_user_input_2( input )
+	super.process_user_input_2( input )
 
 
 # This one should be overriden by implementations.
@@ -662,7 +662,7 @@ func create_assembly():
 
 
 func serialize():
-	var data: Dictionary = .serialize()
+	var data: Dictionary = super.serialize()
 	data["control_group"] = int(control_group)
 	
 	var atts: Array = get_attachments()
@@ -699,7 +699,7 @@ func deserialize( data: Dictionary ):
 		var att_data: Dictionary = coupling_nodes_data[name]
 		att.deserialize( att_data )
 	
-	var ret: bool = .deserialize( data )
+	var ret: bool = super.deserialize( data )
 	if not ret:
 		return false
 	

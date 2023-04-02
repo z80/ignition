@@ -1,31 +1,31 @@
 
-extends ViewportContainer
+extends SubViewportContainer
 
-export(Basis) var sun_direction = Basis.IDENTITY setget _set_sun_direction, _get_sun_direction
+@export var sun_direction: Basis = Basis.IDENTITY: get = _get_sun_direction, set = _set_sun_direction
 
 # This is actual root for adding visual content.
-var root: Spatial = null
+var root: Node3D = null
 
-var _viewport: Viewport = null
-var _light: DirectionalLight = null
-var _camera: Camera = null
+var _viewport: SubViewport = null
+var _light: DirectionalLight3D = null
+var _camera: Camera3D = null
 
 
 func get_light():
-	var light: DirectionalLight = _get_light()
+	var light: DirectionalLight3D = _get_light()
 	return light
 
 
 func _get_light():
 	if _light == null:
-		_light = get_node( "Viewport/Root/SunLight" )
+		_light = get_node( "SubViewport/Root/SunLight" )
 	return _light
 
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	root = get_node( "Viewport/Root" )
+	root = get_node( "SubViewport/Root" )
 	_camera   = root.camera
 	_light    = root.light
 
@@ -34,7 +34,7 @@ func _ready():
 func _on_resized():
 	var sz: Vector2 = self.get_rect().size
 	if _viewport == null:
-		_viewport = get_node( "Viewport" )
+		_viewport = get_node( "SubViewport" )
 	_viewport.size = sz
 
 

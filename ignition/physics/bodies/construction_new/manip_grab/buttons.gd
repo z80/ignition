@@ -26,12 +26,12 @@ func _ready():
 
 
 func _on_World_pressed():
-	world_btn.pressed = true
-	local_btn.pressed = false
+	world_btn.button_pressed = true
+	local_btn.button_pressed = false
 	emit_signal( "world" )
 
 
 func _on_Local_pressed():
-	world_btn.pressed = false
-	local_btn.pressed = true
+	world_btn.button_pressed = false
+	local_btn.button_pressed = true
 	emit_signal( "local" )

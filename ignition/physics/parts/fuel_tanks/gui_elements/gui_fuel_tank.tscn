@@ -5,7 +5,7 @@
 [node name="GuiFuelTank" type="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_min_size = Vector2( 120, 30 )
+custom_minimum_size = Vector2( 120, 30 )
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -14,15 +14,15 @@ __meta__ = {
 [node name="Container" type="VBoxContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = 1.0
+offset_right = 1.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="Indicator" type="HSlider" parent="Container"]
-margin_right = 1025.0
-margin_bottom = 20.0
-rect_min_size = Vector2( 70, 20 )
+offset_right = 1025.0
+offset_bottom = 20.0
+custom_minimum_size = Vector2( 70, 20 )
 value = 100.0
 tick_count = 11
 ticks_on_borders = true
@@ -31,8 +31,8 @@ __meta__ = {
 }
 
 [node name="Label" type="Label" parent="Container"]
-margin_top = 24.0
-margin_right = 1025.0
-margin_bottom = 44.0
-rect_min_size = Vector2( 70, 20 )
+offset_top = 24.0
+offset_right = 1025.0
+offset_bottom = 44.0
+custom_minimum_size = Vector2( 70, 20 )
 text = "Fuel left: 10t"

@@ -2,7 +2,7 @@
 extends Part
 class_name Decoupler
 
-export(String) var decouple_sound = ""
+@export var decouple_sound: String = ""
 
 # This one should point to the coupling node wich is iupposed to 
 # be eliminated.
@@ -10,11 +10,11 @@ var decoupled: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func init():
-	.init()
+	super.init()
 
 
 func process_user_input_group( input: Dictionary ):
-	.process_user_input_group( input )
+	super.process_user_input_group( input )
 
 	if input.has( "ui_space" ):
 		var inp = input[ "ui_space" ]
@@ -40,13 +40,13 @@ func decoupler_activate():
 
 
 func serialize():
-	var data: Dictionary = .serialize()
+	var data: Dictionary = super.serialize()
 	data["decoupled"] = decoupled
 	return data
 
 
 func deserialize( data: Dictionary ):
-	var ret: bool = .deserialize( data )
+	var ret: bool = super.deserialize( data )
 	if not ret:
 		return false
 	

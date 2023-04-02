@@ -1,8 +1,8 @@
 
 extends RefFrameNode
 
-export(PackedScene) var CollisionCell = null
-var _collision_body: StaticBody = null
+@export var CollisionCell: PackedScene = null
+var _collision_body: StaticBody3D = null
 
 var _source_se3: Se3Ref = null
 
@@ -17,7 +17,7 @@ func _ign_post_process( _delta ):
 	
 	var ref_frame: RefFrameNode = get_parent()
 	var se3: Se3Ref = self.relative_to( ref_frame )
-	var t: Transform = se3.transform
+	var t: Transform3D = se3.transform
 	_collision_body.transform = t
 	
 #	# Validation.
@@ -34,7 +34,7 @@ func _get_collision_body():
 	
 	# Here it should be for ref frame physical space.
 	if _collision_body == null:
-		_collision_body = CollisionCell.instance()
+		_collision_body = CollisionCell.instantiate()
 		var phys_env: Node = ref_frame_physics.get_physics_environment()
 		phys_env.add_physics_body( _collision_body )
 	
@@ -42,27 +42,27 @@ func _get_collision_body():
 
 
 func remove_surface():
-	var static_body: StaticBody = _get_collision_body()
-	var collision_shape: CollisionShape = static_body.get_collision_shape()
+	var static_body: StaticBody3D = _get_collision_body()
+	var collision_shape: CollisionShape3D = static_body.get_collision_shape()
 	
 	# Just empty shape so that there are no polygons to collide with.
-	var shape: ConcavePolygonShape = ConcavePolygonShape.new()
+	var shape: ConcavePolygonShape3D = ConcavePolygonShape3D.new()
 	collision_shape.shape = shape
 
 
 func clone_surface( other_cell: RefFrameNode ):
-	var other_static_body: StaticBody = other_cell._get_collision_body()
-	var other_collision_shape: CollisionShape = other_static_body.get_collision_shape()
-	var shape: ConcavePolygonShape = other_collision_shape.shape
+	var other_static_body: StaticBody3D = other_cell._get_collision_body()
+	var other_collision_shape: CollisionShape3D = other_static_body.get_collision_shape()
+	var shape: ConcavePolygonShape3D = other_collision_shape.shape
 
-	var own_static_body: StaticBody = _get_collision_body()
-	var own_collision_shape: CollisionShape = own_static_body.get_collision_shape()
+	var own_static_body: StaticBody3D = _get_collision_body()
+	var own_collision_shape: CollisionShape3D = own_static_body.get_collision_shape()
 	own_collision_shape.shape = shape
 
 
 
 func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_size_strategy: VolumeNodeSizeStrategyGd, source_surface: Resource ):
-	var collision_body: StaticBody = _get_collision_body()
+	var collision_body: StaticBody3D = _get_collision_body()
 	if collision_body == null:
 		return null
 	
@@ -107,9 +107,9 @@ func build_surface_finished( args ):
 	var qty: int = voxel_surface.get_nodes_qty()
 	#print( "surface done, nodes qty: ", qty )
 	
-	var static_body: StaticBody = _get_collision_body()
-	var collision_shape: CollisionShape = static_body.get_collision_shape()
-	var shape: ConcavePolygonShape = ConcavePolygonShape.new()
+	var static_body: StaticBody3D = _get_collision_body()
+	var collision_shape: CollisionShape3D = static_body.get_collision_shape()
+	var shape: ConcavePolygonShape3D = ConcavePolygonShape3D.new()
 	#voxel_surface.apply_to_mesh_only( _visual.surface )
 	#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
 	var _ok: bool = voxel_surface.apply_to_collision_shape( shape )

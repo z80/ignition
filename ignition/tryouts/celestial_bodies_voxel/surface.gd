@@ -1,11 +1,11 @@
 
-extends Spatial
+extends Node3D
 
-export(Resource) var surface_source = null
+@export var surface_source: Resource = null
 
 ## If solid, it generates physical surface 
 ## for collision processing.
-export(bool)     var solid = true
+@export var solid: bool = true
 
 var _material_inds: Array = []
 var _surface_meshes: Array = []
@@ -43,13 +43,13 @@ func _ready():
 func _get_surface_mesh( ind: int ):
 	var qty: int = _surface_meshes.size()
 	while ind >= qty:
-		var m: MeshInstance = MeshInstance.new()
+		var m: MeshInstance3D = MeshInstance3D.new()
 		m.name = "Mesh_" + str(qty)
 		self.add_child( m )
 		_surface_meshes.push_back( m )
 		qty += 1
 	
-	var ret: MeshInstance = _surface_meshes[ind]
+	var ret: MeshInstance3D = _surface_meshes[ind]
 	return ret
 	
 
@@ -87,25 +87,25 @@ func update_material_properties( source_se3: Se3Ref, scaler: DistanceScalerBaseR
 	var s: DistanceScalerRef = scaler
 	var plain_dist: float = s.plain_distance
 	var log_scale: float  = s.log_scale
-	var source_tr: Transform = ref_point_transform.transform
+	var source_tr: Transform3D = ref_point_transform.transform
 	var scaled_source_se3: Se3Ref = _voxel_surface.compute_source_se3( source_se3, _local_point_se3 )
 	var inv_scaled_source_se3: Se3Ref = scaled_source_se3.inverse()
-	var inv_scaled_source_tr: Transform = inv_scaled_source_se3.transform
+	var inv_scaled_source_tr: Transform3D = inv_scaled_source_se3.transform
 	
 	# How much change vertex position to get true displacement with respect to 
 	# source origin in origin ref. frame.
 	var displacement: Vector3 = _local_point_se3.r
 	
 	for i in range(qty):
-		var mesh_inst: MeshInstance = meshes[i]
+		var mesh_inst: MeshInstance3D = meshes[i]
 		var sm: ShaderMaterial = mesh_inst.material_override as ShaderMaterial
 		if sm == null:
 			continue
-		sm.set_shader_param( "plain_dist", plain_dist )
-		sm.set_shader_param( "log_scale", log_scale )
-		sm.set_shader_param( "source_tr", source_tr )
-		sm.set_shader_param( "inv_scaled_source_tr", inv_scaled_source_tr )
-		sm.set_shader_param( "displacement", displacement )
+		sm.set_shader_parameter( "plain_dist", plain_dist )
+		sm.set_shader_parameter( "log_scale", log_scale )
+		sm.set_shader_parameter( "source_tr", source_tr )
+		sm.set_shader_parameter( "inv_scaled_source_tr", inv_scaled_source_tr )
+		sm.set_shader_parameter( "displacement", displacement )
 
 
 func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
@@ -114,7 +114,7 @@ func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: Dista
 	
 	var meshes: Array = []
 	for ind in material_inds:
-		var mi: MeshInstance = _get_surface_mesh( ind )
+		var mi: MeshInstance3D = _get_surface_mesh( ind )
 		meshes.push_back( mi )
 	
 	for mi in meshes:
@@ -130,7 +130,7 @@ func rescale_surface( source_se3: Se3Ref, local_point_se3: Se3Ref, scaler: Dista
 		var material_ind: int = material_inds[i]
 		if material_ind < 0:
 			material_ind = 0
-		var mesh_inst: MeshInstance = meshes[i]
+		var mesh_inst: MeshInstance3D = meshes[i]
 		mesh_inst.visible = true
 		mesh_inst.material_override = materials[material_ind]
 		
@@ -149,7 +149,7 @@ func rescale_surface_finished( local_point_se3: Se3Ref, wireframe: bool = false 
 
 	var meshes: Array = []
 	for ind in material_inds:
-		var mi: MeshInstance = _get_surface_mesh( ind )
+		var mi: MeshInstance3D = _get_surface_mesh( ind )
 		meshes.push_back( mi )
 
 	var qty: int = material_inds.size()
@@ -157,7 +157,7 @@ func rescale_surface_finished( local_point_se3: Se3Ref, wireframe: bool = false 
 		var material_ind: int = material_inds[i]
 		if material_ind < 0:
 			material_ind = 0
-		var mesh_inst: MeshInstance = meshes[i]
+		var mesh_inst: MeshInstance3D = meshes[i]
 	
 		lock()
 		if wireframe:
@@ -174,7 +174,7 @@ func rescale_surface_finished( local_point_se3: Se3Ref, wireframe: bool = false 
 
 
 func get_root_se3( source_se3: Se3Ref, scaler: DistanceScalerBaseRef ):
-	var t: Transform = _voxel_surface.compute_source_transform( source_se3, _local_point_se3 )
+	var t: Transform3D = _voxel_surface.compute_source_transform( source_se3, _local_point_se3 )
 	return t
 
 

@@ -3,7 +3,7 @@
 [ext_resource path="res://physics/menu/root_menu/rigid_menu_item.gd" type="Script" id=1]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 94.6973, 21.9069 )
+size = Vector2( 94.6973, 21.9069 )
 
 [node name="RootMenuItem" type="RigidBody2D"]
 continuous_cd = 2
@@ -15,10 +15,10 @@ script = ExtResource( 1 )
 shape = SubResource( 1 )
 
 [node name="Button" type="TextureButton" parent="."]
-margin_left = -93.0
-margin_top = -19.0703
-margin_right = 94.0
-margin_bottom = 20.9297
+offset_left = -93.0
+offset_top = -19.0703
+offset_right = 94.0
+offset_bottom = 20.9297
 __meta__ = {
 "_edit_use_anchors_": false
 }

@@ -9,17 +9,17 @@ __meta__ = {
 
 [node name="Panel" type="Panel" parent="."]
 anchor_bottom = 0.998
-margin_right = 108.0
-margin_bottom = 0.200012
+offset_right = 108.0
+offset_bottom = 0.200012
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="ScrollContainer" type="ScrollContainer" parent="Panel"]
-margin_left = 7.0
-margin_top = 145.0
-margin_right = 104.0
-margin_bottom = 591.0
+offset_left = 7.0
+offset_top = 145.0
+offset_right = 104.0
+offset_bottom = 591.0
 __meta__ = {
 "_edit_use_anchors_": false
 }

@@ -23,7 +23,7 @@ func _ready():
 	rf.remove_parent()
 	rf.change_parent( get_node( \"Landscape\" ) )
 	
-	PhysicsManager.camera = $Camera
+	PhysicsManager.camera = $Camera3D
 	
 	var capsule: Body = BodyCreator.create( \"character_simple\" )
 	# Call add body to process inclusion and initialization properly.
@@ -47,7 +47,7 @@ func _ready():
 	
 	#var privot: Spatial = capsule._visual
 	#$Camera.privot = privot
-	$Camera.set_mode( $Camera.Mode.TPS_AZIMUTH )
+	$Camera3D.set_mode( $Camera3D.Mode.TPS_AZIMUTH )
 	
 	# Initial set of select and focus object.
 	PhysicsManager.player_select  = capsule
@@ -69,8 +69,8 @@ script = SubResource( 1 )
 
 [node name="Landscape" parent="." instance=ExtResource( 5 )]
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.897405, 0.441208, 0, -0.441208, 0.897405, 0, 2.33134, 4.60433 )
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 0.897405, 0.441208, 0, -0.441208, 0.897405, 0, 2.33134, 4.60433 )
 script = ExtResource( 2 )
 
 [node name="AxesVis" parent="." instance=ExtResource( 4 )]

@@ -1,16 +1,16 @@
 
-extends Spatial
+extends Node3D
 
-export(Basis) var sun_direction = Basis.IDENTITY setget _set_sun_direction, _get_sun_direction
+@export var sun_direction: Basis = Basis.IDENTITY: get = _get_sun_direction, set = _set_sun_direction
 
 # This is actual root for adding visual content.
-var root: Spatial = null
+var root: Node3D = null
 
-var _light: DirectionalLight = null
+var _light: DirectionalLight3D = null
 
 
 func get_light():
-	var light: DirectionalLight = _get_light()
+	var light: DirectionalLight3D = _get_light()
 	return light
 
 

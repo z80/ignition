@@ -1,9 +1,9 @@
 
-extends Spatial
+extends Node3D
 class_name CharacterVisualBase
 
-var target_tps: Spatial = null
-var target_fps: Spatial = null
+var target_tps: Node3D = null
+var target_fps: Node3D = null
 var body: PhysicsBodyBase = null
 
 # Called when the node enters the scene tree for the first time.

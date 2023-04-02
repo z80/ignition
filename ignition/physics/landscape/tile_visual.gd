@@ -2,7 +2,7 @@
 extends TileBase
 
 func construct():
-	.construct()
+	super.construct()
 	var meshes = recompute()
 	var land_mesh  = meshes[0]
 	var water_mesh = meshes[1]

@@ -38,7 +38,7 @@ func density_viscosity( se3: Se3Ref ):
 
 
 
-export(Vector3) var ang_velocity = Vector3.ZERO
+@export var ang_velocity: Vector3 = Vector3.ZERO
 
 func compute_force( body: RefFrameNode, se3: Se3Ref ):
 	var dv: Array = density_viscosity( se3 )
@@ -73,9 +73,9 @@ func compute_force( body: RefFrameNode, se3: Se3Ref ):
 	var body_se3: Se3Ref = body.get_se3()
 	# To convert velocity to parent ref. frame in order to query for 
 	# face ray intersections.
-	var body_q: Quat = body_se3.q
+	var body_q: Quaternion = body_se3.q
 	var forward: Vector3 = -v.normalized()
-	forward = body_q.xform( forward )
+	forward = body_q * (forward)
 	
 	var rf_physics: RefFrameNode = body.get_parent()
 	var broad_tree: BroadTreeGd = rf_physics.get_broad_tree()
@@ -88,7 +88,7 @@ func compute_force( body: RefFrameNode, se3: Se3Ref ):
 		
 		var n_v: float = n.dot( v )
 		
-		var rf_r: Vector3  = body_q.xform( r )
+		var rf_r: Vector3  = body_q * (r)
 		var start: Vector3 = rf_r - forward * BACK_DIST
 		var end: Vector3   = rf_r + forward * FORWARD_DIST
 		

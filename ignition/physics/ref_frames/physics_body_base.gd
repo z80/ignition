@@ -8,16 +8,16 @@ enum BodyState {
 	CONSTRUCTION=2
 }
 
-export(BodyState)         var body_state         = BodyState.DYNAMIC
+@export var body_state: BodyState         = BodyState.DYNAMIC
 
 # When inheriting need to redefine these two.
-export(PackedScene) var VisualScene   = null
-export(PackedScene) var AirDragScene  = null
+@export var VisualScene: PackedScene   = null
+@export var AirDragScene: PackedScene  = null
 
 
 
-var _visual: RigidBody       = null
-var _physical: RigidBody     = null
+var _visual: RigidBody3D       = null
+var _physical: RigidBody3D     = null
 var _air_drag_scene: Node    = null
 var _shock_wave_visual: Node = null
 
@@ -32,7 +32,7 @@ var _octree_mesh: OctreeMeshGd = null
 
 
 # Force visualizer
-var force: Spatial = null
+var force: Node3D = null
 
 
 func get_class():
@@ -69,7 +69,7 @@ func _ready():
 	if AirDragScene != null:
 		_create_octree_mesh()
 		# Create air drag mesh(es).
-		_air_drag_scene = AirDragScene.instance()
+		_air_drag_scene = AirDragScene.instantiate()
 		_octree_mesh.add_child( _air_drag_scene )
 		_air_drag_scene.visible = false
 		_octree_mesh.rebuild()
@@ -77,7 +77,7 @@ func _ready():
 	# Force visualizer. This is purely for debugging purposes.
 	if Constants.DEBUG and (force == null) and false:
 		var Force = preload( "res://physics/force_source/force_visualizer.tscn" )
-		force = Force.instance()
+		force = Force.instantiate()
 		RootScene.get_visual_layer_near().add_child( force )
 	
 	if _visual == null:
@@ -114,7 +114,7 @@ func _traverse_interation_nodes_recursive( p: Node ):
 	if p == null:
 		return false
 	
-	var s: Spatial = p as Spatial
+	var s: Node3D = p as Node3D
 	if s != null:
 		var node: InteractionNode = s as InteractionNode
 		if node != null:
@@ -141,7 +141,7 @@ func _traverse_shock_wave_visuals_recursive( node: Node ):
 	if node == null:
 		return
 	
-	var s: Spatial = node as Spatial
+	var s: Node3D = node as Node3D
 	if s != null:
 		var swv: ShockWaveVisual = s as ShockWaveVisual
 		if swv != null:
@@ -196,7 +196,7 @@ func on_delete():
 func update_visual( origin: RefFrameNode = null ):
 	if _visual != null:
 		var se3: Se3Ref = self.relative_to( origin )
-		var t: Transform = se3.transform
+		var t: Transform3D = se3.transform
 		_visual.transform = t
 
 
@@ -234,7 +234,7 @@ func gui_classes( mode: Array ):
 		for cl in s_classes:
 			classes.push_back( cl )
 	
-	var empty: bool = mode.empty()
+	var empty: bool = mode.is_empty()
 	if empty:
 		var cam_mode = load( "res://physics/camera_ctrl/gui_elements/gui_camera_mode.tscn" )
 		var cam_this = load( "res://physics/camera_ctrl/gui_elements/gui_control_this.tscn" )
@@ -298,7 +298,7 @@ func _ign_physics_pre_process( delta ):
 # To make it overridable.
 func update_state_from_physics( delta ):
 	if _physical != null:
-		var t: Transform = _physical.transform
+		var t: Transform3D = _physical.transform
 		var v: Vector3   = _physical.linear_velocity
 		var w: Vector3   = _physical.angular_velocity
 		self.set_t( t )
@@ -315,7 +315,7 @@ func update_physics_from_state():
 	# There might be a body without physical, right?
 	# So need to check if it exists even after create_physical() call.
 	if _physical != null:
-		var t: Transform = self.t()
+		var t: Transform3D = self.t()
 		_physical.transform = t
 		var v: Vector3 = self.v()
 		_physical.set_linear_velocity( v )
@@ -339,9 +339,9 @@ func _create_visual( Visual: PackedScene ):
 	if Visual == null:
 		return null
 	
-	var v = Visual.instance()
+	var v = Visual.instantiate()
 	
-	var t: Transform = self.t()
+	var t: Transform3D = self.t()
 	v.transform = t
 	
 	var root: Node = RootScene.get_visual_layer_near()
@@ -350,9 +350,9 @@ func _create_visual( Visual: PackedScene ):
 	
 	# Check if it is a RigidBody.
 	# If it is, set mode to kinematic.
-	var rigid_body: RigidBody = v as RigidBody
+	var rigid_body: RigidBody3D = v as RigidBody3D
 	if rigid_body != null:
-		rigid_body.mode = RigidBody.MODE_KINEMATIC
+		rigid_body.mode = RigidBody3D.FREEZE_MODE_KINEMATIC
 	
 	_visual = v
 	
@@ -365,7 +365,7 @@ func _create_visual( Visual: PackedScene ):
 	# Own ref. frame visualizer
 	if Constants.DEBUG and (get_class() != "SurfaceProvider") and false:
 		var OwnRf = preload( "res://physics/force_source/own_ref_frame_visualizer.tscn" )
-		var rf = OwnRf.instance()
+		var rf = OwnRf.instantiate()
 		_visual.add_child( rf )
 
 
@@ -390,11 +390,11 @@ func _create_physical( Physical: PackedScene ):
 	if parent_rf == null:
 		return null
 	
-	var p: RigidBody = Physical.instance()
+	var p: RigidBody3D = Physical.instantiate()
 	
 	#p.visible = false
 	
-	var t: Transform = self.t()
+	var t: Transform3D = self.t()
 	p.transform = t
 	var v: Vector3 = self.v()
 	p.linear_velocity = v
@@ -439,7 +439,7 @@ func change_parent( p: Node = null ):
 
 
 func change_parent_inner( p: Node ):
-	.change_parent( p )
+	super.change_parent( p )
 
 
 # Nothing here by default.
@@ -474,11 +474,11 @@ func add_force_torque( F: Vector3, P: Vector3 ):
 		_physical = null
 		
 	if _physical != null:
-		var rb: RigidBody = _physical as RigidBody
+		var rb: RigidBody3D = _physical as RigidBody3D
 		if rb:
 			rb.sleeping = false
-			rb.add_central_force( F )
-			rb.add_torque( P )
+			rb.apply_central_force( F )
+			rb.apply_torque( P )
 	
 	if force != null:
 		force.set_force( false, F, self.r() )
@@ -566,7 +566,7 @@ func create_assembly():
 
 
 func serialize():
-	var data: Dictionary = .serialize()
+	var data: Dictionary = super.serialize()
 	
 	data["body_state"]         = int(body_state)
 	
@@ -581,7 +581,7 @@ func serialize():
 # When this thing is called all objects are created.
 # So can assume that all saved paths should be valid.
 func deserialize( data: Dictionary ):
-	var ok: bool = .deserialize( data )
+	var ok: bool = super.deserialize( data )
 	if not ok:
 		return false
 	

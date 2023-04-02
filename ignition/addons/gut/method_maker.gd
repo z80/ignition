@@ -72,12 +72,12 @@ func _init():
 	_supported_defaults[TYPE_NIL] = ''
 	_supported_defaults[TYPE_BOOL] = ''
 	_supported_defaults[TYPE_INT] = ''
-	_supported_defaults[TYPE_REAL] = ''
+	_supported_defaults[TYPE_FLOAT] = ''
 	_supported_defaults[TYPE_OBJECT] = ''
 	_supported_defaults[TYPE_ARRAY] = ''
 	_supported_defaults[TYPE_STRING] = ''
 	_supported_defaults[TYPE_DICTIONARY] = ''
-	_supported_defaults[TYPE_VECTOR2_ARRAY] = ''
+	_supported_defaults[TYPE_PACKED_VECTOR2_ARRAY] = ''
 
 	# These require a prefix for whatever default is provided
 	_supported_defaults[TYPE_VECTOR2] = 'Vector2'

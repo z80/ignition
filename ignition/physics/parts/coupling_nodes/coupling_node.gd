@@ -1,29 +1,29 @@
 
-extends Spatial
+extends Node3D
 class_name CouplingNode
 
 # The part can be connected to others via this node.
-export(bool) var allows_connecting = true
+@export var allows_connecting: bool = true
 # Other parts can be connected to this node.
-export(bool) var allows_connections = true
+@export var allows_connections: bool = true
 # Allows getting connected to the surface
-export(bool) var allows_surface_coupling = false
+@export var allows_surface_coupling: bool = false
 
 enum NodeSize { SMALL=0, MEDIUM=1, LARGE=2 }
-export(NodeSize) var node_size = NodeSize.MEDIUM
+@export var node_size: NodeSize = NodeSize.MEDIUM
 
 var part: RefFrameNode = null
 
 # Reference to connection created (or not created).
-var connection: Reference = null
+var connection: RefCounted = null
 
-var relative_to_owner: Transform = Transform.IDENTITY
+var relative_to_owner: Transform3D = Transform3D.IDENTITY
 
 # Angle only transform.
 #var angle_transform: Transform = Transform.IDENTITY
 
 # Fordisplaying visuals.
-export(bool) var show_visual = false setget _set_show_visual, _get_show_visual
+@export var show_visual: bool = false: get = _get_show_visual, set = _set_show_visual
 var _visual = null
 
 
@@ -45,7 +45,7 @@ func _process( delta ):
 # Should be overwritten in derived classes.
 func process():
 	if show_visual and (_visual != null):
-		var t: Transform = world_transform()
+		var t: Transform3D = world_transform()
 		_visual.transform = t
 		_visual.size = snap_size()
 
@@ -54,23 +54,23 @@ func process():
 
 func compute_relative_to_owner():
 	var p: Node = self
-	var t: Transform = Transform.IDENTITY
-	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
+	var t: Transform3D = Transform3D.IDENTITY
+	var ret: Transform3D = _compute_relative_to_owner_recursive( p, t )
 	return ret
 
 
 
-func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
-	var s: Spatial = n as Spatial
+func _compute_relative_to_owner_recursive( n: Node, t: Transform3D ):
+	var s: Node3D = n as Node3D
 	if s != null:
-		var ct: Transform = s.transform
+		var ct: Transform3D = s.transform
 		t = t * ct
 	var ow: Node = self.owner
 	if n == ow:
 		return t
 	
 	var p: Node = n.get_parent()
-	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
+	var ret: Transform3D = _compute_relative_to_owner_recursive( p, t )
 	return ret
 
 
@@ -82,10 +82,10 @@ func _set_show_visual( en: bool ):
 	if show_visual:
 		if _visual == null:
 			var Visual = preload( "res://physics/parts/coupling_nodes/coupling_node_visual.tscn" )
-			_visual = Visual.instance()
+			_visual = Visual.instantiate()
 			_visual.size = snap_size()
 			_visual.surface = allows_surface_coupling
-			var vp: Viewport = RootScene.get_visual_layer_overlay()
+			var vp: SubViewport = RootScene.get_visual_layer_overlay()
 			vp.add_child( _visual )
 		_visual.visible = true
 	else:
@@ -107,14 +107,14 @@ func _get_show_visual():
 func world_transform():
 	var camera: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var se3: Se3Ref = part.relative_to( camera )
-	var t_parent: Transform = se3.transform
-	var t: Transform = t_parent * relative_to_owner
+	var t_parent: Transform3D = se3.transform
+	var t: Transform3D = t_parent * relative_to_owner
 	return t
 
 
 func ref_frame_transform():
 	if part == null:
-		return Transform.IDENTITY
+		return Transform3D.IDENTITY
 	
 	var se3: Se3Ref = Se3Ref.new()
 	se3.transform = relative_to_owner
@@ -185,7 +185,7 @@ func couple_with( n: CouplingNode ):
 
 
 
-func couple_with_surface( other_part: RefFrameNode, transform: Transform ):
+func couple_with_surface( other_part: RefFrameNode, transform: Transform3D ):
 	var coupling_self: CouplingAttachment  = CouplingAttachment.new()
 	var coupling_other: CouplingAttachment = CouplingAttachment.new()
 	

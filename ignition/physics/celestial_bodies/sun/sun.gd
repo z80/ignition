@@ -4,12 +4,12 @@ class_name Sun
 
 
 # Defining geometry and GM based on surface orbiting velocity.
-export(float)  var radius_km = 5.0
+@export var radius_km: float = 5.0
 
-export(float) var glow_size = 0.2
-export(float) var ray_scale = 10.0
-export(float) var ray_size  = 1.0
-export(float) var ray_bias  = 0.1
+@export var glow_size: float = 0.2
+@export var ray_scale: float = 10.0
+@export var ray_size: float  = 1.0
+@export var ray_bias: float  = 0.1
 
 var ref_frame_to_check_index: int = 0
 
@@ -35,13 +35,13 @@ func init_forces():
 	var gm: float = motion.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
 	set_own_gm( gm )
 	
-	.init_forces()
+	super.init_forces()
 
 
 
 
 func process_ref_frames( celestial_bodies: Array ):
-	.process_ref_frames( celestial_bodies )
+	super.process_ref_frames( celestial_bodies )
 	
 	var rfs: Array = get_ref_frames( self )
 	var qty: int = len( rfs )
@@ -74,7 +74,7 @@ func process_ref_frames( celestial_bodies: Array ):
 
 
 func serialize():
-	var data: Dictionary = .serialize()
+	var data: Dictionary = super.serialize()
 	
 	return data
 
@@ -82,7 +82,7 @@ func serialize():
 
 
 func deserialize( data: Dictionary ):
-	var ret: bool = .deserialize( data )
+	var ret: bool = super.deserialize( data )
 	if not ret:
 		return false
 	init_forces()

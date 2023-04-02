@@ -1,7 +1,7 @@
-extends Spatial
+extends Node3D
 
 
-export(NodePath) var target_path setget _set_target_path
+@export var target_path: NodePath: set = _set_target_path
 var target = null
 
 signal euler( angles )
@@ -17,7 +17,7 @@ var _dragging = {
 	origin = Vector3.ZERO, 
 	rotation_axis = Vector3.ZERO, 
 	drag_axis = Vector3.ZERO, 
-	start_q = Quat.IDENTITY, 
+	start_q = Quaternion.IDENTITY, 
 	mouse_start = Vector3.ZERO, 
 	mouse_at = Vector3.ZERO, 
 	drag_scale = 1.0, 
@@ -34,7 +34,7 @@ func _ready():
 func _process( _delta ):
 	if not _dragging.enabled:
 		if target != null:
-			var t: Transform = target.t()
+			var t: Transform3D = target.t()
 			self.transform = t
 			
 
@@ -95,7 +95,7 @@ func _input(event):
 	var me: InputEventMouseButton = event as InputEventMouseButton
 	if not me:
 		return
-	if (me.button_index != BUTTON_LEFT):
+	if (me.button_index != MOUSE_BUTTON_LEFT):
 		return
 	
 	if not me.pressed:
@@ -107,7 +107,7 @@ func _process_input( event ):
 	var me: InputEventMouseButton = event as InputEventMouseButton
 	if not me:
 		return
-	if (me.button_index != BUTTON_LEFT):
+	if (me.button_index != MOUSE_BUTTON_LEFT):
 		return
 	
 	if me.pressed:
@@ -125,28 +125,28 @@ func _process_input( event ):
 
 func _init_dragging( axis: Vector3 ):
 	# Own origin and unit vector.
-	var t: Transform = self.transform
+	var t: Transform3D = self.transform
 	var own_r: Vector3 = t.origin
-	var own_a: Vector3 = t.basis.xform( axis )
+	var own_a: Vector3 = t.basis * (axis)
 	
-	var vp: Viewport = get_viewport()
+	var vp: SubViewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
-	var camera: Camera = RootScene.ref_frame_root.player_camera
+	var camera: Camera3D = RootScene.ref_frame_root.player_camera
 	
 	# Camera origin and unit vector.
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
 	var cam_a: Vector3 = camera.project_ray_normal(mouse_uv)
 	
 	# Convert to ref. frame. object resides in.
-	var gt: Transform = self.global_transform
-	cam_r = t.basis.xform( gt.basis.xform_inv( cam_r ) )
-	cam_a = t.basis.xform( gt.basis.xform_inv( cam_a ) )
+	var gt: Transform3D = self.global_transform
+	cam_r = t.basis * ((cam_r) * gt.basis)
+	cam_a = t.basis * ((cam_a) * gt.basis)
 	
 	var drag_a: Vector3 = cam_a.cross( own_a )
 	drag_a = drag_a.normalized()
 	
-	var q: Quat = t.basis
+	var q: Quaternion = t.basis
 	
 	var dist: float = (own_r - cam_r).length()
 	
@@ -175,14 +175,14 @@ func _process_dragging():
 	var co2 = cos( angle_2 )
 	var si2 = sin( angle_2 )
 	var a: Vector3 = _dragging.rotation_axis
-	var dq: Quat = Quat( a.x * si2, a.y * si2, a.z * si2, co2 )
-	var q: Quat = dq * _dragging.start_q
+	var dq: Quaternion = Quaternion( a.x * si2, a.y * si2, a.z * si2, co2 )
+	var q: Quaternion = dq * _dragging.start_q
 	var b: Basis = q
 	var euler: Vector3 = b.get_euler()
 	euler.x = round( euler.x / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.y = round( euler.y / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.z = round( euler.z / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
-	q = Quat( euler )
+	q = Quaternion( euler )
 
 	#print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
 	
@@ -193,10 +193,10 @@ func _process_dragging():
 			body.set_q( q )
 			body.update_physical_state_from_rf()
 		else:
-			var tt: Transform = target.transform
+			var tt: Transform3D = target.transform
 			tt.basis = q
 			target.transform = tt
-		var st: Transform = self.transform
+		var st: Transform3D = self.transform
 		st.basis = q
 		self.transform   = st
 
@@ -223,10 +223,10 @@ func _mouse_on_axis():
 
 
 func _mouse_intersection():
-	var vp: Viewport = get_viewport()
+	var vp: SubViewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
-	var camera: Camera = RootScene.ref_frame_root.player_camera
+	var camera: Camera3D = RootScene.ref_frame_root.player_camera
 	
 	# Camera origin and unit vector.
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
@@ -279,11 +279,11 @@ func _mouse_intersection():
 	
 	var inv_A: Basis = A.inverse()
 	
-	var own_p: Vector3 = own_A.xform( own_r )
-	var cam_p: Vector3 = cam_A.xform( cam_r )
+	var own_p: Vector3 = own_A * (own_r)
+	var cam_p: Vector3 = cam_A * (cam_r)
 	var p: Vector3 = own_p + cam_p
 	
-	var r: Vector3 = inv_A.xform( p )
+	var r: Vector3 = inv_A * (p)
 	
 	#print( "\nmouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a, ", closest_p: ", r )
 	

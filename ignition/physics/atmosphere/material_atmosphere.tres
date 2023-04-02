@@ -5,8 +5,8 @@ code = "shader_type spatial;
 render_mode unshaded;
 
 // Atmosphere parameters
-uniform vec4  atmosphere_color_day:     hint_color = vec4( 0.3, 0.3, 0.7, 1.0 );
-uniform vec4  atmosphere_color_evening: hint_color = vec4( 0.7, 0.3, 0.3, 1.0 );
+uniform vec4  atmosphere_color_day:     source_color = vec4( 0.3, 0.3, 0.7, 1.0 );
+uniform vec4  atmosphere_color_evening: source_color = vec4( 0.7, 0.3, 0.3, 1.0 );
 uniform vec3  sphere_position = vec3(0.0, 0.0, 0.0);
 uniform float sphere_radius = 50.0;
 uniform float atmosphere_height    = 2.0;
@@ -136,12 +136,12 @@ vec4 compute_atmosphere_color( vec3 ray_origin, vec3 sphere_center, vec3 ray )
 void vertex()
 {
 	//sphere_position = (WORLD_MATRIX * vec4(0.0, 0.0, 0.0, 1.0) ).xyz;
-	cam_position = (CAMERA_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	cam_position = (INV_VIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 }
 
 void fragment()
 {
-	vec3 ray = -(CAMERA_MATRIX * vec4(VIEW, 0.0)).xyz;
+	vec3 ray = -(INV_VIEW_MATRIX * vec4(VIEW, 0.0)).xyz;
 	ray = ray / length(ray);
 	
 	//bool ok = ray_intersects_sphere( cam_position, sphere_position, ray, sphere_radius );

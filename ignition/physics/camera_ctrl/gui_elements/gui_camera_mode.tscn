@@ -5,7 +5,7 @@
 [node name="GuiCameraMode" type="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_min_size = Vector2( 120, 30 )
+custom_minimum_size = Vector2( 120, 30 )
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -14,25 +14,25 @@ __meta__ = {
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = -2.99998
-margin_bottom = -3.0
+offset_right = -2.99998
+offset_bottom = -3.0
 alignment = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="SetFps" type="Button" parent="HBoxContainer"]
-margin_left = 422.0
-margin_right = 508.0
-margin_bottom = 597.0
-hint_tooltip = "First person camera mode."
-text = "Camera FPS"
+offset_left = 422.0
+offset_right = 508.0
+offset_bottom = 597.0
+tooltip_text = "First person camera mode."
+text = "Camera3D FPS"
 
 [node name="SetTps" type="Button" parent="HBoxContainer"]
-margin_left = 512.0
-margin_right = 598.0
-margin_bottom = 597.0
-hint_tooltip = "Third person camera mode."
-text = "Camera TPS"
+offset_left = 512.0
+offset_right = 598.0
+offset_bottom = 597.0
+tooltip_text = "Third person camera mode."
+text = "Camera3D TPS"
 [connection signal="pressed" from="HBoxContainer/SetFps" to="." method="_on_fps_pressed"]
 [connection signal="pressed" from="HBoxContainer/SetTps" to="." method="_on_tps_pressed"]

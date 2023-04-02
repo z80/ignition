@@ -1,11 +1,11 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://physics/interact_icon/assets/icon_48.png" type="Texture" id=1]
+[ext_resource path="res://physics/interact_icon/assets/icon_48.png" type="Texture2D" id=1]
 [ext_resource path="res://physics/interact_icon/icon.gd" type="Script" id=2]
 
 [node name="IconButton" type="TextureButton"]
-margin_right = 48.0
-margin_bottom = 48.0
+offset_right = 48.0
+offset_bottom = 48.0
 focus_mode = 0
 texture_normal = ExtResource( 1 )
 texture_pressed = ExtResource( 1 )

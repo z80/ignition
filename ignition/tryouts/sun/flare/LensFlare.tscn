@@ -1,13 +1,13 @@
 [gd_scene load_steps=11 format=2]
 
 [ext_resource path="res://addons/silicon.vfx.lens_flare/lens_flare.gd" type="Script" id=1]
-[ext_resource path="res://addons/silicon.vfx.lens_flare/lens_dirt_default.jpeg" type="Texture" id=2]
+[ext_resource path="res://addons/silicon.vfx.lens_flare/lens_dirt_default.jpeg" type="Texture2D" id=2]
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=3]
 [ext_resource path="res://tryouts/sun/flare/FlareEditor.gd" type="Script" id=4]
 [ext_resource path="res://tryouts/sun/flare/Slider.tscn" type="PackedScene" id=5]
-[ext_resource path="res://tryouts/sun/flare/Square.ttf" type="DynamicFontData" id=6]
+[ext_resource path="res://tryouts/sun/flare/Square.ttf" type="FontFile" id=6]
 
-[sub_resource type="DynamicFont" id=1]
+[sub_resource type="FontFile" id=1]
 size = 20
 use_mipmaps = true
 use_filter = true
@@ -16,31 +16,31 @@ font_data = ExtResource( 6 )
 [sub_resource type="Animation" id=2]
 length = 4.0
 tracks/0/type = "value"
-tracks/0/path = NodePath(".:custom_colors/font_color")
+tracks/0/path = NodePath(".:theme_override_colors/font_color")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4 ),
-"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
+"times": PackedFloat32Array( 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4 ),
+"transitions": PackedFloat32Array( 1, 1, 1, 1, 1, 1, 1, 1, 1 ),
 "update": 0,
 "values": [ Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ), Color( 1, 1, 1, 0 ), Color( 1, 1, 1, 1 ) ]
 }
 tracks/1/type = "value"
-tracks/1/path = NodePath(".:rect_position")
+tracks/1/path = NodePath(".:position")
 tracks/1/interp = 2
 tracks/1/loop_wrap = true
 tracks/1/imported = false
 tracks/1/enabled = true
 tracks/1/keys = {
-"times": PoolRealArray( 0, 3, 4 ),
-"transitions": PoolRealArray( 1, 1, 4 ),
+"times": PackedFloat32Array( 0, 3, 4 ),
+"transitions": PackedFloat32Array( 1, 1, 4 ),
 "update": 0,
 "values": [ Vector2( 0, 578 ), Vector2( 0, 578 ), Vector2( 0, 700 ) ]
 }
 
-[sub_resource type="ProceduralSky" id=3]
+[sub_resource type="Sky" id=3]
 ground_energy = 0.5
 sun_angle_max = 24.52
 sun_energy = 16.0
@@ -53,7 +53,7 @@ tonemap_exposure = 0.48
 adjustment_brightness = 0.67
 adjustment_contrast = 1.91
 
-[node name="Main" type="Spatial"]
+[node name="Main" type="Node3D"]
 
 [node name="LensFlare" type="Node" parent="."]
 script = ExtResource( 1 )
@@ -68,17 +68,17 @@ halo_width = 0.4
 streak_strength = 0.5
 lens_dirt = ExtResource( 2 )
 
-[node name="CameraBase" type="Position3D" parent="."]
+[node name="CameraBase" type="Marker3D" parent="."]
 
-[node name="Camera" type="Camera" parent="CameraBase"]
-transform = Transform( 0.990683, 0.0787858, 0.111085, -0.00953811, 0.853812, -0.520493, -0.135853, 0.514584, 0.846609, 0.140886, -0.660126, 1.07524 )
+[node name="Camera3D" type="Camera3D" parent="CameraBase"]
+transform = Transform3D( 0.990683, 0.0787858, 0.111085, -0.00953811, 0.853812, -0.520493, -0.135853, 0.514584, 0.846609, 0.140886, -0.660126, 1.07524 )
 script = ExtResource( 3 )
 
 [node name="Panel" type="Panel" parent="."]
 anchor_bottom = 1.0
-margin_right = 299.0
-margin_bottom = -396.0
-rect_min_size = Vector2( 240, 0 )
+offset_right = 299.0
+offset_bottom = -396.0
+custom_minimum_size = Vector2( 240, 0 )
 script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -87,85 +87,85 @@ __meta__ = {
 [node name="Settings" type="VBoxContainer" parent="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 10.0
-margin_top = 7.0
-margin_right = -10.0
-margin_bottom = -10.0
-rect_min_size = Vector2( 200, 0 )
+offset_left = 10.0
+offset_top = 7.0
+offset_right = -10.0
+offset_bottom = -10.0
+custom_minimum_size = Vector2( 200, 0 )
 alignment = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="FlareStrength" parent="Panel/Settings" instance=ExtResource( 5 )]
-margin_top = 3.0
-margin_right = 279.0
-margin_bottom = 19.0
+offset_top = 3.0
+offset_right = 279.0
+offset_bottom = 19.0
 
 [node name="FlareBias" parent="Panel/Settings" instance=ExtResource( 5 )]
-margin_top = 23.0
-margin_right = 279.0
-margin_bottom = 39.0
+offset_top = 23.0
+offset_right = 279.0
+offset_bottom = 39.0
 
 [node name="FlareBlur" parent="Panel/Settings" instance=ExtResource( 5 )]
-margin_top = 43.0
-margin_right = 279.0
-margin_bottom = 59.0
+offset_top = 43.0
+offset_right = 279.0
+offset_bottom = 59.0
 
 [node name="Distortion" parent="Panel/Settings" instance=ExtResource( 5 )]
-margin_top = 63.0
-margin_right = 279.0
-margin_bottom = 79.0
+offset_top = 63.0
+offset_right = 279.0
+offset_bottom = 79.0
 
 [node name="DistortQuality" type="HBoxContainer" parent="Panel/Settings"]
-margin_top = 83.0
-margin_right = 279.0
-margin_bottom = 103.0
+offset_top = 83.0
+offset_right = 279.0
+offset_bottom = 103.0
 
 [node name="Label" type="Label" parent="Panel/Settings/DistortQuality"]
-margin_top = 3.0
-margin_right = 122.0
-margin_bottom = 17.0
+offset_top = 3.0
+offset_right = 122.0
+offset_bottom = 17.0
 text = "Distortion Quality: "
 
 [node name="OptionButton" type="OptionButton" parent="Panel/Settings/DistortQuality"]
-margin_left = 126.0
-margin_right = 279.0
-margin_bottom = 20.0
+offset_left = 126.0
+offset_right = 279.0
+offset_bottom = 20.0
 size_flags_horizontal = 3
 text = "Low"
 items = [ "Low", null, false, 0, null, "Medium", null, false, 1, null, "High", null, false, 2, null ]
 selected = 0
 
 [node name="GhostCount" parent="Panel/Settings" instance=ExtResource( 5 )]
-margin_top = 107.0
-margin_right = 279.0
-margin_bottom = 123.0
+offset_top = 107.0
+offset_right = 279.0
+offset_bottom = 123.0
 
 [node name="GhostSpacing" parent="Panel/Settings" instance=ExtResource( 5 )]
-margin_top = 127.0
-margin_right = 279.0
-margin_bottom = 143.0
+offset_top = 127.0
+offset_right = 279.0
+offset_bottom = 143.0
 
 [node name="HaloWidth" parent="Panel/Settings" instance=ExtResource( 5 )]
-margin_top = 147.0
-margin_right = 279.0
-margin_bottom = 163.0
+offset_top = 147.0
+offset_right = 279.0
+offset_bottom = 163.0
 
 [node name="StreakStrength" parent="Panel/Settings" instance=ExtResource( 5 )]
-margin_top = 167.0
-margin_right = 279.0
-margin_bottom = 183.0
+offset_top = 167.0
+offset_right = 279.0
+offset_bottom = 183.0
 
 [node name="LookAround" type="Label" parent="."]
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_top = -22.0
-custom_fonts/font = SubResource( 1 )
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
-custom_constants/shadow_as_outline = 1
+offset_top = -22.0
+theme_override_fonts/font = SubResource( 1 )
+theme_override_colors/font_color = Color( 1, 1, 1, 1 )
+theme_override_colors/font_shadow_color = Color( 0, 0, 0, 1 )
+theme_override_constants/shadow_outline_size = 1
 text = "You may look around with the WASD keys"
 align = 1
 __meta__ = {

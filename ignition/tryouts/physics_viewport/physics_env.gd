@@ -1,4 +1,4 @@
-extends ViewportContainer
+extends SubViewportContainer
 
 
 # Declare member variables here. Examples:
@@ -11,6 +11,6 @@ func _ready():
 	pass # Replace with function body.
 
 
-func add_physics_body( body: RigidBody ):
+func add_physics_body( body: RigidBody3D ):
 	var s = get_node( "Vp/Scene" )
 	s.add_physics_body( body )

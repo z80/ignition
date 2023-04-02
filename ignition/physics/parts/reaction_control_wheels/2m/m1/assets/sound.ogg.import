@@ -1,15 +1,19 @@
 [remap]
 
-importer="ogg_vorbis"
-type="AudioStreamOGGVorbis"
-path="res://.import/sound.ogg-cf50490dcaab437e134b0563cf00ef79.oggstr"
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://b7ee38kgi5b1v"
+path="res://.godot/imported/sound.ogg-cf50490dcaab437e134b0563cf00ef79.oggvorbisstr"
 
 [deps]
 
 source_file="res://physics/parts/reaction_control_wheels/2m/m1/assets/sound.ogg"
-dest_files=[ "res://.import/sound.ogg-cf50490dcaab437e134b0563cf00ef79.oggstr" ]
+dest_files=["res://.godot/imported/sound.ogg-cf50490dcaab437e134b0563cf00ef79.oggvorbisstr"]
 
 [params]
 
 loop=true
 loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

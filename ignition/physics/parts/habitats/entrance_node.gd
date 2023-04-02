@@ -1,14 +1,14 @@
 
-extends Spatial
+extends Node3D
 class_name EntranceNode
 
 # Boarding works within this distance 
 # from the node's origin.
 # Unboarding happens in the node origin. So it shouldn't be inside of 
 # the habitat module.
-export(float) var radius = 10.0
+@export var radius: float = 10.0
 
-var relative_to_owner: Transform = Transform.IDENTITY
+var relative_to_owner: Transform3D = Transform3D.IDENTITY
 # Part pointer. This thing should be filled externally.
 var part: Node = null
 
@@ -20,23 +20,23 @@ func _ready():
 
 func compute_relative_to_owner():
 	var p: Node = self
-	var t: Transform = Transform.IDENTITY
-	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
+	var t: Transform3D = Transform3D.IDENTITY
+	var ret: Transform3D = _compute_relative_to_owner_recursive( p, t )
 	return ret
 
 
 
-func _compute_relative_to_owner_recursive( n: Node, t: Transform ):
-	var s: Spatial = n as Spatial
+func _compute_relative_to_owner_recursive( n: Node, t: Transform3D ):
+	var s: Node3D = n as Node3D
 	if s != null:
-		var ct: Transform = s.transform
+		var ct: Transform3D = s.transform
 		t = t * ct
 	var ow: Node = self.owner
 	if n == ow:
 		return t
 	
 	var p: Node = n.get_parent()
-	var ret: Transform = _compute_relative_to_owner_recursive( p, t )
+	var ret: Transform3D = _compute_relative_to_owner_recursive( p, t )
 	return ret
 
 

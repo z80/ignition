@@ -1,8 +1,8 @@
 
-extends Spatial
+extends Node3D
 class_name ShockWaveVisual
 
-export(Resource) var shock_wave_config = null
+@export var shock_wave_config: Resource = null
 
 var shock_stripes: Array = []
 var speed_min: float     = 1.0

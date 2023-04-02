@@ -6,7 +6,7 @@
 [node name="PanelBlocks" type="Panel"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 1.0
+offset_left = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource( 1 )
@@ -15,14 +15,14 @@ button_scene = ExtResource( 2 )
 [node name="Scroll" type="ScrollContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 4.0
-margin_top = 4.0
-margin_right = 4.0
-margin_bottom = 4.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 4.0
+offset_bottom = 4.0
 
 [node name="Container" type="GridContainer" parent="Scroll"]
-margin_right = 1023.0
-margin_bottom = 192.0
-rect_min_size = Vector2( 192, 192 )
+offset_right = 1023.0
+offset_bottom = 192.0
+custom_minimum_size = Vector2( 192, 192 )
 size_flags_horizontal = 3
 columns = 3

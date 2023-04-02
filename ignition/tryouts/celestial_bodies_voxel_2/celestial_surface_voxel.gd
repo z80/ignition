@@ -2,12 +2,12 @@
 extends CelestialBody
 class_name CelestialSurfaceVoxel
 
-export(Resource) var config_atmosphere = null
-export(PackedScene) var VisualNodeSpace = null
+@export var config_atmosphere: Resource = null
+@export var VisualNodeSpace: PackedScene = null
 
-export(float) var radius_km setget , _get_radius_km
+@export var radius_km: float: get = _get_radius_km
 
-var _visual_space: Spatial = null
+var _visual_space: Node3D = null
 var _visual_surface: Node  = null
 
 
@@ -29,8 +29,8 @@ var _visual_surface: Node  = null
 #export(float) var air_pressure_surface = 101000.0
 
 var orbit_visualizer: Node = null
-export(Color) var orbit_color = Color( 1.0, 0.0, 0.0, 1.0 ) setget _set_orbit_color, _get_orbit_color
-export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
+@export var orbit_color: Color = Color( 1.0, 0.0, 0.0, 1.0 ): get = _get_orbit_color, set = _set_orbit_color
+@export var show_orbit: bool = false: get = _get_show_orbit, set = _set_show_orbit
 
 
 
@@ -39,7 +39,7 @@ var ref_frame_to_check_rotating_index: int = 0
 var ref_frame_to_check_orbiting_index: int = 0
 
 
-export(float) var rescale_angular_distance = 1.1 / 180.0 * PI
+@export var rescale_angular_distance: float = 1.1 / 180.0 * PI
 var last_player_rf_r: Vector3 = Vector3.ZERO
 
 
@@ -67,8 +67,8 @@ func rotation_rf():
 
 func _create_visuals():
 	if VisualNodeSpace != null:
-		var layer: Spatial = RootScene.get_visual_layer_space()
-		_visual_space = VisualNodeSpace.instance()
+		var layer: Node3D = RootScene.get_visual_layer_space()
+		_visual_space = VisualNodeSpace.instantiate()
 		layer.add_child( _visual_space )
 	
 	_visual_surface = get_node( "Rotation/VisualSurface" )
@@ -118,7 +118,7 @@ func init_forces():
 	# Initialize force source for air drag forces.
 	_init_force_source_air_drag()
 	
-	.init_forces()
+	super.init_forces()
 
 
 
@@ -144,14 +144,14 @@ func _process_geometry( force_player_rf: RefFrameNode = null ):
 	
 	var physics_ref_frames: Array  = root.physics_ref_frames()
 	
-	var translation: RefFrameNode = self
+	var position: RefFrameNode = self
 	var rotation: RefFrameNode    = rotation_rf()
 	
 	var paths: Array = []
 	for rf in physics_ref_frames:
 		# Check if either node is direct parent of this rf
 		var p = rf.get_parent()
-		var is_child: bool = ( p == rotation ) or ( p == translation )
+		var is_child: bool = ( p == rotation ) or ( p == position )
 		if not is_child:
 			continue
 	
@@ -185,7 +185,7 @@ func _process_geometry( force_player_rf: RefFrameNode = null ):
 
 # Here need to switch between orbiting and being on a rotating surface.
 func process_ref_frames( celestial_bodies: Array ):
-	.process_ref_frames( celestial_bodies )
+	super.process_ref_frames( celestial_bodies )
 	
 	# Apply gravity, centrifugal, Coriolis and Euler force to bodies in 
 	# rotational ref. frame.
@@ -219,7 +219,7 @@ func _apply_forces():
 		if debug:
 			rot.debug = false
 		var se3_local: Se3Ref       = b.get_se3()
-		var q: Quat                 = se3_local.q
+		var q: Quaternion                 = se3_local.q
 		
 		# Apply gravity and rotational forces.
 		var acc: Vector3 = b.acceleration
@@ -232,8 +232,8 @@ func _apply_forces():
 		var force_torque: Array = _force_source_air_drag.compute_force( b, se3_rel_to_body )
 		F = force_torque[0]
 		P = force_torque[1]
-		F = q.xform( F )
-		P = q.xform( P )
+		F = q * (F)
+		P = q * (P)
 		b.add_force_torque( F, P )
 
 
@@ -275,7 +275,7 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 		var broad_tree: BroadTreeGd = ref_frame.get_broad_tree()
 		
 		# For each body compute velocity with respect to self.
-		if not octree_meshes.empty():
+		if not octree_meshes.is_empty():
 			for b in bodies:
 				var body: PhysicsBodyBase = b as PhysicsBodyBase
 				
@@ -288,10 +288,10 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 				
 				var v_in_rotation: Vector3 = se3.v
 				#var v_in_rotation: Vector3 = Vector3(60.0, 0.0, 0.0)
-				var q: Quat     = se3.q
-				var inv_q: Quat = q.inverse()
+				var q: Quaternion     = se3.q
+				var inv_q: Quaternion = q.inverse()
 				# Convert this velocity to body's ref. frame.
-				var v_in_mesh: Vector3 = inv_q.xform( v_in_rotation )
+				var v_in_mesh: Vector3 = inv_q * (v_in_rotation)
 				#var v_in_mesh: Vector3 = q.xform( v_in_rotation )
 				
 				# Body in physics ref. frame.
@@ -447,10 +447,10 @@ func _create_orbit_visualizer():
 	if is_instance_valid( orbit_visualizer ):
 		orbit_visualizer.queue_free()
 	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
-	orbit_visualizer = Vis.instance()
+	orbit_visualizer = Vis.instantiate()
 	self.add_child( orbit_visualizer )
 	
-	var layer: Spatial = RootScene.get_visual_layer_space()
+	var layer: Node3D = RootScene.get_visual_layer_space()
 	layer.add_child( orbit_visualizer )
 	
 	orbit_visualizer.color     = orbit_color
@@ -527,21 +527,21 @@ func _get_radius_km():
 func serialize():
 	var rotation: RefFrameNode = rotation_rf()
 	var rotation_data: Dictionary = rotation.serialize()
-	var translation_data: Dictionary = .serialize()
-	var ret_data: Dictionary = { rotation = rotation_data, translation = translation_data }
+	var translation_data: Dictionary = super.serialize()
+	var ret_data: Dictionary = { rotation = rotation_data, position = translation_data }
 	return ret_data
 
 
 func deserialize( data: Dictionary ):
 	var rotation_data: Dictionary    = data.rotation
-	var translation_data: Dictionary = data.translation
+	var translation_data: Dictionary = data.position
 	var rotation: RefFrameNode = rotation_rf()
 	
 	var rot_ok: bool = rotation.deserialize( rotation_data )
 	if not rot_ok:
 		return false
 	
-	var ok: bool = .deserialize( translation_data )
+	var ok: bool = super.deserialize( translation_data )
 	if not ok:
 		return false
 	

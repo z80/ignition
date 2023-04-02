@@ -97,7 +97,7 @@ void vertex()
 	vertex_w = vec3( UV.xy, UV2.x );
 	//vertex_w = ( WORLD_MATRIX * vec4( VERTEX, 1.0 ) ).xyz;
 	//normal_w = mat_to_planet_center * NORMAL;
-	normal_w = to_planet_rf * NORMAL; //( WORLD_MATRIX * vec4( NORMAL, 0.0 ) ).xyz;
+	normal_w = to_planet_rf * NORMAL; //( MODEL_MATRIX * vec4( NORMAL, 0.0 ) ).xyz;
 	dist_w   = length(vertex_w + common_point) - planet_radius;
 }
 

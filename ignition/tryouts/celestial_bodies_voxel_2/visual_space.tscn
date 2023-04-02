@@ -6,7 +6,7 @@
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" type="Resource" id=4]
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/atmosphere/atmosphere.tscn" type="PackedScene" id=5]
 
-[node name="VisualSpace" type="Spatial"]
+[node name="VisualSpace" type="Node3D"]
 script = ExtResource( 2 )
 layer_config = ExtResource( 4 )
 surface_source = ExtResource( 3 )

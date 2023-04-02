@@ -40,7 +40,7 @@ func _get_file_list_node():
 
 
 func _default_file_name():
-	var d: Dictionary = OS.get_datetime()
+	var d: Dictionary = Time.get_datetime_dict_from_system()
 	var name: String = "{year}_{month}_{day}_{hour}_{minute}_{second}".format( d )
 	return name
 

@@ -5,10 +5,10 @@
 [node name="Container" type="HBoxContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = -2.99998
-margin_bottom = -3.0
-rect_min_size = Vector2( 80, 32 )
-hint_tooltip = "Pick a control group for this part"
+offset_right = -2.99998
+offset_bottom = -3.0
+custom_minimum_size = Vector2( 80, 32 )
+tooltip_text = "Pick a control group for this part"
 alignment = 1
 script = ExtResource( 1 )
 __meta__ = {
@@ -16,11 +16,11 @@ __meta__ = {
 }
 
 [node name="MenuButton" type="MenuButton" parent="."]
-margin_left = 468.0
-margin_right = 552.0
-margin_bottom = 597.0
-rect_min_size = Vector2( 84, 24 )
-hint_tooltip = "Pick a control group for this part"
+offset_left = 468.0
+offset_right = 552.0
+offset_bottom = 597.0
+custom_minimum_size = Vector2( 84, 24 )
+tooltip_text = "Pick a control group for this part"
 text = "Group"
 align = 0
 [connection signal="pressed" from="MenuButton" to="." method="_on_menu_pressed"]

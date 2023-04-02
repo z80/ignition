@@ -2,11 +2,11 @@
 
 [ext_resource path="res://physics/atmosphere/material_atmosphere_2.tres" type="Material" id=1]
 
-[sub_resource type="CubeMesh" id=1]
+[sub_resource type="BoxMesh" id=1]
 flip_faces = true
 size = Vector3( 1, 1, 1 )
 
-[node name="AtmosphereMesh" type="MeshInstance"]
-transform = Transform( 100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0 )
+[node name="AtmosphereMesh" type="MeshInstance3D"]
+transform = Transform3D( 100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0 )
 mesh = SubResource( 1 )
 material/0 = ExtResource( 1 )

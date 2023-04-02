@@ -3,19 +3,19 @@
 [ext_resource path="res://tryouts/learning/landscape.gd" type="Script" id=1]
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=2]
 
-[node name="Landscape" type="Spatial"]
+[node name="Landscape" type="Node3D"]
 script = ExtResource( 1 )
-target_path = NodePath("Camera")
+target_path = NodePath("Camera3D")
 size = 50.0
 resolution = 32
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.657796, 0.753196, 0, -0.753196, 0.657796, 0, 1.77139, 2.06757 )
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 0.657796, 0.753196, 0, -0.753196, 0.657796, 0, 1.77139, 2.06757 )
 script = ExtResource( 2 )
 max_speed = Vector3( 5, 5, 5 )
 
-[node name="OmniLight" type="OmniLight" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0 )
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0 )
 light_energy = 0.5
 light_indirect_energy = 0.5
 omni_range = 500.0

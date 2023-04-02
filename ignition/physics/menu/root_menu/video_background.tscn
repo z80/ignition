@@ -14,31 +14,31 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Intro" type="VideoPlayer" parent="."]
-margin_left = 7.0
-margin_top = 7.0
-margin_right = 1017.0
-margin_bottom = 593.0
+[node name="Intro" type="VideoStreamPlayer" parent="."]
+offset_left = 7.0
+offset_top = 7.0
+offset_right = 1017.0
+offset_bottom = 593.0
 mouse_filter = 2
 stream = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Loop" type="VideoPlayer" parent="."]
+[node name="Loop" type="VideoStreamPlayer" parent="."]
 visible = false
-margin_right = 1024.0
-margin_bottom = 600.0
+offset_right = 1024.0
+offset_bottom = 600.0
 mouse_filter = 2
 stream = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Click" type="VideoPlayer" parent="."]
+[node name="Click" type="VideoStreamPlayer" parent="."]
 visible = false
-margin_right = 1024.0
-margin_bottom = 600.0
+offset_right = 1024.0
+offset_bottom = 600.0
 mouse_filter = 2
 stream = ExtResource( 2 )
 __meta__ = {

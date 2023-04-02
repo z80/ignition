@@ -26,7 +26,7 @@ func _ready():
 
 
 func process_inner(delta):
-	.process_inner(delta)
+	super.process_inner(delta)
 	
 	#t_elapsed += delta
 	#if t_elapsed >= 1.0:
@@ -43,7 +43,7 @@ func process_inner(delta):
 
 
 func init():
-	.init()
+	super.init()
 	
 	#var t: Transform = Transform.IDENTITY
 	#t.origin = Vector3( 0.0, 1.0, 0.0 )
@@ -82,9 +82,9 @@ func set_collision_layer( layer ):
 func construction_activate():
 	#$PanelParts.visible = true
 	var PanelParts = load( "res://physics/bodies/construction_new/panel_parts/panel_parts.tscn" )
-	panel_parts = PanelParts.instance()
+	panel_parts = PanelParts.instantiate()
 	panel_parts.construction = self
-	panel_parts.connect( "create_block", self, "create_block" )
+	panel_parts.connect("create_block", Callable(self, "create_block"))
 	var panel_parent: Control = RootScene.get_root_for_gui_panels()
 	panel_parent.add_child( panel_parts )
 	
@@ -114,15 +114,15 @@ func activate_grab( body ):
 	if not is_instance_valid( body ):
 		return
 	var Grab = load( "res://physics/bodies/construction_new/manip_grab/manip_grab.tscn" )
-	var grab = Grab.instance()
+	var grab = Grab.instantiate()
 	RootScene.get_visual_layer_near().add_child( grab )
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body
 	activated_mode = "construction_editing"
 	
-	grab.connect( "drag_started",  self, "_on_drag_started" )
-	grab.connect( "drag_finished", self, "_on_drag_finished" )
+	grab.connect("drag_started", Callable(self, "_on_drag_started"))
+	grab.connect("drag_finished", Callable(self, "_on_drag_finished"))
 
 
 func _on_drag_started( grab: Node ):
@@ -247,7 +247,7 @@ func create_block( block_name, dynamic: bool = false ):
 	var player = RootScene.ref_frame_root.player_camera.get_parent()
 	block.change_parent( player )
 	
-	var t: Transform = Transform.IDENTITY
+	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
 	block.set_t( t )
 	block.set_v( Vector3.ZERO )

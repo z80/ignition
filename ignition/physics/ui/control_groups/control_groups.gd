@@ -26,14 +26,14 @@ func _input(event):
 			return
 		for msg in _msgs:
 			var key = msg[0]
-			if event.scancode == key:
+			if event.keycode == key:
 				var check = msg[2]
 				var pressed: bool = check.pressed
 				pressed = not pressed
-				check.pressed = pressed
+				check.button_pressed = pressed
 				var gui_input_stri: String = msg[1]
 				UserInput.gui_control_bool( gui_input_stri, pressed, pressed, not pressed )
-				check.pressed = pressed
+				check.button_pressed = pressed
 				UiSound.play( Constants.ButtonClick )
 
 
@@ -53,7 +53,7 @@ func _on_group_pressed( play_sound: bool = true ):
 
 func _make_group_1_selected():
 	var check: CheckButton = _msgs[0][2]
-	check.pressed = true
+	check.button_pressed = true
 	_on_group_pressed( false )
 
 

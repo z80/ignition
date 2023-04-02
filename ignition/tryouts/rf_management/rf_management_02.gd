@@ -15,7 +15,7 @@ func _ready():
 	
 	DDD.print( "Hello!" )
 	
-	var camera: RefFrameNode = get_node( "Camera" )
+	var camera: RefFrameNode = get_node( "Camera3D" )
 	camera.set_mode( PlayerCamera.Mode.TPS_AZIMUTH )
 	DDD.print( "Setup camera!" )
 #	var cp = camera.get_parent()
@@ -101,7 +101,7 @@ func _create_character( name: String = "Astronaut", at: Vector3 = Vector3(1.0, 0
 	var se3: Se3Ref = surf.surface_se3( at, height )
 	rf.set_se3( se3 )
 	
-	se3.transform = Transform.IDENTITY
+	se3.transform = Transform3D.IDENTITY
 	se3.v         = Vector3.ZERO
 	se3.w         = Vector3.ZERO
 	character.set_se3( se3 )

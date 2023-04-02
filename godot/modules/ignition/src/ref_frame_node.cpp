@@ -37,8 +37,8 @@ void RefFrameNode::_bind_methods()
 
 	//ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
 	//ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize );
-	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize );
+	GDVIRTUAL_BIND(serialize);
+	GDVIRTUAL_BIND(deserialize, "data");
 
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM3D, "transform" ),        "set_t", "t" );
@@ -56,8 +56,8 @@ void RefFrameNode::_jumped()
 	ScriptInstance * si = get_script_instance();
 	if ( si != nullptr )
 	{
-		//const Variant *ptr[1] = {};
-		si->call( "_jumped" );
+		Callable::CallError err;
+		si->callp( "_jumped", nullptr, 0, err );
 	}
 	if ( debug_ )
 		print_line( "jumped" );
@@ -68,8 +68,8 @@ void RefFrameNode::_parent_jumped()
 	ScriptInstance * si = get_script_instance();
 	if ( si != nullptr )
 	{
-		//const Variant *ptr[1] = {};
-		si->call( "_parent_jumped" );
+		Callable::CallError err;
+		si->callp( "_parent_jumped", nullptr, 0, err );
 	}
 	if ( debug_ )
 		print_line( "parent jumped" );
@@ -81,8 +81,9 @@ void RefFrameNode::_child_jumped( RefFrameNode * child_ref_frame )
 	if ( si != nullptr )
 	{
 		const Variant arg( child_ref_frame );
-		//const Variant *ptr[1] = { &arg };
-		si->call( "_child_jumped", arg );
+		const Variant *ptr[1] = { &arg };
+		Callable::CallError err;
+		si->callp( "_child_jumped", ptr, 1, err );
 	}
 	if ( debug_ )
 		print_line( "child jumped" );
@@ -94,8 +95,9 @@ void RefFrameNode::_child_entered( RefFrameNode * child_ref_frame )
 	if ( si != nullptr )
 	{
 		const Variant arg( child_ref_frame );
-		//const Variant *ptr[1] = { &arg };
-		si->call( "_child_entered", arg );
+		const Variant *ptr[1] = { &arg };
+		Callable::CallError err;
+		si->callp( "_child_entered", ptr, 1, err );
 	}
 	if ( debug_ )
 		print_line( "child entered" );
@@ -107,8 +109,9 @@ void RefFrameNode::_child_left( RefFrameNode * child_ref_frame )
 	if ( si != nullptr )
 	{
 		const Variant arg( child_ref_frame );
-		//const Variant *ptr[1] = { &arg };
-		si->call( "_child_left", arg );
+		const Variant *ptr[1] = { &arg };
+		Callable::CallError err;
+		si->callp( "_child_left", ptr, 1, err );
 	}
 	if ( debug_ )
 		print_line( "child left" );
@@ -566,8 +569,9 @@ void RefFrameNode::_ign_pre_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		//const Variant * ptr[1] = { &time };
-		inst->call( "_ign_pre_process", time );
+		const Variant * ptr[1] = { &time };
+		Callable::CallError err;
+		inst->callp( "_ign_pre_process", ptr, 1, err );
 	}
 }
 
@@ -577,8 +581,9 @@ void RefFrameNode::_ign_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		//const Variant * ptr[1] = { &time };
-		inst->call( "_ign_process", time );
+		const Variant * ptr[1] = { &time };
+		Callable::CallError err;
+		inst->callp( "_ign_process", ptr, 1, err );
 	}
 }
 
@@ -588,8 +593,9 @@ void RefFrameNode::_ign_post_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		//const Variant * ptr[1] = { &time };
-		inst->call( "_ign_post_process", time );
+		const Variant * ptr[1] = { &time };
+		Callable::CallError err;
+		inst->callp( "_ign_post_process", ptr, 1, err );
 	}
 }
 
@@ -600,8 +606,9 @@ void RefFrameNode::_ign_physics_pre_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		//const Variant * ptr[1] = { &time };
-		inst->call( "_ign_physics_pre_process", time );
+		const Variant * ptr[1] = { &time };
+		Callable::CallError err;
+		inst->callp( "_ign_physics_pre_process", ptr, 1, err );
 	}
 }
 
@@ -611,8 +618,9 @@ void RefFrameNode::_ign_physics_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		//const Variant * ptr[1] = { &time };
-		inst->call( "_ign_physics_process", time );
+		const Variant * ptr[1] = { &time };
+		Callable::CallError err;
+		inst->callp( "_ign_physics_process", ptr, 1, err );
 	}
 }
 
@@ -622,8 +630,9 @@ void RefFrameNode::_ign_physics_post_process( real_t delta )
 	if (inst != nullptr)
 	{
 		Variant time = delta;
-		//const Variant * ptr[1] = { &time };
-		inst->call( "_ign_physics_post_process", time );
+		const Variant * ptr[1] = { &time };
+		Callable::CallError err;
+		inst->callp( "_ign_physics_post_process", ptr, 1, err );
 	}
 }
 

@@ -1,15 +1,15 @@
+@tool
 
-tool
 extends Node
 class_name FoliageSourceOld
 
-export(Array) var creators = []
+@export var creators: Array = []
 
 ### Drag instance creators here.
-export(Resource) var drop_creators_here = null setget _set_creator, _get_creator
+@export var drop_creators_here: Resource = null: get = _get_creator, set = _set_creator
 
-export(float) var fill_dist      = 120.0
-export(float) var fill_node_size = 100.0
+@export var fill_dist: float      = 120.0
+@export var fill_node_size: float = 100.0
 var _created_instances: Dictionary = {}
 var _rand: IgnRandomGd = null
 var _mc_mutex: Mutex = null
@@ -24,7 +24,7 @@ func _init():
 
 func _get_voxel_surface():
 	if _voxel_surface == null:
-		var parent: Spatial = get_parent()
+		var parent: Node3D = get_parent()
 		_voxel_surface = parent.get_voxel_surface()
 
 
@@ -231,7 +231,7 @@ func _set_creator( c: Resource ):
 	if c != null:
 		creators.push_back( c )
 	drop_creators_here = null
-	property_list_changed_notify()
+	notify_property_list_changed()
 
 
 func _get_creator():

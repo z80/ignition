@@ -4,36 +4,36 @@
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=2]
 
 
-[sub_resource type="SpatialMaterial" id=1]
+[sub_resource type="StandardMaterial3D" id=1]
 vertex_color_use_as_albedo = true
 normal_enabled = true
 normal_scale = 1.0
 
 [sub_resource type="SphereMesh" id=2]
 
-[node name="Heightmap" type="ImmediateGeometry"]
+[node name="Heightmap" type="ImmediateMesh"]
 material_override = SubResource( 1 )
 cast_shadow = 0
 script = ExtResource( 1 )
 period = 10.0
 persistence = 0.9
 lacunarity = 0.5
-octaves = 3
+fractal_octaves = 3
 resolution = 94
 height = 10.0
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 5, 6 )
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 5, 6 )
 script = ExtResource( 2 )
 max_speed = Vector3( 5, 5, 5 )
 
-[node name="MeshInstance" type="MeshInstance" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 cast_shadow = 0
 mesh = SubResource( 2 )
 material/0 = null
 
-[node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 0.104355, -0.0468146, 0.993438, -0.99454, -0.00491215, 0.104239, 0, -0.998892, -0.0470716, 12.8775, 14.956, 0 )
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D( 0.104355, -0.0468146, 0.993438, -0.99454, -0.00491215, 0.104239, 0, -0.998892, -0.0470716, 12.8775, 14.956, 0 )
 light_color = Color( 1, 0.968627, 0.729412, 1 )
 light_energy = 0.5
 light_indirect_energy = 0.02

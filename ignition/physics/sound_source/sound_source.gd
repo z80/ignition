@@ -87,7 +87,7 @@ func _get_listener_node():
 func _position_sources():
 	var l: RefFrameNode = _get_listener_node()
 	var se3: Se3Ref = relative_to( l )
-	var t: Transform = se3.transform
+	var t: Transform3D = se3.transform
 	
 	var qty: int = get_child_count()
 	for i in range(qty):
@@ -101,7 +101,7 @@ func _position_sources():
 
 
 func _get_stream_player():
-	var available: bool = not _sources.empty()
+	var available: bool = not _sources.is_empty()
 	if available:
 		var p: AudioStreamPlayer3D = _sources.back()
 		_sources.resize( _sources.size() - 1 )
@@ -114,7 +114,7 @@ func _get_stream_player():
 		p.name = name
 		p.bus  = "Sounds"
 		add_child( p )
-		var _err_code: int = p.connect( "finished", self, "_on_playback_finished", [p] )
+		var _err_code: int = p.connect("finished", Callable(self, "_on_playback_finished").bind(p))
 		return p
 
 

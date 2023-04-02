@@ -3,18 +3,18 @@
 [ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=1]
 [ext_resource path="res://physics/bodies/construction/manip_grab/manip_grab.tscn" type="PackedScene" id=2]
 
-[sub_resource type="CubeMesh" id=1]
+[sub_resource type="BoxMesh" id=1]
 
-[node name="Spatial" type="Spatial"]
+[node name="Node3D" type="Node3D"]
 
-[node name="MeshInstance" type="MeshInstance" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource( 1 )
 material/0 = null
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.786008, 0.618216, 0, -0.618216, 0.786008, 0, 2.84933, 4.33137 )
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 0.786008, 0.618216, 0, -0.618216, 0.786008, 0, 2.84933, 4.33137 )
 script = ExtResource( 1 )
 max_speed = Vector3( 5, 5, 5 )
 
 [node name="ManipGrab" parent="." instance=ExtResource( 2 )]
-target_path = NodePath("../MeshInstance")
+target_path = NodePath("../MeshInstance3D")

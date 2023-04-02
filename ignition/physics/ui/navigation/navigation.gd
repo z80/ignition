@@ -48,17 +48,17 @@ func _recompute_mode_surface():
 	var rot: RefFrameNode = cb.rotation_rf()
 	
 	var se3: Se3Ref = ctrl.relative_to( rot )
-	var navball = get_node( "ViewportContainer/Viewport/Navball" )
+	var navball = get_node( "SubViewportContainer/SubViewport/Navball" )
 	navball.set_orientation_surface( se3 )
 	
 	# Compute prograde/retrograde.
 	var v: Vector3 = se3.v
-	var q_inv: Quat = se3.q.inverse()
-	var _q_i: Quat = Quat.IDENTITY
-	v = q_inv.xform( v )
+	var q_inv: Quaternion = se3.q.inverse()
+	var _q_i: Quaternion = Quaternion.IDENTITY
+	v = q_inv * (v)
 	
 	var r: Vector3 = se3.r.normalized()
-	r = q_inv.xform( r )
+	r = q_inv * (r)
 	var n: Vector3 = r.cross( v )
 	var Orthogonalize = preload( "res://physics/utils/orthogonalize.gd" )
 	var ret: Array = Orthogonalize.orthogonalize( v, n, r )
@@ -121,17 +121,17 @@ func _recompute_mode_orbit():
 	else:
 		se3_rot = se3
 
-	var navball = get_node( "ViewportContainer/Viewport/Navball" )
+	var navball = get_node( "SubViewportContainer/SubViewport/Navball" )
 	navball.set_orientation_orbit( se3_rot )
 	
 	# Compute prograde/retrograde.
 	var v: Vector3 = se3.v
-	var q_inv: Quat = se3.q.inverse()
+	var q_inv: Quaternion = se3.q.inverse()
 	#var q_i: Quat = Quat.IDENTITY
-	v = q_inv.xform( v )
+	v = q_inv * (v)
 	
 	var r: Vector3 = se3.r.normalized()
-	r = q_inv.xform( r )
+	r = q_inv * (r)
 	var n: Vector3 = r.cross( v )
 	var Orthogonalize = preload( "res://physics/utils/orthogonalize.gd" )
 	var ret: Array = Orthogonalize.orthogonalize( v, n, r )
@@ -175,7 +175,7 @@ func _recompute_mode_target():
 
 # https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 # Only need to convert Godot RF to Wikipedia described ref frame.
-func _compute_yaw_pitch_roll( q: Quat ):
+func _compute_yaw_pitch_roll( q: Quaternion ):
 	var qw: float =  q.w
 	var qx: float = -q.z
 	var qy: float = -q.x
@@ -275,12 +275,12 @@ func _input(event):
 		#print( "pressed: ", pressed )
 		if not key_pressed:
 			return
-		if event.scancode == KEY_M:
+		if event.keycode == KEY_M:
 			UiSound.play( Constants.ButtonClick )
 			var btn: Button = get_node( "Map" )
 			var pressed: bool = btn.pressed
 			pressed = not pressed
-			btn.pressed = pressed
+			btn.button_pressed = pressed
 			UserInput.gui_control_bool( "ui_map", pressed, pressed, not pressed )
 
 

@@ -5,8 +5,8 @@ var vp_container: Node = null
 
 var ref_frame_root: RefFrameRoot = null
 
-var _visual_layer_space: Spatial = null
-var _visual_layer_near: Spatial = null
+var _visual_layer_space: Node3D = null
+var _visual_layer_near: Node3D = null
 var _collision_surfaces: Node = null
 
 # Called when the node enters the scene tree for the first time.
@@ -18,7 +18,7 @@ func _ready():
 	_visual_layer_near = root.root
 	
 	# Setup rendering viewport result to plane texture.
-	var vp: Viewport = _visual_layer_space.get_viewport()
+	var vp: SubViewport = _visual_layer_space.get_viewport()
 	_visual_layer_near.camera.set_viewport( vp )
 
 
@@ -33,7 +33,7 @@ func get_visual_layer_near():
 func get_visual_layer_overlay():
 	if vp_container == null:
 		vp_container = get_node( "VisualLayerOverlay" )
-	var vp: Viewport = vp_container.get_viewport()
+	var vp: SubViewport = vp_container.get_viewport()
 	return vp
 
 

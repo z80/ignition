@@ -11,7 +11,7 @@ func _enter_tree():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var camera: Camera = get_node( "Camera" )
+	var camera: Camera3D = get_node( "Camera3D" )
 	camera.set_mode( PlayerCamera.Mode.TPS_AZIMUTH )
 	
 	var character = _create_character( "my_character", Vector3( 1.0, 0.0, 0.0 ), 1.0 )

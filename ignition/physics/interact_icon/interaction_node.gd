@@ -1,9 +1,9 @@
 
-extends Spatial
+extends Node3D
 class_name InteractionNode
 
-var target: Node = null setget _set_target, _get_target
-var icon_visible: bool = false setget _set_icon_visible, _get_icon_visible
+var target: Node = null: get = _get_target, set = _set_target
+var icon_visible: bool = false: get = _get_icon_visible, set = _set_icon_visible
 
 var _icon: Control             = null
 var _container_window: Control = null
@@ -79,7 +79,7 @@ func _create_icon():
 		return _icon
 	
 	var Icon: PackedScene = get_icon_scene()
-	_icon = Icon.instance()
+	_icon = Icon.instantiate()
 	var root_node: Node = RootScene.get_root_for_gui_popups()
 	root_node.add_child( _icon )
 	
@@ -88,14 +88,14 @@ func _create_icon():
 	# In order to position it properly immediately.
 	_process(0.0)
 	
-	_icon.connect( "icon_clicked", self, "_on_clicked" )
+	_icon.connect("icon_clicked", Callable(self, "_on_clicked"))
 	
 	return _icon
 
 
 func distance_to_camera_ray():
-	var vp: Viewport = get_viewport()
-	var cam: Camera = vp.get_camera()
+	var vp: SubViewport = get_viewport()
+	var cam: Camera3D = vp.get_camera_3d()
 	if (cam == null) or (not is_instance_valid(cam)):
 		return -1.0
 
@@ -128,8 +128,8 @@ func distance_to_camera_ray():
 
 
 func _position_on_screen() -> Vector2:
-	var vp: Viewport   = get_viewport()
-	var cam: Camera    = vp.get_camera()
+	var vp: SubViewport   = get_viewport()
+	var cam: Camera3D    = vp.get_camera_3d()
 	var at_3d: Vector3 = self.global_transform.origin
 	var at_2d: Vector2 =  cam.unproject_position( at_3d )
 	
@@ -154,12 +154,12 @@ func _on_clicked():
 		return
 	
 	var Window: PackedScene = get_container_scene()
-	_container_window = Window.instance()
+	_container_window = Window.instantiate()
 
 	var parent_for_windows: Control = RootScene.get_root_for_gui_windows()
 	parent_for_windows.add_child( _container_window )
 	var at: Vector2 = get_viewport().get_mouse_position()
-	_container_window.rect_position = at
+	_container_window.position = at
 	
 	_container_window.setup_gui( target )
 

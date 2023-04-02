@@ -2,8 +2,8 @@ shader_type spatial;
 render_mode unshaded;
 
 // Atmosphere parameters
-uniform vec4  color_day:   hint_color = vec4( 0.65, 0.8, 1.0, 1.0 );
-uniform vec4  color_night: hint_color = vec4( 1.0, 0.43, 0.46, 1.0 );
+uniform vec4  color_day:   source_color = vec4( 0.65, 0.8, 1.0, 1.0 );
+uniform vec4  color_night: source_color = vec4( 1.0, 0.43, 0.46, 1.0 );
 uniform float planet_radius = 1000.0;
 uniform float height  = 10.0;
 uniform float transparency_distance_inner = 1.0;

@@ -1,4 +1,4 @@
-extends RigidBody
+extends RigidBody3D
 
 const SPEED = 10.0
 const GAIN = 50.5
@@ -11,14 +11,14 @@ const GAIN_ANGULAR = 100.0
 const GAIN_D_ANGULAR = 100.0
 const MAX_TORQUE = 5.0
 
-export(bool) var translation_abolute = false
-export(bool) var rotation_abolute = false
+@export var translation_abolute: bool = false
+@export var rotation_abolute: bool = false
 
 # Amount of force projected onto this direction is zeroed.
-export(bool) var translation_do_ignore_direction = false
-export(Vector3) var translation_ignore_direction = Vector3.UP
+@export var translation_do_ignore_direction: bool = false
+@export var translation_ignore_direction: Vector3 = Vector3.UP
 
-var target_q: Quat = Quat.IDENTITY
+var target_q: Quaternion = Quaternion.IDENTITY
 
 var print_period: float = 0.1
 var print_elapsed: float = 0.0
@@ -60,8 +60,8 @@ func position_control( state ):
 		v *= SPEED
 	
 	if not translation_abolute:
-		var t: Transform = self.transform
-		v = t.basis.xform( v )
+		var t: Transform3D = self.transform
+		v = t.basis * (v)
 	
 	var model_v: Vector3 = self.linear_velocity
 	var dv: Vector3 = v - model_v
@@ -76,7 +76,7 @@ func position_control( state ):
 	if f_abs > MAX_FORCE:
 		f = f * (MAX_FORCE / f_abs)
 	
-	state.add_central_force( f )
+	state.apply_central_force( f )
 	#self.add_central_force( f )
 
 
@@ -138,8 +138,8 @@ func ang_vel_control( state ):
 	#	print( "target q: ", target_q )
 	
 	# Adjustment q.
-	var t: Transform = self.transform
-	var q: Quat = t.basis
+	var t: Transform3D = self.transform
+	var q: Quaternion = t.basis
 	#if do_print:
 	#	print( "current q: ", q )
 	#dq = q.inverse() * target_q
@@ -153,7 +153,7 @@ func ang_vel_control( state ):
 	if do_print:
 		print( "wanted w relative: ", wanted_w )
 	if not rotation_abolute:
-		wanted_w = q.xform( wanted_w )
+		wanted_w = q * (wanted_w)
 	wanted_w *= MAX_ANG_VEL
 	if do_print:
 		print( "wanted w absolute: ", wanted_w )
@@ -169,7 +169,7 @@ func ang_vel_control( state ):
 	
 	if do_print:
 		print( "torque: ", torque )
-	state.add_torque( torque )
+	state.apply_torque( torque )
 
 
 
@@ -226,7 +226,7 @@ func rotation_control( state ):
 			print( "control w: ", w )
 		w *= ANG_VEL * dt * 0.5
 		
-		var dq = Quat( w.x, w.y, w.z, 1.0 )
+		var dq = Quaternion( w.x, w.y, w.z, 1.0 )
 		if rotation_abolute:
 			target_q = dq * target_q
 		else:
@@ -236,8 +236,8 @@ func rotation_control( state ):
 		print( "target q: ", target_q )
 	
 	# Adjustment q.
-	var t: Transform = self.transform
-	var q: Quat = t.basis
+	var t: Transform3D = self.transform
+	var q: Quaternion = t.basis
 	if do_print:
 		print( "current q: ", q )
 	var dq = target_q * q.inverse()
@@ -265,5 +265,5 @@ func rotation_control( state ):
 	
 	if do_print:
 		print( "torque: ", torque )
-	state.add_torque( torque )
+	state.apply_torque( torque )
 

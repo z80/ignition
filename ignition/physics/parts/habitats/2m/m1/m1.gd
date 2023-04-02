@@ -3,5 +3,5 @@ extends Habitat
 
 
 func init():
-	.init()
+	super.init()
 

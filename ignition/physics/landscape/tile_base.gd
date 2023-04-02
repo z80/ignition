@@ -1,4 +1,4 @@
-extends MeshInstance
+extends MeshInstance3D
 class_name TileBase
 
 var index_x: int = 0
@@ -31,7 +31,7 @@ func recompute():
 	# Move tile physically.
 	# Probably, it works correctly only for visual tiles.
 	var at: Vector3 = Vector3( origin_x, 0.0, origin_z )
-	translation = at
+	position = at
 	
 	var ind: int = 0
 	for iz in range( res_plus_one ):
@@ -45,11 +45,11 @@ func recompute():
 			ind += 1
 	
 	var verts_qty: int = res_minus_one*res_minus_one * 6
-	var vertices = PoolVector3Array()
-	var normals  = PoolVector3Array()
-	var tangents = PoolRealArray()
-	var colors   = PoolColorArray()
-	var uvs      = PoolVector2Array()
+	var vertices = PackedVector3Array()
+	var normals  = PackedVector3Array()
+	var tangents = PackedFloat32Array()
+	var colors   = PackedColorArray()
+	var uvs      = PackedVector2Array()
 	vertices.resize( verts_qty )
 	normals.resize( verts_qty )
 	tangents.resize( verts_qty*4 )
@@ -186,7 +186,7 @@ func recompute():
 	
 	
 	# Create water.
-	var water_vertices = PoolVector3Array()
+	var water_vertices = PackedVector3Array()
 	water_vertices.resize( verts_qty )
 
 	var water_norm: Vector3 = Vector3.UP;

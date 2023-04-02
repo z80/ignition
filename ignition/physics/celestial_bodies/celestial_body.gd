@@ -2,23 +2,23 @@
 extends RefFrameMotionNode
 class_name CelestialBody
 
-export(String) var human_readable_name = "Planet"
-export(String) var wiki_page = ""
-export(bool)   var discovered = false
+@export var human_readable_name: String = "Planet"
+@export var wiki_page: String = ""
+@export var discovered: bool = false
 
 # Planet rotation.
-export(float)   var rotation_period_hrs = 0.1
-export(Vector3) var rotation_axis       = Vector3( 0.0, 1.0, 0.0 )
+@export var rotation_period_hrs: float = 0.1
+@export var rotation_axis: Vector3       = Vector3( 0.0, 1.0, 0.0 )
 
 # Defining geometry and GM based on surface orbiting velocity.
-export(Resource) var surface_source = null
+@export var surface_source: Resource = null
 #export(float)  var surface_orbital_vel_kms = 0.3
 
 # Planet's orbit parameters.
-export(Vector3) var perigee_dir = Vector3( 1.0, 0.0, 0.0 )
-export(Vector3) var perigee_vel = Vector3( 0.0, 0.0, -1.0 )
-export(float)   var orbital_period_hrs   = 0.1
-export(float)   var orbital_eccentricity = 0.0
+@export var perigee_dir: Vector3 = Vector3( 1.0, 0.0, 0.0 )
+@export var perigee_vel: Vector3 = Vector3( 0.0, 0.0, -1.0 )
+@export var orbital_period_hrs: float   = 0.1
+@export var orbital_eccentricity: float = 0.0
 
 # If solar system is not constructed very carefully, 
 # sometimes the body of the biggest influence can be current body's 
@@ -120,13 +120,13 @@ func gravitational_influence( se3: Se3Ref ):
 
 
 func serialize():
-	var data: Dictionary = .serialize()
+	var data: Dictionary = super.serialize()
 	return data
 
 
 
 func deserialize( data: Dictionary ):
-	var ret: bool = .deserialize( data )
+	var ret: bool = super.deserialize( data )
 	return ret
 
 
@@ -137,11 +137,11 @@ func set_local_up( physics_bodies: Array, force_origin: RefFrameNode ):
 	for b in physics_bodies:
 		var se3_rel_to_origin: Se3Ref = self.relative_to( b )
 		var se3_local: Se3Ref = b.get_se3()
-		var q: Quat = se3_local.q
+		var q: Quaternion = se3_local.q
 		
 		var r: Vector3 = -se3_rel_to_origin.r
 		r = r.normalized()
-		r = q.xform( r )
+		r = q * (r)
 		b.set_local_up( r )
 
 

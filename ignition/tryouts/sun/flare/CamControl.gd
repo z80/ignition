@@ -1,12 +1,12 @@
-extends Camera
+extends Camera3D
 
 const UP = Vector3(0, 1, 0)
-export var camera_speed = 0.5
+@export var camera_speed = 0.5
 
 var temp_translation;
 
 func _ready():
-	temp_translation = translation
+	temp_translation = position
 
 func _physics_process(delta):
 	
@@ -24,6 +24,6 @@ func _physics_process(delta):
 	if Input.is_key_pressed(KEY_W):
 		temp_translation -= xform.basis[1] * speed
 	
-	translation = translation.linear_interpolate(temp_translation, 0.3)
+	position = position.lerp(temp_translation, 0.3)
 	
 	look_at(Vector3(), UP)

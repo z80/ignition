@@ -10,14 +10,14 @@ var node_sz_max: float      = 1.25
 var node_sz_min: float      = 0.25
 var radius: float           = 100.0
 var bounding_radius: float  = 100.0
-var noise: OpenSimplexNoise = null
+var noise: FastNoiseLite = null
 var height: float           = 20.0
 
 
 
 func _init():
-	noise = OpenSimplexNoise.new()
-	noise.octaves = 4
+	noise = FastNoiseLite.new()
+	noise.fractal_octaves = 4
 	noise.period = 0.2
 	noise.persistence = 0.8
 

@@ -15,6 +15,6 @@ func set_collision_bit( bit: int ):
 
 
 func setup_tile( tile ):
-	.setup_tile( tile )
+	super.setup_tile( tile )
 	if _collision_bit >= 0:
 		tile.set_collision_bit( _collision_bit )

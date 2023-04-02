@@ -5,11 +5,11 @@ extends Node
 # All visualization meshes/or other types are with respect to the ref frame 
 # where controlled object is.
 # Ref frame is selected when player clicks the icon.
-var player_select = null setget _set_player_select, _get_player_select
+var player_select = null: get = _get_player_select, set = _set_player_select
 # Ref frame gets focus when explicitly pressed "c" (center) on a selected ref. frame.
-var player_control = null setget _set_player_control, _get_player_control
+var player_control = null: get = _get_player_control, set = _set_player_control
 # Camera. It is supposed to be the only one.
-var camera = null setget _set_camera, _get_camera
+var camera = null: get = _get_camera, set = _set_camera
 # Scaler for large distances.
 var distance_scaler = DistanceScalerRef.new()
 
@@ -292,7 +292,7 @@ func update_camera( delta: float ):
 	# Apply sun.
 	var group: String = Constants.SUN_GROUP_NAME
 	var all_suns: Array = get_tree().get_nodes_in_group( group )
-	if not all_suns.empty():
+	if not all_suns.is_empty():
 		var sun: RefFrameNode = all_suns[0] as RefFrameNode
 		c.apply_sun( p_rf, sun )
 	

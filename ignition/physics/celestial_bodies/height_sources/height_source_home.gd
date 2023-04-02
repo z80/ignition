@@ -1,7 +1,7 @@
 
 extends Object
 
-var _noise: OpenSimplexNoise = null
+var _noise: FastNoiseLite = null
 
 
 
@@ -12,9 +12,9 @@ func _init():
 	init()
 	
 func init( radius: float = 1.0, height: float = 0.2 ):
-	_noise = OpenSimplexNoise.new()
+	_noise = FastNoiseLite.new()
 	_noise.period = 1.0
-	_noise.octaves = 1
+	_noise.fractal_octaves = 1
 
 
 func height( at: Vector3 ):
@@ -39,7 +39,7 @@ func color( at: Vector3, norm: Vector3, height: float ):
 
 
 func noise( v: Vector3 ):
-	var n: OpenSimplexNoise = _noise
+	var n: FastNoiseLite = _noise
 	var f: float = 0.0
 	
 	if abs(v.y) > POLAR_CAP:

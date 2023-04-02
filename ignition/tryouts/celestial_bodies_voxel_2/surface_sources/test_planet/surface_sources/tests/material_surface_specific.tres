@@ -1,10 +1,10 @@
 [gd_resource type="ShaderMaterial" load_steps=6 format=2]
 
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/rocks_albedo.png" type="Texture" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/snow_albedo.png" type="Texture" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/grass.png" type="Texture" id=3]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/sand_albedo.png" type="Texture" id=4]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/tests/shader_surface_specific.shader" type="Shader" id=5]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/rocks_albedo.png" type="Texture2D" id=1]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/snow_albedo.png" type="Texture2D" id=2]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/grass.png" type="Texture2D" id=3]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/sand_albedo.png" type="Texture2D" id=4]
+[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/tests/shader_surface_specific.gdshader" type="Shader" id=5]
 
 [resource]
 shader = ExtResource( 5 )

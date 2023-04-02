@@ -4,9 +4,9 @@ signal wiki_page( path )
 
 const SUFFIX: String = ".wiki"
 
-export(String) var root_folder = "res://wiki"
-export(String) var root_file   = "root"
-export(String) var start_file  = "root"
+@export var root_folder: String = "res://wiki"
+@export var root_file: String   = "root"
+@export var start_file: String  = "root"
 
 
 var _text_area: RichTextLabel = null
@@ -41,7 +41,7 @@ func open_internal( full_path: String, path: String, update_history: bool = true
 	var text: String = file.get_as_text()
 	
 	var l: RichTextLabel = _get_text_area()
-	l.bbcode_text = text
+	l.text = text
 	l.scroll_to_line( 0 )
 	emit_signal( "wiki_page", path )
 	

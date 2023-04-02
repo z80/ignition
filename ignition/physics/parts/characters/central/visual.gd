@@ -3,7 +3,7 @@ extends CharacterVisualBase
 
 
 func init():
-	.init()
+	super.init()
 
 
 # Called when the node enters the scene tree for the first time.

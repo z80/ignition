@@ -44,7 +44,7 @@ func on_user_input( event: InputEvent ):
 		#print( "pressed: ", pressed )
 		if key_pressed:
 			return
-		if event.scancode == KEY_ESCAPE:
+		if event.keycode == KEY_ESCAPE:
 			var v: bool = self.visible
 			var current: bool = is_current()
 			if current:

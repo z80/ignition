@@ -1,11 +1,11 @@
-extends Spatial
+extends Node3D
 class_name LandscapeBase
 
 var LandscapeTileType = null
 
-export var distance: int = 1
-export var size: float = 5.0
-export var resolution: int = 17
+@export var distance: int = 1
+@export var size: float = 5.0
+@export var resolution: int = 17
 
 var _initialized: bool = false
 var _point_tile_x: int = 0
@@ -13,9 +13,9 @@ var _point_tile_z: int = 0
 # Current relative ref frame transform.
 # Tile are places inside of this ref frame.
 # So need to undo this transform.
-var _rel_t: Transform
+var _rel_t: Transform3D
 # Transfrom for which tiles were computed.
-var _applied_rel_t: Transform
+var _applied_rel_t: Transform3D
 
 var height_func = LandscapeHeightFunc.new()
 
@@ -28,7 +28,7 @@ func height( x: float, z: float ):
 
 
 # Called externally when needed.
-func update( t: Transform ):
+func update( t: Transform3D ):
 	_rel_t = t
 	var needs_recompute: bool = _need_recompute()
 	if needs_recompute:
@@ -88,7 +88,7 @@ func _move_landscape():
 	for tile in existing_tiles:
 		var x: float = tile.origin_x
 		var z: float = tile.origin_z
-		var t: Transform
+		var t: Transform3D
 		t.origin = Vector3( x, 0.0, z )
 		# Translation transfrom of the ref. frame is put on top of
 		t = inv_t * t
@@ -147,7 +147,7 @@ func _label_tiles_to_recompute():
 		
 		# If no spare one found, create one.
 		if not assigned:
-			var tile = LandscapeTileType.instance()
+			var tile = LandscapeTileType.instantiate()
 			tile.index_x = x
 			tile.index_z = z
 			tile.rebuild = true
@@ -161,7 +161,7 @@ func get_existing_tiles():
 	var tiles = []
 	for i in range(qty):
 		var ch = get_child(i)
-		var is_tile = ch is MeshInstance
+		var is_tile = ch is MeshInstance3D
 		if is_tile:
 			tiles.push_back( ch )
 	return tiles

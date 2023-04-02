@@ -2,5 +2,5 @@
 
 [ext_resource path="res://tryouts/learning/array_mesh.gd" type="Script" id=1]
 
-[node name="LandscapeTile" type="MeshInstance"]
+[node name="LandscapeTile" type="MeshInstance3D"]
 script = ExtResource( 1 )

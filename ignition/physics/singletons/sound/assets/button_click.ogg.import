@@ -1,15 +1,19 @@
 [remap]
 
-importer="ogg_vorbis"
-type="AudioStreamOGGVorbis"
-path="res://.import/button_click.ogg-9eb1691cec214d671cc1687a18e1c80d.oggstr"
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://6uouldl3cbfv"
+path="res://.godot/imported/button_click.ogg-9eb1691cec214d671cc1687a18e1c80d.oggvorbisstr"
 
 [deps]
 
 source_file="res://physics/singletons/sound/assets/button_click.ogg"
-dest_files=[ "res://.import/button_click.ogg-9eb1691cec214d671cc1687a18e1c80d.oggstr" ]
+dest_files=["res://.godot/imported/button_click.ogg-9eb1691cec214d671cc1687a18e1c80d.oggvorbisstr"]
 
 [params]
 
 loop=false
 loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

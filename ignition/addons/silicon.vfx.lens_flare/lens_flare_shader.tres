@@ -86,7 +86,7 @@ void fragment() {
 	float d = length(centerVec);
 	float radial = acos(centerVec.x / d);
 	
-	float starOffset = dot(CAMERA_MATRIX[2].xyz, vec3(1.0)) * 10.0;
+	float starOffset = dot(INV_VIEW_MATRIX[2].xyz, vec3(1.0)) * 10.0;
 	float star = 
 			texture(starburst, vec2(radial + starOffset)).r
 		  * texture(starburst, vec2(radial + starOffset * 0.5)).r;

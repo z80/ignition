@@ -1,18 +1,18 @@
-extends Spatial
+extends Node3D
 
-export(float) var pressure_optimal = 0.8e5
-export(float) var pressure_low     = 0.0
-export(float) var pressure_high    = 1.0e5
-export(float) var thrust = 0.0 setget _set_thrust, _get_thrust
-export(float) var pressure = 0.0 setget _set_pressure, _get_pressure
-
-
+@export var pressure_optimal: float = 0.8e5
+@export var pressure_low: float     = 0.0
+@export var pressure_high: float    = 1.0e5
+@export var thrust: float = 0.0: get = _get_thrust, set = _set_thrust
+@export var pressure: float = 0.0: get = _get_pressure, set = _set_pressure
 
 
-var _carbon_traces: MeshInstance  = null
-var _outer_layer: MeshInstance    = null
-var _inner_tube: MeshInstance     = null
-var _shock_diamonds: MeshInstance = null
+
+
+var _carbon_traces: MeshInstance3D  = null
+var _outer_layer: MeshInstance3D    = null
+var _inner_tube: MeshInstance3D     = null
+var _shock_diamonds: MeshInstance3D = null
 
 
 func set_exhaust( new_thrust: float, new_pressure: float ):
@@ -45,10 +45,10 @@ func _update_look():
 	
 	var clamped_pressure: float = clamp( pressure, pressure_low, pressure_high )
 
-	var ct: MeshInstance = _get_carbon_traces()
+	var ct: MeshInstance3D = _get_carbon_traces()
 	_setup_material( ct, thrust, clamped_pressure )
 	
-	var ol: MeshInstance = _get_outer_layer()
+	var ol: MeshInstance3D = _get_outer_layer()
 	var size_y: float = 12.0 * (1.0 + thrust)
 	var size: float = size_y
 	if clamped_pressure < pressure_optimal:
@@ -61,8 +61,8 @@ func _update_look():
 		size *= scale
 	_setup_material( ol, thrust, clamped_pressure, size )
 	
-	var it: MeshInstance = _get_inner_tube()
-	var sd: MeshInstance = _get_shock_diamonds()
+	var it: MeshInstance3D = _get_inner_tube()
+	var sd: MeshInstance3D = _get_shock_diamonds()
 	size = size_y
 	if clamped_pressure < pressure_optimal:
 		#print( "below optimal" )
@@ -78,7 +78,7 @@ func _update_look():
 
 
 
-func _setup_material( mesh: MeshInstance, thrust: float, pressure_clamped: float, size_y: float = -1.0 ):
+func _setup_material( mesh: MeshInstance3D, thrust: float, pressure_clamped: float, size_y: float = -1.0 ):
 	if mesh == null:
 		return
 	
@@ -92,9 +92,9 @@ func _setup_material( mesh: MeshInstance, thrust: float, pressure_clamped: float
 	underexpanded = clamp( underexpanded, 0.0, 1.0 )
 	mesh.set( "blend_shapes/Underexpanded", underexpanded )
 	
-	var mat: ShaderMaterial = mesh.get_surface_material( 0 )
+	var mat: ShaderMaterial = mesh.get_surface_override_material( 0 )
 	if size_y >= 0.0:
-		mat.set_shader_param( "size_y", size_y )
+		mat.set_shader_parameter( "size_y", size_y )
 	
 	#print( "overexpanded: ", overexpanded, "; underexpanded: ", underexpanded )
 

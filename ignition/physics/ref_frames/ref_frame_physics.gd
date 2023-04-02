@@ -2,7 +2,7 @@
 extends RefFrameNonInertialNode
 class_name RefFramePhysics
 
-export(PackedScene) var PhysicsEnv = null
+@export var PhysicsEnv: PackedScene = null
 var _physics_env = null
 var _collision_surface: Node = null
 
@@ -99,7 +99,7 @@ func update():
 func _create_physics_environment():
 	if (_physics_env != null) and is_instance_valid(_physics_env):
 		return
-	var env = PhysicsEnv.instance()
+	var env = PhysicsEnv.instantiate()
 	var root: Node = RootScene.get_root_for_physics_envs()
 	root.add_child( env )
 	_physics_env = env
@@ -119,7 +119,7 @@ func _destroy_physics_environment():
 
 
 # This one is called by Bodies in order to enable physics. 
-func add_physics_body( body: RigidBody ):
+func add_physics_body( body: RigidBody3D ):
 	if _physics_env == null:
 		_create_physics_environment()
 	
@@ -150,7 +150,7 @@ func is_active():
 
 
 
-func jump( t: Transform, v: Vector3=Vector3.ZERO ):
+func jump( t: Transform3D, v: Vector3=Vector3.ZERO ):
 	# Debug output.
 	var movement_type: String = self.movement_type()
 	var dbg: bool = false
@@ -259,7 +259,7 @@ func jump_if_needed():
 	if dist < Constants.RF_JUMP_DISTANCE:
 		return
 	
-	var t: Transform = Transform.IDENTITY
+	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = r
 	jump( t, v )
 
@@ -611,7 +611,7 @@ func parent_bodies():
 func distance( b: RefFramePhysics ):
 	var bodies_a: Array = root_most_child_bodies()
 	var bodies_b: Array = b.root_most_child_bodies()
-	if bodies_a.empty() or bodies_b.empty():
+	if bodies_a.is_empty() or bodies_b.is_empty():
 		return 2.0 * Constants.RF_SPLIT_DISTANCE
 	
 	#var bodies_all: Array = bodies_a + bodies_b
@@ -681,13 +681,13 @@ func _re_parent_children_on_delete():
 
 
 func serialize():
-	var data: Dictionary = .serialize()
+	var data: Dictionary = super.serialize()
 	return data
 
 
 
 func deserialize( data: Dictionary ):
-	var ret: bool  = .deserialize( data )
+	var ret: bool  = super.deserialize( data )
 	return true
 
 
@@ -695,9 +695,9 @@ func deserialize( data: Dictionary ):
 static func _debug_distances( bodies: Array ):
 	var bodies_node: Node = RootScene.get_root_for_bodies()
 	var tree: SceneTree = bodies_node.get_tree()
-	var vp: Viewport = tree.root
+	var vp: SubViewport = tree.root
 	var root_node: Node = vp.get_node( "Root" ).get_node( "Sun" )
-	var ass: PhysicsBodyBase = root_node.find_node( "Construction", true, false )
+	var ass: PhysicsBodyBase = root_node.find_child( "Construction", true, false )
 	DDD.important()
 	DDD.print( "                All relative to assembly:" )
 	for b in bodies:

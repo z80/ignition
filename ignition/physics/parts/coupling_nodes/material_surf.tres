@@ -4,8 +4,8 @@
 code = "shader_type spatial;
 render_mode unshaded;
 
-uniform vec4 color_a: hint_color = vec4( 0.81, 0.81,  0.0, 0.4 );
-uniform vec4 color_b: hint_color = vec4( 0.36, 0.36, 0.36, 0.2 );
+uniform vec4 color_a: source_color = vec4( 0.81, 0.81,  0.0, 0.4 );
+uniform vec4 color_b: source_color = vec4( 0.36, 0.36, 0.36, 0.2 );
 
 varying vec3 point3d;
 

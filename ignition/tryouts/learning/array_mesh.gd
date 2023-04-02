@@ -1,4 +1,4 @@
-extends MeshInstance
+extends MeshInstance3D
 
 var Landscape = preload( "res://learning/landscape.tscn" )
 
@@ -42,7 +42,7 @@ func _construct():
 			verts.push_back( v2 )
 			verts.push_back( v3 )
 	
-	var vertices = PoolVector3Array()
+	var vertices = PackedVector3Array()
 	var sz = verts.size()
 	vertices.resize( sz )
 	for i in range( sz ):

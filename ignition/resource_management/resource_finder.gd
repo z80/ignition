@@ -19,12 +19,12 @@ static func find_categories( path: String ):
 
 
 static func _find_blocks_recursive( path: String, ret: Array ):
-	var dir: Directory = Directory.new()
+	var dir: DirAccess = DirAccess.new()
 	var ok: bool = (dir.open( path ) == OK)
 	if not ok:
 		return
 	
-	dir.list_dir_begin()
+	dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name: String = dir.get_next()
 	
 	while (file_name != ""):
@@ -54,12 +54,12 @@ static func _find_blocks_recursive( path: String, ret: Array ):
 
 
 static func _find_techs_recursive( path: String, ret: Array ):
-	var dir: Directory = Directory.new()
+	var dir: DirAccess = DirAccess.new()
 	var ok: bool = (dir.open( path ) == OK)
 	if not ok:
 		return
 	
-	dir.list_dir_begin()
+	dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name: String = dir.get_next()
 	
 	while (file_name != ""):
@@ -89,12 +89,12 @@ static func _find_techs_recursive( path: String, ret: Array ):
 
 
 static func _find_categories_recursive( path: String, ret: Array ):
-	var dir: Directory = Directory.new()
+	var dir: DirAccess = DirAccess.new()
 	var ok: bool = (dir.open( path ) == OK)
 	if not ok:
 		return
 	
-	dir.list_dir_begin()
+	dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name: String = dir.get_next()
 	
 	while (file_name != ""):
@@ -155,12 +155,12 @@ static func get_package_files():
 	fname = fname + ".pck"
 	
 	var root_path: String = 'res://'
-	var dir: Directory = Directory.new()
+	var dir: DirAccess = DirAccess.new()
 	var ok: bool = (dir.open( root_path ) == OK)
 	if not ok:
 		return ret
 	
-	dir.list_dir_begin()
+	dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name: String = dir.get_next()
 	
 	while (file_name != ""):

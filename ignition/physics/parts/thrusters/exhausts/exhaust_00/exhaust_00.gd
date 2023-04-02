@@ -1,9 +1,9 @@
 extends Exhaust
 
 
-export(float) var pressure_optimal = 0.8e5
-export(float) var pressure_low     = 0.0
-export(float) var pressure_high    = 1.0e5
+@export var pressure_optimal: float = 0.8e5
+@export var pressure_low: float     = 0.0
+@export var pressure_high: float    = 1.0e5
 
 
 
@@ -14,12 +14,12 @@ func _ready():
 
 # Both are assumed to be from 0 to 1.
 func set_exhaust( power: float, pressure: float ):
-	var mi: MeshInstance = get_node( "inner" )
-	var m: Material = mi.get_surface_material( 0 )
+	var mi: MeshInstance3D = get_node( "inner" )
+	var m: Material = mi.get_surface_override_material( 0 )
 	m.set( "shader_param/power", pressure )
 	m.set( "shader_param/pressure", pressure )
 	
 	mi = get_node( "outer" )
-	m = mi.get_surface_material( 0 )
+	m = mi.get_surface_override_material( 0 )
 	m.set( "shader_param/power", pressure )
 	m.set( "shader_param/pressure", pressure )

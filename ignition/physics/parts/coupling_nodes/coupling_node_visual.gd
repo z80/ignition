@@ -1,10 +1,10 @@
 
-extends Spatial
+extends Node3D
 
-export(Resource) var node_material = null
-export(Resource) var surf_material = null
-export(float) var size = 0.5 setget _set_size, _get_size
-export(bool) var surface = false setget _set_surface, _get_surface
+@export var node_material: Resource = null
+@export var surf_material: Resource = null
+@export var size: float = 0.5: get = _get_size, set = _set_size
+@export var surface: bool = false: get = _get_surface, set = _set_surface
 
 
 # Called when the node enters the scene tree for the first time.
@@ -13,7 +13,7 @@ func _ready():
 
 
 func _set_size( sz: float ):
-	var s: Spatial = get_node( "PartNode" )
+	var s: Node3D = get_node( "PartNode" )
 	s.scale = Vector3( sz, sz, sz )
 	size = sz
 
@@ -24,7 +24,7 @@ func _get_size():
 
 func _set_surface( en: bool ):
 	surface = en
-	var mi: MeshInstance = get_node( "PartNode" )
+	var mi: MeshInstance3D = get_node( "PartNode" )
 	if en:
 		mi.material_override = surf_material
 		

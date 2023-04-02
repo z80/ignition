@@ -8,7 +8,7 @@
 [node name="VisualLayerSpace" type="Node"]
 script = ExtResource( 2 )
 
-[node name="Viewport" type="Viewport" parent="."]
+[node name="SubViewport" type="SubViewport" parent="."]
 size = Vector2( 1024, 600 )
 world = SubResource( 2 )
 transparent_bg = true
@@ -19,9 +19,9 @@ audio_listener_enable_2d = true
 audio_listener_enable_3d = true
 shadow_atlas_size = 256
 
-[node name="Root" parent="Viewport" instance=ExtResource( 3 )]
+[node name="Root" parent="SubViewport" instance=ExtResource( 3 )]
 
-[node name="Camera" parent="Viewport/Root" index="0"]
+[node name="Camera3D" parent="SubViewport/Root" index="0"]
 far = 8192.0
 
-[editable path="Viewport/Root"]
+[editable path="SubViewport/Root"]

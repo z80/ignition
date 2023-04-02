@@ -41,7 +41,7 @@ void fragment()
 {
   vec2 at = vertex_position;
   at.x += TIME*0.05;
-  NORMALMAP = texture(normalmap, at).xyz;
+  NORMAL_MAP = texture(normalmap, at).xyz;
 
   float fresnel = sqrt(1.0 - dot(NORMAL, VIEW));
   RIM = 0.2;
@@ -51,7 +51,7 @@ void fragment()
 }
 "
 
-[sub_resource type="OpenSimplexNoise" id=2]
+[sub_resource type="FastNoiseLite" id=2]
 
 [sub_resource type="NoiseTexture" id=3]
 width = 128
@@ -59,7 +59,7 @@ height = 128
 seamless = true
 noise = SubResource( 2 )
 
-[sub_resource type="OpenSimplexNoise" id=4]
+[sub_resource type="FastNoiseLite" id=4]
 
 [sub_resource type="NoiseTexture" id=5]
 width = 128

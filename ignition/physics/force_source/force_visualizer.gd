@@ -1,4 +1,4 @@
-extends Spatial
+extends Node3D
 
 
 # Declare member variables here. Examples:
@@ -25,9 +25,9 @@ func set_force( visible: bool, F: Vector3, r: Vector3 ):
 	if self.visible:
 		var az: float = atan2( F.y, F.x )
 		var el: float = asin( F.z )
-		var q1: Quat = Quat( Vector3(0.0, 0.0, 1.0), az)
-		var q2: Quat = Quat( Vector3(1.0, 0.0, 0.0), el)
-		var t: Transform = self.transform
+		var q1: Quaternion = Quaternion( Vector3(0.0, 0.0, 1.0), az)
+		var q2: Quaternion = Quaternion( Vector3(1.0, 0.0, 0.0), el)
+		var t: Transform3D = self.transform
 		t.basis = q1 * q2
 		t.origin = r
 		self.transform = t

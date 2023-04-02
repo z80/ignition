@@ -7,10 +7,10 @@ anchor_left = 0.5
 anchor_top = 0.547
 anchor_right = 0.5
 anchor_bottom = 0.547
-margin_left = -56.0
-margin_top = -8.20004
-margin_right = 56.0
-margin_bottom = 14.8
+offset_left = -56.0
+offset_top = -8.20004
+offset_right = 56.0
+offset_bottom = 14.8
 text = "File
 "
 valign = 1

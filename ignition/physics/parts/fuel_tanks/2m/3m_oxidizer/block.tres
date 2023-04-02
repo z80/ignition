@@ -1,7 +1,7 @@
 [gd_resource type="Resource" load_steps=4 format=2]
 
 [ext_resource path="res://resource_management/block.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer/assets/icon.png" type="Texture" id=2]
+[ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer/assets/icon.png" type="Texture2D" id=2]
 [ext_resource path="res://physics/parts/fuel_tanks/2m/3m_oxidizer/oxidizer_tank_2m_3m.tscn" type="PackedScene" id=3]
 
 [resource]

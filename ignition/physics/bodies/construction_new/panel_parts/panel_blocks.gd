@@ -3,7 +3,7 @@ extends Control
 
 signal block_picked( desc )
 
-export(PackedScene) var button_scene = null
+@export var button_scene: PackedScene = null
 
 var _container: GridContainer = null
 
@@ -51,10 +51,10 @@ func _get_container():
 
 func _create_button( block_desc: Resource ):
 	var vb: GridContainer = _get_container()
-	var btn: Control      = button_scene.instance()
+	var btn: Control      = button_scene.instantiate()
 	btn.block_desc        = block_desc
 	vb.add_child( btn )
-	btn.connect( "block_picked", self, "on_block_picked" )
+	btn.connect("block_picked", Callable(self, "on_block_picked"))
 
 
 

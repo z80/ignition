@@ -1,17 +1,17 @@
 extends Control
 
-export(PackedScene) var GameScene = null
+@export var GameScene: PackedScene = null
 
 var to_do: String = ""
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	$Node2D/Item01.connect( "clicked", $Background, "play_click" )
-	$Node2D/Item01.connect( "clicked", self,        "_on_quit_click" )
+	$Node2D/Item01.connect("clicked", Callable($Background, "play_click"))
+	$Node2D/Item01.connect("clicked", Callable(self, "_on_quit_click"))
 	
-	$Node2D/Item02.connect( "clicked", $Background, "play_click" )
-	$Node2D/Item02.connect( "clicked", self,        "_on_start_click" )
+	$Node2D/Item02.connect("clicked", Callable($Background, "play_click"))
+	$Node2D/Item02.connect("clicked", Callable(self, "_on_start_click"))
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -31,7 +31,7 @@ func _on_quit_click():
 
 func on_start():
 	var t = get_tree()
-	t.change_scene( GameScene.resource_path )
+	t.change_scene_to_file( GameScene.resource_path )
 
 
 
@@ -53,6 +53,6 @@ func _on_url_meta_clicked(meta):
 
 func _on_help_pressed():
 	var Wiki = preload( "res://wiki_handler/wiki_window.tscn" )
-	var wiki: Control = Wiki.instance()
+	var wiki: Control = Wiki.instantiate()
 	add_child( wiki )
 

@@ -3,7 +3,7 @@
 [ext_resource path="res://physics/bodies/construction/visual.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/bodies/construction/physical.tscn" type="PackedScene" id=2]
 
-[node name="Spatial" type="Spatial"]
+[node name="Node3D" type="Node3D"]
 
 [node name="Visual" parent="." instance=ExtResource( 1 )]
 

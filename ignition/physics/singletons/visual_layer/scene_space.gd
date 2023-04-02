@@ -1,15 +1,15 @@
-extends Spatial
+extends Node3D
 
-export(Basis) var sun_direction = Basis.IDENTITY setget _set_sun_direction, _get_sun_direction
-export(Quat) var camera_global_rotation = Quat.IDENTITY setget _set_global_rotation
+@export var sun_direction: Basis = Basis.IDENTITY: get = _get_sun_direction, set = _set_sun_direction
+@export var camera_global_rotation: Quaternion = Quaternion.IDENTITY: set = _set_global_rotation
 
-var camera: Camera = null
-var light: DirectionalLight = null
-var background_sky: Spatial = null
+var camera: Camera3D = null
+var light: DirectionalLight3D = null
+var background_sky: Node3D = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	camera = get_node("Camera")
+	camera = get_node("Camera3D")
 	light  = get_node("SunLight")
 	background_sky = get_node("BackgroundSky")
 
@@ -29,9 +29,9 @@ func _get_sun_direction():
 	return light.transform.basis
 
 
-func _set_global_rotation( q: Quat ):
+func _set_global_rotation( q: Quaternion ):
 	camera_global_rotation = q.normalized()
-	var inv_q: Quat = camera_global_rotation.inverse()
+	var inv_q: Quaternion = camera_global_rotation.inverse()
 	var b: Basis = Basis( inv_q )
 	
 	var far: float = camera.far * 0.99

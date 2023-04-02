@@ -1,5 +1,5 @@
 
-extends RigidBody
+extends RigidBody3D
 
 
 func get_decoupling_node():

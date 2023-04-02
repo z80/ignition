@@ -2,8 +2,8 @@
 shader_type spatial;
 
 // Water surface color.
-uniform vec4 albedo_norm : hint_color;
-uniform vec4 albedo_tang : hint_color;
+uniform vec4 albedo_norm : source_color;
+uniform vec4 albedo_tang : source_color;
 uniform float metallic : hint_range(0.0, 1.0) = 0.0;
 uniform float roughness : hint_range(0.0, 1.0) = 0.02;
 
@@ -24,7 +24,7 @@ varying vec3 normal_w;
 void vertex()
 {
 	vertex_w = vec3( UV.xy, UV2.x );
-	normal_w = (WORLD_MATRIX * vec4( NORMAL, 0.0 )).xyz;
+	normal_w = (MODEL_MATRIX * vec4( NORMAL, 0.0 )).xyz;
 }
 
 float fresnel( float amount, vec3 norm, vec3 view )

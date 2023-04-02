@@ -1,9 +1,9 @@
-extends Spatial
+extends Node3D
 
 
-export(Vector3) var velocity  = Vector3( 1.0, 0.0, 0.0 )
-export(float)   var distance  = 1.0
-export(float)   var side_step = 0.2
+@export var velocity: Vector3  = Vector3( 1.0, 0.0, 0.0 )
+@export var distance: float  = 1.0
+@export var side_step: float = 0.2
 
 
 var broad_tree: BroadTreeGd = null
@@ -68,7 +68,7 @@ func draw_shock_wave():
 
 
 func copy_camera_ref_frame_pose():
-	var c: Camera = get_node( "Camera" )
+	var c: Camera3D = get_node( "Camera3D" )
 	var crf: RefFrameNode = get_node( "CameraRefFrameNode" )
 	crf.transform = c.transform
 

@@ -107,7 +107,9 @@ public:
 
 
 	virtual Dictionary serialize();
+	GDVIRTUAL0R(Dictionary, serialize);
 	virtual bool deserialize( const Dictionary & data );
+	GDVIRTUAL1R(bool, deserialize, Dictionary);
 };
 
 }

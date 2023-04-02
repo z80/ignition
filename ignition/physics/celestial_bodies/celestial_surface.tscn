@@ -15,6 +15,6 @@ detail_size_2 = 0.15
 [node name="CelestialBody" type="CubeSphereNode" parent="Rotation"]
 target_mesh = NodePath("Mesh")
 
-[node name="Mesh" type="MeshInstance" parent="Rotation/CelestialBody"]
+[node name="Mesh" type="MeshInstance3D" parent="Rotation/CelestialBody"]
 material_override = ExtResource( 2 )
 generate_lightmap = false

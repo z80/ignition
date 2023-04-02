@@ -1,37 +1,35 @@
 [remap]
 
 importer="texture"
-type="StreamTexture"
-path.s3tc="res://.import/sand_normal.png-649eb14f847ad75e79dcd0aafc2b5d8a.s3tc.stex"
-path.etc2="res://.import/sand_normal.png-649eb14f847ad75e79dcd0aafc2b5d8a.etc2.stex"
+type="CompressedTexture2D"
+uid="uid://b3unkhmx8ljsn"
+path.s3tc="res://.godot/imported/sand_normal.png-649eb14f847ad75e79dcd0aafc2b5d8a.s3tc.ctex"
 metadata={
-"imported_formats": [ "s3tc", "etc2" ],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/sand_normal.png"
-dest_files=[ "res://.import/sand_normal.png-649eb14f847ad75e79dcd0aafc2b5d8a.s3tc.stex", "res://.import/sand_normal.png-649eb14f847ad75e79dcd0aafc2b5d8a.etc2.stex" ]
+dest_files=["res://.godot/imported/sand_normal.png-649eb14f847ad75e79dcd0aafc2b5d8a.s3tc.ctex"]
 
 [params]
 
 compress/mode=2
+compress/high_quality=false
 compress/lossy_quality=0.7
-compress/hdr_mode=0
-compress/bptc_ldr=0
+compress/hdr_compression=1
 compress/normal_map=0
-flags/repeat=true
-flags/filter=true
-flags/mipmaps=true
-flags/anisotropic=false
-flags/srgb=2
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
 process/fix_alpha_border=true
 process/premult_alpha=false
-process/HDR_as_SRGB=false
-process/invert_color=false
 process/normal_map_invert_y=false
-stream=false
-size_limit=0
-detect_3d=false
-svg/scale=1.0
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

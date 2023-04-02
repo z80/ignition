@@ -1,34 +1,34 @@
-tool
+@tool
 extends Resource
 class_name SurfaceSourceBase
 
-export(float) var bounding_radius = 1000.0 setget set_bounding_radius, get_bounding_radius
-export(float) var source_radius = 800.0 setget set_source_radius, get_source_radius
-export(float) var radius_km setget set_radius_km, get_radius_km
-export(float) var orbiting_velocity setget set_orbiting_velocity, get_orbiting_velocity
-export(float) var g setget set_g, get_g
+@export var bounding_radius: float = 1000.0: get = get_bounding_radius, set = set_bounding_radius
+@export var source_radius: float = 800.0: get = get_source_radius, set = set_source_radius
+@export var radius_km: float: get = get_radius_km, set = set_radius_km
+@export var orbiting_velocity: float: get = get_orbiting_velocity, set = set_orbiting_velocity
+@export var g: float: get = get_g, set = set_g
 #export(float) var gm setget , get_gm
 
-export(float) var focus_depth   = 40.0
+@export var focus_depth: float   = 40.0
 
 
-export(Material) var drop_materials_solid_here = null setget _set_drop_materials_solid_here
-export(Array) var materials_solid: Array = []
+@export var drop_materials_solid_here: Material = null: set = _set_drop_materials_solid_here
+@export var materials_solid: Array: Array = []
 
-export(Material) var drop_materials_liquid_here = null setget _set_drop_materials_liquid_here
-export(Array) var materials_liquid: Array = []
+@export var drop_materials_liquid_here: Material = null: set = _set_drop_materials_liquid_here
+@export var materials_liquid: Array: Array = []
 
 
 func _set_drop_materials_solid_here( m: Material ):
 	drop_materials_solid_here = null
 	materials_solid.push_back( m )
-	property_list_changed_notify()
+	notify_property_list_changed()
 
 
 func _set_drop_materials_liquid_here( m: Material ):
 	drop_materials_liquid_here = null
 	materials_liquid.push_back( m )
-	property_list_changed_notify()
+	notify_property_list_changed()
 
 
 func set_bounding_radius( r: float ):
@@ -41,7 +41,7 @@ func get_bounding_radius():
 
 func set_source_radius( v: float ):
 	source_radius = v
-	property_list_changed_notify()
+	notify_property_list_changed()
 
 
 func get_source_radius():
@@ -50,7 +50,7 @@ func get_source_radius():
 
 func set_radius_km( r_km: float ):
 	source_radius = r_km * 1000.0
-	property_list_changed_notify()
+	notify_property_list_changed()
 
 
 func get_radius_km():
@@ -61,7 +61,7 @@ func get_radius_km():
 func set_orbiting_velocity( v: float ):
 	orbiting_velocity = v
 	g = v*v/source_radius
-	property_list_changed_notify()
+	notify_property_list_changed()
 
 
 func get_orbiting_velocity():
@@ -71,7 +71,7 @@ func get_orbiting_velocity():
 func set_g( gg: float ):
 	g = gg
 	orbiting_velocity = sqrt(g*source_radius)
-	property_list_changed_notify()
+	notify_property_list_changed()
 
 
 func get_g():

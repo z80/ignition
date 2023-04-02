@@ -2,8 +2,8 @@
 
 [ext_resource path="res://physics/ref_frames/physics_env/physics_scene.gd" type="Script" id=1]
 
-[node name="PhysicsScene" type="Spatial"]
+[node name="PhysicsScene" type="Node3D"]
 script = ExtResource( 1 )
 
-[node name="Camera" type="Camera" parent="."]
+[node name="Camera3D" type="Camera3D" parent="."]
 visible = false

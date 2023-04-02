@@ -8,8 +8,8 @@ const Velocity = preload( "res://physics/orbital_motion/velocity.gd" )
 
 static func init( r: Vector3, v: Vector3, args: Dictionary ):
 	var inv_A: Basis = args.inv_A
-	r = inv_A.xform( r )
-	v = inv_A.xform( v )
+	r = inv_A * (r)
+	v = inv_A * (v)
 	
 	# Semi-latus-rectum in parabolic case.
 	var abs_h: float = args.h.length()
@@ -61,8 +61,8 @@ static func process( dt: float, args: Dictionary ):
 	var v: Vector3 = velocity( args, r )
 	
 	var Aw: Basis = args.A
-	r = Aw.xform( r )
-	v = Aw.xform( v )
+	r = Aw * (r)
+	v = Aw * (v)
 	
 	return [r, v]
 

@@ -3,7 +3,7 @@ extends Panel
 
 signal category_picked( category )
 
-export(PackedScene) var button_scene = null
+@export var button_scene: PackedScene = null
 
 var _vbox: VBoxContainer = null
 
@@ -38,10 +38,10 @@ func _fill_categories():
 
 func _create_button( category: Resource ):
 	var vb: VBoxContainer = _get_container()
-	var btn: Control      = button_scene.instance()
+	var btn: Control      = button_scene.instantiate()
 	btn.category = category
 	vb.add_child( btn )
-	btn.connect( "category_picked", self, "on_category_picked" )
+	btn.connect("category_picked", Callable(self, "on_category_picked"))
 	
 	
 

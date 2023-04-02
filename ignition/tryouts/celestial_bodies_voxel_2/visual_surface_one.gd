@@ -3,9 +3,9 @@ extends RefFrameNode
 
 signal focal_point_changed( point )
 
-export(PackedScene) var VisualCell = null
+@export var VisualCell: PackedScene = null
 
-var _visual: Spatial = null
+var _visual: Node3D = null
 
 var _created_instances: Array = []
 
@@ -20,7 +20,7 @@ func _ready():
 func _ign_post_process( _delta ):
 	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var se3: Se3Ref = self.relative_to( cam )
-	var t: Transform = se3.transform
+	var t: Transform3D = se3.transform
 	_visual.transform = t
 	
 #	# Validation.
@@ -30,9 +30,9 @@ func _ign_post_process( _delta ):
 
 
 func _create_visual():
-	var root: Spatial = RootScene.get_visual_layer_near()
+	var root: Node3D = RootScene.get_visual_layer_near()
 	#var root: Spatial = RootScene.get_visual_layer_space()
-	_visual = VisualCell.instance()
+	_visual = VisualCell.instantiate()
 	root.add_child( _visual )
 
 
@@ -124,8 +124,8 @@ func build_surface_finished( args ):
 		
 		var pt: Vector3 = args.view_point_se3.r
 		var b: Basis = Basis( args.view_point_se3.q )
-		sm.set_shader_param( "common_point", pt )
-		sm.set_shader_param( "to_planet_rf", b )
+		sm.set_shader_parameter( "common_point", pt )
+		sm.set_shader_parameter( "to_planet_rf", b )
 		_visual.solid.material_override = sm
 	
 	#_visual.surface.material_override = surface_source_solid.override_material
@@ -144,8 +144,8 @@ func build_surface_finished( args ):
 			
 			var pt: Vector3 = args.view_point_se3.r
 			var b: Basis = Basis( args.view_point_se3.q )
-			sm.set_shader_param( "common_point", pt )
-			sm.set_shader_param( "to_planet_rf", b )
+			sm.set_shader_parameter( "common_point", pt )
+			sm.set_shader_parameter( "to_planet_rf", b )
 			_visual.liquid.material_override = sm
 	
 	
@@ -195,7 +195,7 @@ func _populate_foliage( volume_surface: MarchingCubesDualGd, bounding_node: Boun
 			var norm: Vector3 = ret[2]
 			
 			var se3: Se3Ref = volume_surface.se3_in_point( at )
-			var local_norm: Vector3 = se3.q.inverse().xform( norm )
+			var local_norm: Vector3 = se3.q.inverse() * (norm)
 			
 			var p: float = foliage_source.probability( se3, norm )
 			var rand_p: float = rand.floating_point_closed()

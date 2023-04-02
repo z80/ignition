@@ -7,7 +7,7 @@
 [ext_resource path="res://physics/parts/thrusters/exhausts/exhaust_01/assets/exhaust_01/exhaust_01_OuterLayer.mesh" type="ArrayMesh" id=5]
 [ext_resource path="res://physics/parts/thrusters/exhausts/exhaust_01/assets/exhaust_01/exhaust_01_Glow.mesh" type="ArrayMesh" id=6]
 
-[sub_resource type="SpatialMaterial" id=17]
+[sub_resource type="StandardMaterial3D" id=17]
 flags_transparent = true
 flags_do_not_receive_shadows = true
 albedo_color = Color( 1, 1, 1, 0.164706 )
@@ -36,8 +36,8 @@ uniform sampler2D noise;
 uniform sampler2D displacement_x;
 uniform sampler2D displacement_z;
 
-uniform vec4 color_bright: hint_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
-uniform vec4 color_dark:   hint_color = vec4( 0.0, 0.0, 0.0, 1.0 );
+uniform vec4 color_bright: source_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
+uniform vec4 color_dark:   source_color = vec4( 0.0, 0.0, 0.0, 1.0 );
 
 varying float time;
 varying vec3 point3d;
@@ -109,7 +109,7 @@ void fragment() {
 }
 "
 
-[sub_resource type="OpenSimplexNoise" id=2]
+[sub_resource type="FastNoiseLite" id=2]
 seed = 1
 period = 15.0
 
@@ -119,7 +119,7 @@ height = 128
 seamless = true
 noise = SubResource( 2 )
 
-[sub_resource type="OpenSimplexNoise" id=4]
+[sub_resource type="FastNoiseLite" id=4]
 seed = 2
 period = 15.0
 
@@ -129,7 +129,7 @@ height = 128
 seamless = true
 noise = SubResource( 4 )
 
-[sub_resource type="OpenSimplexNoise" id=6]
+[sub_resource type="FastNoiseLite" id=6]
 period = 15.0
 
 [sub_resource type="NoiseTexture" id=7]
@@ -171,8 +171,8 @@ uniform sampler2D noise;
 uniform sampler2D displacement_x;
 uniform sampler2D displacement_z;
 
-uniform vec4 color_bright: hint_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
-uniform vec4 color_dark:   hint_color = vec4( 0.3529, 0.3529, 0.3529, 1.0 );
+uniform vec4 color_bright: source_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
+uniform vec4 color_dark:   source_color = vec4( 0.3529, 0.3529, 0.3529, 1.0 );
 
 varying float time;
 varying vec3 point3d;
@@ -237,7 +237,7 @@ void fragment() {
 }
 "
 
-[sub_resource type="OpenSimplexNoise" id=11]
+[sub_resource type="FastNoiseLite" id=11]
 seed = 1
 period = 15.0
 
@@ -247,7 +247,7 @@ height = 128
 seamless = true
 noise = SubResource( 11 )
 
-[sub_resource type="OpenSimplexNoise" id=13]
+[sub_resource type="FastNoiseLite" id=13]
 seed = 2
 period = 15.0
 
@@ -257,7 +257,7 @@ height = 128
 seamless = true
 noise = SubResource( 13 )
 
-[sub_resource type="OpenSimplexNoise" id=15]
+[sub_resource type="FastNoiseLite" id=15]
 period = 15.0
 
 [sub_resource type="NoiseTexture" id=16]
@@ -308,37 +308,37 @@ shader_param/noise = SubResource( 16 )
 shader_param/displacement_x = SubResource( 12 )
 shader_param/displacement_z = SubResource( 14 )
 
-[node name="Exhaust" type="Spatial"]
+[node name="Exhaust" type="Node3D"]
 script = ExtResource( 1 )
 pressure_low = 40000.0
 thrust = 0.02
 
-[node name="Glow" type="MeshInstance" parent="."]
+[node name="Glow" type="MeshInstance3D" parent="."]
 mesh = ExtResource( 6 )
 material/0 = SubResource( 17 )
 
-[node name="CarbonTraces" type="MeshInstance" parent="."]
+[node name="CarbonTraces" type="MeshInstance3D" parent="."]
 mesh = ExtResource( 4 )
 blend_shapes/Overexpanded = 0.0
 blend_shapes/Thrust = 0.02
 blend_shapes/Underexpanded = 0.25
 material/0 = SubResource( 18 )
 
-[node name="ShockDiamonds" type="MeshInstance" parent="."]
+[node name="ShockDiamonds" type="MeshInstance3D" parent="."]
 mesh = ExtResource( 3 )
 blend_shapes/Overexpanded = 0.0
 blend_shapes/Thrust = 0.02
 blend_shapes/Underexpanded = 0.25
 material/0 = SubResource( 19 )
 
-[node name="InnerTube" type="MeshInstance" parent="."]
+[node name="InnerTube" type="MeshInstance3D" parent="."]
 mesh = ExtResource( 2 )
 blend_shapes/Overexpanded = 0.0
 blend_shapes/Thrust = 0.02
 blend_shapes/Underexpanded = 0.25
 material/0 = SubResource( 20 )
 
-[node name="OuterLayer" type="MeshInstance" parent="."]
+[node name="OuterLayer" type="MeshInstance3D" parent="."]
 mesh = ExtResource( 5 )
 blend_shapes/Overexpanded = 0.0
 blend_shapes/Thrust = 0.02

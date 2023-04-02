@@ -18,7 +18,7 @@ func _init():
 func gui_classes( mode: Array ):
 	#var in_tree = self.is_inside_tree()
 	#self.print_tree_pretty()
-	var classes = .gui_classes( mode )
+	var classes = super.gui_classes( mode )
 	if mode.has( "construction_menu" ):
 		var T = load( "res://physics/bodies/construction_new/gui_elements/gui_transform_2.tscn" )
 		var R = load( "res://physics/bodies/construction_new/gui_elements/gui_rotate.tscn" )

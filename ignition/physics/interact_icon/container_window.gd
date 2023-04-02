@@ -20,7 +20,7 @@ func setup_gui( target_object: Node ):
 	_set_title( target_object.name )
 	var c: VBoxContainer = get_node( "VBox/Container" )
 	for C in classes:
-		var inst = C.instance()
+		var inst = C.instantiate()
 		c.add_child( inst )
 		var has_init: bool = inst.has_method( "init" )
 		if has_init:
@@ -78,9 +78,9 @@ func _input(event):
 
 	if(_mouse.in_handle):
 		if(event is InputEventMouseMotion and _mouse.down):
-			var new_size = rect_size + event.position - _mouse.down_pos
+			var new_size = size + event.position - _mouse.down_pos
 			var new_mouse_down_pos = event.position
-			rect_size = new_size
+			size = new_size
 			_mouse.down_pos = new_mouse_down_pos
 			_pre_maximize_rect = get_rect()
 

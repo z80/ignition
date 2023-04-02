@@ -3,13 +3,13 @@
 [ext_resource path="res://physics/parts/decouplers/2m/m1/visual_raw.tscn" type="PackedScene" id=1]
 [ext_resource path="res://physics/parts/decouplers/2m/m1/visual.gd" type="Script" id=2]
 
-[sub_resource type="CylinderShape" id=2]
+[sub_resource type="CylinderShape3D" id=2]
 height = 0.1
 
-[node name="Decoupler" type="RigidBody"]
+[node name="Decoupler" type="RigidBody3D"]
 script = ExtResource( 2 )
 
-[node name="CollisionShape" type="CollisionShape" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource( 2 )
 
 [node name="Model" parent="." instance=ExtResource( 1 )]

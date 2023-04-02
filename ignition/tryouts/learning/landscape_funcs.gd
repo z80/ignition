@@ -1,5 +1,5 @@
 
-extends Reference
+extends RefCounted
 class_name LandscapeFunc
 
 const TOTAL_HEIGHT: float = 5.0
@@ -12,17 +12,17 @@ const CLIFF_COEF: float = 3.3
 const DETAIL_GAIN: float = 0.1
 const DETAIL_TH: float = 0.7
 
-var _na: OpenSimplexNoise = OpenSimplexNoise.new()
-var _nb: OpenSimplexNoise = OpenSimplexNoise.new()
+var _na: FastNoiseLite = FastNoiseLite.new()
+var _nb: FastNoiseLite = FastNoiseLite.new()
 
 
 
 func _ready():
-	_na.octaves = 4
+	_na.fractal_octaves = 4
 	_na.period = 20.0
 	_na.persistence = 0.8
 
-	_nb.octaves = 4
+	_nb.fractal_octaves = 4
 	_nb.period = 5.0
 	_nb.persistence = 0.8
 

@@ -1,14 +1,14 @@
-extends Spatial
+extends Node3D
 
 var Motion = load( "res://physics/orbital_motion/motion.gd" )
 
-export(NodePath) var parent
-export(float) var r = 1.0
-export(float) var v = 1.0
-export(Vector3) var unit_r = Vector3( 1.0, 0.0, 0.0 )
-export(Vector3) var unit_v = Vector3( 0.0, 0.0, -1.0 )
-export(float) var ecc = 0.0
-export(float) var T = 60.0
+@export var parent: NodePath
+@export var r: float = 1.0
+@export var v: float = 1.0
+@export var unit_r: Vector3 = Vector3( 1.0, 0.0, 0.0 )
+@export var unit_v: Vector3 = Vector3( 0.0, 0.0, -1.0 )
+@export var ecc: float = 0.0
+@export var T: float = 60.0
 
 var gm: float = 1.0
 var state = null

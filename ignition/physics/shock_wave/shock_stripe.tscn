@@ -7,6 +7,6 @@
 [node name="ShockStripe" instance=ExtResource( 1 )]
 script = ExtResource( 2 )
 
-[node name="Circle" parent="Armature/Skeleton" index="0"]
-transform = Transform( 1, 0, 0, 0, 10, 0, 0, 0, 1, 0, 0, 0 )
+[node name="Circle" parent="Armature/Skeleton3D" index="0"]
+transform = Transform3D( 1, 0, 0, 0, 10, 0, 0, 0, 1, 0, 0, 0 )
 material/0 = ExtResource( 3 )
