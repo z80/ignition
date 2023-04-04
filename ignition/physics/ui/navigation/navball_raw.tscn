@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://csc3uxhx5fuu8"]
+
+[ext_resource type="PackedScene" uid="uid://dc3lnwighgwwd" path="res://physics/ui/navigation/assets/navball.gltf" id="1_bfh4x"]
+[ext_resource type="Material" uid="uid://cyrsqx7ehhgvy" path="res://physics/ui/navigation/navball.material" id="2_h7ayc"]
+
+[node name="Navball" instance=ExtResource("1_bfh4x")]
+
+[node name="navball_uv" parent="." index="0"]
+surface_material_override/0 = ExtResource("2_h7ayc")

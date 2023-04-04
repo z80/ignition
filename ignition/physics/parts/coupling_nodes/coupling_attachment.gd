@@ -15,9 +15,9 @@ var is_parent: bool = false
 @export var transform: Transform3D = Transform3D.IDENTITY
 # If this one is attached to other part 
 # need to remember the rotation angle.
-@export var yaw: float: float = 0.0: get = _get_yaw, set = _set_yaw
-@export var pitch: float: float = 0.0: get = _get_pitch, set = _set_pitch
-@export var roll: float: float = 0.0: get = _get_roll, set = _set_roll
+@export var yaw: float   = 0.0: get = _get_yaw, set = _set_yaw
+@export var pitch: float = 0.0: get = _get_pitch, set = _set_pitch
+@export var roll: float  = 0.0: get = _get_roll, set = _set_roll
 
 var _joint: Generic6DOFJoint3D = null
 

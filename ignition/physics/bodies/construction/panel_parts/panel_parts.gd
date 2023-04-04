@@ -59,12 +59,12 @@ func _create_buttons_frames():
 	_cleanup_panel( frames )
 	
 	_add_button( frames, "res://physics/parts/frames/frame_box/icon.png", 
-						 "frame_box", 
-						 "Frame box description", false )
+						"frame_box", 
+						"Frame box description", false )
 
 	_add_button( frames, "res://physics/parts/frames/frame_light/assets/icon.png", 
-						 "frame_light", 
-						 "Frame light description", false )
+						"frame_light", 
+						"Frame light description", false )
 
 
 func _create_buttons_parts():
@@ -75,20 +75,20 @@ func _create_buttons_parts():
 	
 	
 	_add_button( parts, "res://physics/parts/fuel_tanks/2m/3m_fuel/assets/icon.png", 
-						 "fuel_tank_2m_3m", 
-						 "Fuel tank 2m diameter, 3m height", true )
+						"fuel_tank_2m_3m", 
+						"Fuel tank 2m diameter, 3m height", true )
 	
 	_add_button( parts, "res://physics/parts/fuel_tanks/2m/3m_oxidizer/assets/icon.png", 
-						 "oxidizer_tank_2m_3m", 
-						 "Oxidizer tank 2m diameter, 3m height", true )
+						"oxidizer_tank_2m_3m", 
+						"Oxidizer tank 2m diameter, 3m height", true )
 	
 	_add_button( parts, "res://physics/parts/fuel_tanks/2m/5m_fuel/assets/icon.png", 
-						 "fuel_tank_2m_5m", 
-						 "Fuel tank 2m diameter, 5m height", true )
+						"fuel_tank_2m_5m", 
+						"Fuel tank 2m diameter, 5m height", true )
 	
 	_add_button( parts, "res://physics/parts/fuel_tanks/2m/5m_oxidizer/assets/icon.png", 
-						 "oxidizer_tank_2m_5m", 
-						 "Oxidizer tank 2m diameter, 5m height", true )
+						"oxidizer_tank_2m_5m", 
+						"Oxidizer tank 2m diameter, 5m height", true )
 
 
 #	_add_button( parts, "res://physics/parts/fuel_tanks/2m/3m_fuel/assets/icon.png", 
@@ -109,25 +109,25 @@ func _create_buttons_parts():
 #						 "Thrsuter ver 01", true )
 
 	_add_button( parts, "res://physics/parts/thrusters/atmospheric/assets/icon.png", 
-						 "thruster_atmospheric", 
-						 "Low altitude atmosphere thrsuter", true )
+						"thruster_atmospheric", 
+						"Low altitude atmosphere thrsuter", true )
 
 	_add_button( parts, "res://physics/parts/thrusters/vacuum/assets/icon.png", 
-						 "thruster_vacuum", 
-						 "High altitude vacuum optimized thrsuter", true )
+						"thruster_vacuum", 
+						"High altitude vacuum optimized thrsuter", true )
 	
 	
 	_add_button( parts, "res://physics/parts/reaction_control_wheels/2m/m1/assets/icon.png", 
-						 "reaction_control_wheels_2m_m1", 
-						 "2m reaction control wheels", true )
+						"reaction_control_wheels_2m_m1", 
+						"2m reaction control wheels", true )
 	
 	_add_button( parts, "res://physics/parts/habitats/2m/m1/assets/icon.png", 
-						 "habitat_2m_m1", 
-						 "Habitat 2m diameter", true )
+						"habitat_2m_m1", 
+						"Habitat 2m diameter", true )
 	
 	_add_button( parts, "res://physics/parts/decouplers/2m/m1/assets/icon.png", 
-						 "decoupler_2m_1m", 
-						 "Decoupler 2m diameter", true )
+						"decoupler_2m_1m", 
+						"Decoupler 2m diameter", true )
 	
 
 

@@ -1,29 +1,27 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=4 format=3 uid="uid://rn6w4h82i7j4"]
 
-[ext_resource path="res://physics/ui/navigation/assets/anti_normal.png" type="Texture2D" id=1]
+[ext_resource type="Texture2D" uid="uid://cek4gp7rkr1lc" path="res://physics/ui/navigation/assets/anti_normal.png" id="1"]
 
-[sub_resource type="ArrayMesh" id=1]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xf3od"]
+transparency = 1
+albedo_texture = ExtResource("1")
+
+[sub_resource type="ArrayMesh" id="1"]
 resource_name = "billboard"
-surfaces/0 = {
-"aabb": AABB( -1, 0, -1, 2, 1e-05, 2.00001 ),
-"array_data": PackedByteArray( 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 0, 127, 0, 0, 0, 0, 129, 127, 106, 33, 106, 33, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 0, 127, 0, 0, 0, 0, 129, 127, 106, 33, 234, 59, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 0, 127, 0, 0, 0, 0, 129, 127, 234, 59, 234, 59, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 0, 127, 0, 0, 0, 0, 129, 127, 234, 59, 106, 33 ),
-"array_index_data": PackedByteArray( 0, 0, 2, 0, 1, 0, 0, 0, 3, 0, 2, 0 ),
-"blend_shape_data": [  ],
-"format": 97559,
+_surfaces = [{
+"aabb": AABB(-1, 0, -1, 2, 1e-05, 2.00001),
+"attribute_data": PackedByteArray(0, 64, 45, 60, 0, 64, 45, 60, 0, 64, 45, 60, 0, 64, 125, 63, 0, 64, 125, 63, 0, 64, 125, 63, 0, 64, 125, 63, 0, 64, 45, 60),
+"format": 4119,
 "index_count": 6,
-"primitive": 4,
-"skeleton_aabb": [  ],
-"vertex_count": 4
-}
-
-[sub_resource type="StandardMaterial3D" id=2]
-flags_transparent = true
-flags_unshaded = true
-albedo_texture = ExtResource( 1 )
+"index_data": PackedByteArray(0, 0, 2, 0, 1, 0, 0, 0, 3, 0, 2, 0),
+"material": SubResource("StandardMaterial3D_xf3od"),
+"primitive": 3,
+"vertex_count": 4,
+"vertex_data": PackedByteArray(0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 63, 255, 255, 255, 255, 32, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 63, 255, 255, 255, 255, 97, 0, 0, 0, 0, 0, 128, 63, 0, 0, 0, 0, 0, 0, 128, 191, 255, 255, 255, 255, 115, 0, 0, 0, 0, 0, 128, 191, 0, 0, 0, 0, 0, 0, 128, 191, 255, 255, 255, 255, 110, 0, 0, 0)
+}]
 
 [node name="AntiNormal" type="Node3D"]
 
 [node name="billboard" type="MeshInstance3D" parent="."]
-transform = Transform3D( 0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0 )
-mesh = SubResource( 1 )
-material/0 = SubResource( 2 )
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, 0)
+mesh = SubResource("1")

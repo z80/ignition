@@ -554,21 +554,21 @@ bool MarchingCubesDualGd::apply_to_collision_shape( Object * concave_polygon_sha
 //}
 
 
-const Array & MarchingCubesDualGd::collision_faces( const Ref<Se3Ref> & src_se3, real_t dist )
+const PackedVector3Array & MarchingCubesDualGd::collision_faces( const Ref<Se3Ref> & src_se3, real_t dist )
 {
 	const SE3 & source_se3 = src_se3->se3;
 
 	const std::vector<Vector3> & faces = cubes.collision_faces( source_se3, dist );
 
 	const int qty = faces.size();
-	ret_pool_array.resize( qty );
+	ret_packed_array.resize( qty );
 	for ( int i=0; i<qty; i++ )
 	{
 		const Vector3 & v = faces[i];
-		ret_pool_array.set( i, v );
+		ret_packed_array.set( i, v );
 	}
 
-	return ret_pool_array;
+	return ret_packed_array;
 }
 
 void MarchingCubesDualGd::set_max_nodes_qty( int qty )

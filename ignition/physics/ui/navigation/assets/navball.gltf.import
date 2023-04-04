@@ -14,19 +14,32 @@ dest_files=["res://.godot/imported/navball.gltf-2c9327c7a45bced133108a0108bbbb8c
 [params]
 
 nodes/root_type="Node3D"
-nodes/root_name="Scene Root"
+nodes/root_name="Navball"
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 meshes/ensure_tangents=true
-meshes/generate_lods=true
+meshes/generate_lods=false
 meshes/create_shadow_meshes=true
 meshes/light_baking=0
 meshes/lightmap_texel_size=0.1
 skins/use_named_skins=true
-animation/import=true
+animation/import=false
 animation/fps=15
 animation/trimming=false
 animation/remove_immutable_tracks=true
 import_script/path=""
-_subresources={}
-gltf/embedded_image_handling=1
+_subresources={
+"meshes": {
+"navball_navball_uv": {
+"generate/lightmap_uv": 1,
+"generate/lods": 0,
+"generate/shadow_meshes": 1,
+"lods/normal_merge_angle": 60.0,
+"lods/normal_split_angle": 25.0,
+"save_to_file/enabled": true,
+"save_to_file/make_streamable": "",
+"save_to_file/path": ""
+}
+}
+}
+gltf/embedded_image_handling=0

@@ -26,8 +26,8 @@ class_name Character
 # If it should resist tipping over.
 @export var preserve_vertical: bool = true
 
-var target_q: Quaternion    = Quaternion.IDENTITY
-var local_up: Vector3 = Vector3.UP
+var target_q: Quaternion = Quaternion.IDENTITY
+var local_up: Vector3    = Vector3.UP
 
 var print_period: float  = 0.1
 var print_elapsed: float = 0.0

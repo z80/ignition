@@ -1,49 +1,27 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://bjnp12owvy3gu"]
 
-[ext_resource path="res://physics/menu/root_menu/assets/intro_loop.webm" type="VideoStream" id=1]
-[ext_resource path="res://physics/menu/root_menu/assets/intro_click.webm" type="VideoStream" id=2]
-[ext_resource path="res://physics/menu/root_menu/video_background.gd" type="Script" id=3]
-[ext_resource path="res://physics/menu/root_menu/assets/intro_start.webm" type="VideoStream" id=4]
+[ext_resource type="Script" path="res://physics/menu/root_menu/video_background.gd" id="3"]
 
 [node name="C" type="PanelContainer"]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-script = ExtResource( 3 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+script = ExtResource("3")
 
 [node name="Intro" type="VideoStreamPlayer" parent="."]
-offset_left = 7.0
-offset_top = 7.0
-offset_right = 1017.0
-offset_bottom = 593.0
+layout_mode = 2
 mouse_filter = 2
-stream = ExtResource( 4 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Loop" type="VideoStreamPlayer" parent="."]
 visible = false
-offset_right = 1024.0
-offset_bottom = 600.0
+layout_mode = 2
 mouse_filter = 2
-stream = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Click" type="VideoStreamPlayer" parent="."]
 visible = false
-offset_right = 1024.0
-offset_bottom = 600.0
+layout_mode = 2
 mouse_filter = 2
-stream = ExtResource( 2 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [connection signal="finished" from="Intro" to="." method="_on_Intro_finished"]
 [connection signal="finished" from="Loop" to="." method="_on_Loop_finished"]

@@ -1,11 +1,11 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://4qxv1iovjiyw"]
 
-[ext_resource path="res://physics/parts/characters/central/central.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/characters/central/visual.tscn" type="PackedScene" id=2]
+[ext_resource type="Script" path="res://physics/parts/characters/central/central.gd" id="1"]
+[ext_resource type="PackedScene" path="res://physics/parts/characters/central/visual.tscn" id="2"]
 
 [node name="Central" type="RefFrameBodyNode"]
-script = ExtResource( 1 )
-VisualScene = ExtResource( 2 )
+script = ExtResource("1")
+max_force = 50.0
 destruction_dv = 500.0
 part_class = 6
 allows_surface_attachments = false
@@ -16,4 +16,4 @@ conducts_solid_fuel = false
 conducts_electricity = false
 conducts_air = false
 mass = 0.1
-max_force = 50.0
+VisualScene = ExtResource("2")

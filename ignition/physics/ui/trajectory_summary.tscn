@@ -1,268 +1,211 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://bgnnh21a30uf4"]
 
-[ext_resource path="res://physics/ui/trajectory_summary.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://physics/ui/trajectory_summary.gd" id="1"]
 
 [node name="TrajectorySummary" type="Panel"]
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_top = -173.0
 offset_right = 186.0
-script = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+script = ExtResource("1")
 
 [node name="TargetLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_right = 74.0
 offset_bottom = 15.0
 bbcode_enabled = true
-text = "[b]Center:[/b]"
-meta_underlined = false
 text = "Center:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="Target" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.452
 offset_top = 1.66858
 offset_right = 184.452
 offset_bottom = 18.6686
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="TrajectoryTypeLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 16.0
 offset_right = 74.0
 offset_bottom = 31.0
 bbcode_enabled = true
-text = "[b]Traj. type:[/b]"
-meta_underlined = false
 text = "Traj. type:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="TrajectoryType" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.119
 offset_top = 17.6866
 offset_right = 184.119
 offset_bottom = 34.6866
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="ApogeeLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 33.0
 offset_right = 74.0
 offset_bottom = 48.0
 bbcode_enabled = true
-text = "[b]Apogee:[/b]"
-meta_underlined = false
 text = "Apogee:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="Apogee" type="Label" parent="."]
+layout_mode = 0
 offset_left = 73.786
 offset_top = 33.6866
 offset_right = 183.786
 offset_bottom = 50.6866
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="PerigeeLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 50.0
 offset_right = 74.0
 offset_bottom = 65.0
 bbcode_enabled = true
-text = "[b]Perigee:[/b]"
-meta_underlined = false
 text = "Perigee:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="Perigee" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.119
 offset_top = 50.6866
 offset_right = 184.119
 offset_bottom = 67.6866
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="TimeToPerigeeLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 65.0
 offset_right = 74.0
 offset_bottom = 80.0
 bbcode_enabled = true
-text = "[b]T to perigee:[/b]"
-meta_underlined = false
 text = "T to perigee:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="TimeToPerigee" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.119
 offset_top = 65.6866
 offset_right = 184.119
 offset_bottom = 82.6866
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="TimeToApogeeLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 80.0
 offset_right = 74.0
 offset_bottom = 95.0
 bbcode_enabled = true
-text = "[b]T to apogee:[/b]"
-meta_underlined = false
 text = "T to apogee:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="TimeToApogee" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.119
 offset_top = 80.6866
 offset_right = 184.119
 offset_bottom = 97.6866
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="VApogeeLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 95.0
 offset_right = 74.0
 offset_bottom = 110.0
 bbcode_enabled = true
-text = "[b]V apogee:[/b]"
-meta_underlined = false
 text = "V apogee:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="VApogee" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.119
 offset_top = 95.6866
 offset_right = 184.119
 offset_bottom = 112.687
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="VPerigeeLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 110.0
 offset_right = 74.0
 offset_bottom = 125.0
 bbcode_enabled = true
-text = "[b]V perigee:[/b]"
-meta_underlined = false
 text = "V perigee:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="VPerigee" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.119
 offset_top = 110.687
 offset_right = 184.119
 offset_bottom = 127.687
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="PeriodLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 124.0
 offset_right = 74.0
 offset_bottom = 139.0
 bbcode_enabled = true
-text = "[b]Period:[/b]"
-meta_underlined = false
 text = "Period:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="Period" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.119
 offset_top = 124.687
 offset_right = 184.119
 offset_bottom = 141.687
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="VelocityLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 138.0
 offset_right = 74.0
 offset_bottom = 153.0
 bbcode_enabled = true
-text = "[b]Velocity:[/b]"
-meta_underlined = false
 text = "Velocity:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="Velocity" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.119
 offset_top = 138.687
 offset_right = 184.119
 offset_bottom = 155.687
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="DistanceLbl" type="RichTextLabel" parent="."]
+layout_mode = 0
 offset_top = 152.683
 offset_right = 74.0
 offset_bottom = 167.683
 bbcode_enabled = true
-text = "[b]Distance:[/b]"
-meta_underlined = false
 text = "Distance:"
 scroll_active = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
+meta_underlined = false
 
 [node name="Distance" type="Label" parent="."]
+layout_mode = 0
 offset_left = 74.12
 offset_top = 153.37
 offset_right = 184.12
 offset_bottom = 170.37
 text = "Sun"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Timer" type="Timer" parent="."]
 autostart = true

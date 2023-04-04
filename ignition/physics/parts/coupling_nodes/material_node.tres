@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://doaawwd6piii8"]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="Shader" id="1"]
 code = "shader_type spatial;
 render_mode unshaded;
 
@@ -33,6 +33,7 @@ void fragment()
 "
 
 [resource]
-shader = SubResource( 1 )
-shader_param/color_a = Color( 0.81, 0.81, 0, 0.22 )
-shader_param/color_b = Color( 0.36, 0.36, 0.36, 0.22 )
+render_priority = 0
+shader = SubResource("1")
+shader_parameter/color_a = Color(0.81, 0.81, 0, 0.22)
+shader_parameter/color_b = Color(0.36, 0.36, 0.36, 0.22)

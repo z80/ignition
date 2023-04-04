@@ -19,7 +19,7 @@ func _on_TrajParams_pressed():
 	UiSound.play( Constants.ButtonClick )
 
 	var b: Button = get_node( "TrajParams" )
-	var v: bool = b.pressed
+	var v: bool = b.button_pressed
 	
 	var r: Node = _get_root_ui()
 	var tp: Node = r.get_node( "TrajParams" )
@@ -30,7 +30,7 @@ func _on_CtrlGroups_pressed():
 	UiSound.play( Constants.ButtonClick )
 
 	var b: Button = get_node( "CtrlGroups" )
-	var v: bool = b.pressed
+	var v: bool = b.button_pressed
 	
 	var r: Node = _get_root_ui()
 	var tp: Node = r.get_node( "CtrlGroups" )
@@ -41,7 +41,7 @@ func _on_NavBall_pressed():
 	UiSound.play( Constants.ButtonClick )
 
 	var b: Button = get_node( "NavBall" )
-	var v: bool = b.pressed
+	var v: bool = b.button_pressed
 	
 	var r: Node = _get_root_ui()
 	var tp: Node = r.get_node( "NavBall" )

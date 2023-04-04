@@ -35,8 +35,8 @@ var _octree_mesh: OctreeMeshGd = null
 var force: Node3D = null
 
 
-func get_class():
-	return "PhysicsBodyBase"
+#func get_class():
+#	return "PhysicsBodyBase"
 
 
 

@@ -1,7 +1,7 @@
 
 extends Panel
 
-const Time = preload( "res://physics/utils/time.gd" )
+const TimeUtils: Resource = preload( "res://physics/utils/time.gd" )
 
 
 var _cm: CelestialMotionRef = null
@@ -71,14 +71,14 @@ func _visualize_celestial_motion():
 	l.text = str( _cm.perigee() * 0.001 ) + "km"
 	l = _labels[ "time_to_perigee" ]
 	var t: float = abs( _cm.time_after_periapsis() )
-	var stri: String = Time.seconds_to_str( t )
+	var stri: String = TimeUtils.seconds_to_str( t )
 	l.text = stri
 	l = _labels[ "time_to_apogee" ]
 	if movement_type == "elliptic":
 		var T: float = _cm.period()
 		t = abs( _cm.time_after_periapsis() )
 		t = T*0.5 - t
-		stri = Time.seconds_to_str( t )
+		stri = TimeUtils.seconds_to_str( t )
 		l.text = stri
 	else:
 		l.text = "--:--"
@@ -96,7 +96,7 @@ func _visualize_celestial_motion():
 	l = _labels[ "period" ]
 	if movement_type == "elliptic":
 		var T: float = _cm.period()
-		stri = Time.seconds_to_str( T )
+		stri = TimeUtils.seconds_to_str( T )
 		l.text = stri
 	else:
 		l.text = "--:--"

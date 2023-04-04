@@ -14,8 +14,8 @@ func _on_Save_pressed():
 	var root: Node = RootScene.ref_frame_root
 	var data: Dictionary = S.serialize_all( root )
 	#var stri: String = JSON.print( data )
-	var file = File.new()
-	file.open( "res://save_game.json", File.WRITE )
+	var file: FileAccess = FileAccess.open( "res://save_game.json", FileAccess.WRITE )
+	assert( file != null, "Failed to open file for writing!" )
 	file.store_var( data, true )
 	file.close()
 
@@ -28,8 +28,8 @@ func _on_Load_pressed():
 	var S = load( "res://physics/singletons/save_load.gd" )
 	var root: Node = RootScene.ref_frame_root
 	
-	var file = File.new()
-	file.open( "res://save_game.json", File.READ )
+	var file: FileAccess = FileAccess.open( "res://save_game.json", FileAccess.READ )
+	assert( file != null, "Failed to open file for reading!" )
 	var data: Dictionary = file.get_var( true )
 	file.close()
 	

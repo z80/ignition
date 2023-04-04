@@ -59,7 +59,7 @@ public:
 
 	//Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
 	//Transform3D compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
-	const Array & collision_faces( const Ref<Se3Ref> & src_se3, real_t dist );
+	const PackedVector3Array & collision_faces( const Ref<Se3Ref> & src_se3, real_t dist );
 
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;
@@ -76,14 +76,14 @@ public:
 public:
 	MarchingCubesDual cubes;
 
-	Array vertices,
-	      normals;
-	Array tangents;
-	Array uvs,
-	      uv2s;
+	PackedVector3Array vertices,
+					   normals;
+	PackedFloat32Array tangents;
+	PackedVector2Array uvs,
+	                   uv2s;
 
-	Array ret_pool_array;
-	Array ret_array;
+	PackedVector3Array ret_packed_array;
+	Array              ret_array;
 };
 
 

@@ -28,7 +28,9 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("relative_to_se3", "origin", "origin_se3"), &RefFrameNode::relative_to_se3 );
 	ClassDB::bind_method( D_METHOD("se3_relative_to", "object_se3", "origin"), &RefFrameNode::se3_relative_to );
 
-	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent );
+	//ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent );
+	GDVIRTUAL_BIND(change_parent, "node");
+
 
 	ClassDB::bind_method( D_METHOD("jump_to", "dest", "dest_se3"), &RefFrameNode::jump_to );
 

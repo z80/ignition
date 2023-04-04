@@ -264,7 +264,7 @@ func _on_ShowOrbits_pressed():
 func _on_Map_pressed():
 	UiSound.play( Constants.ButtonClick )
 	var btn: Button = get_node( "ModeMap" )
-	var pressed: bool = btn.pressed
+	var pressed: bool = btn.button_pressed
 	UserInput.gui_control_bool( "ui_map", pressed, pressed, not pressed )
 
 
@@ -278,7 +278,7 @@ func _input(event):
 		if event.keycode == KEY_M:
 			UiSound.play( Constants.ButtonClick )
 			var btn: Button = get_node( "Map" )
-			var pressed: bool = btn.pressed
+			var pressed: bool = btn.button_pressed
 			pressed = not pressed
 			btn.button_pressed = pressed
 			UserInput.gui_control_bool( "ui_map", pressed, pressed, not pressed )

@@ -48,10 +48,8 @@ func _on_Load_pressed():
 	
 	var root: Node = RootScene.ref_frame_root
 	
-	var file = File.new()
-	var err: int = file.open( fname, File.READ )
-	if err != OK:
-		return
+	var file: FileAccess = FileAccess.open( fname, FileAccess.READ )
+	assert( file != null, "Failed to open file for reading!" )
 	
 	var data: Dictionary = file.get_var( true )
 	file.close()

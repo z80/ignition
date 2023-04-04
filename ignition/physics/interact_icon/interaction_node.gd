@@ -100,8 +100,8 @@ func distance_to_camera_ray():
 		return -1.0
 
 	var mouse_mode = Input.get_mouse_mode() 
-	if (mouse_mode == Input.MOUSE_MODE_HIDDEN) or \
-	   (mouse_mode == Input.MOUSE_MODE_CAPTURED):
+	if  (mouse_mode == Input.MOUSE_MODE_HIDDEN) or \
+		(mouse_mode == Input.MOUSE_MODE_CAPTURED):
 		return -1.0
 	
 	var cam_at: Vector3  = cam.global_transform.origin

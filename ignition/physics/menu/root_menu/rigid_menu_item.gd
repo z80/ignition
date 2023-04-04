@@ -7,10 +7,10 @@ var mouse_inside: bool = false
 signal clicked
 
 func start():
-	self.mode = RigidBody2D.MODE_RIGID
+	freeze = false
 
 func stop():
-	self.mode = RigidBody2D.FREEZE_MODE_STATIC
+	freeze = true
 
 func _set_size( s: Vector2 ):
 	$CollisionShape2D.set( "shape/size", s )

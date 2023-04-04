@@ -12,7 +12,7 @@ func _ready():
 
 
 func _on_help_pressed():
-	var Wiki = preload( "res://wiki_handler/wiki_window.tscn" )
+	var Wiki: PackedScene = preload( "res://wiki_handler/wiki_window.tscn" )
 	var wiki: Control = Wiki.instantiate()
 	add_child( wiki )
 
