@@ -1,4 +1,5 @@
-extends Exhaust
+
+extends Node3D
 
 
 @export var pressure_optimal: float = 0.8e5

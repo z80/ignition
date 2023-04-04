@@ -11,7 +11,7 @@ var _w_normalized: Vector3 = Vector3.ZERO
 var _torque: Vector3       = Vector3.ZERO
 
 var _control_applied: bool = false
-@export var sound: String: String = ""
+@export var sound: String = ""
 
 
 func init():

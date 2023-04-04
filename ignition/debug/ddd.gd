@@ -20,7 +20,7 @@ func _ready():
 	# Meh
 	var c := Control.new()
 	add_child(c)
-	_font = c.get_font( "font" )
+	_font = c.get_theme_font( "font" )
 	c.queue_free()
 	
 	_canvas_item = Node2D.new()

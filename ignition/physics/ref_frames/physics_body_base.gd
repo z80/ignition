@@ -352,7 +352,7 @@ func _create_visual( Visual: PackedScene ):
 	# If it is, set mode to kinematic.
 	var rigid_body: RigidBody3D = v as RigidBody3D
 	if rigid_body != null:
-		rigid_body.mode = RigidBody3D.FREEZE_MODE_KINEMATIC
+		rigid_body.freeze = true
 	
 	_visual = v
 	
@@ -411,9 +411,9 @@ func _create_physical( Physical: PackedScene ):
 
 
 func parent_physics_ref_frame():
-	var parent_node = get_parent()
-	var parent_rf = parent_node as RefFrameNode
-	if (parent_rf == null) or (parent_rf.get_class() != "RefFramePhysics"):
+	var parent_node: Node = get_parent()
+	var parent_rf = parent_node as RefFrameNonInertialNode
+	if (parent_rf == null) or ( not is_instance_valid(parent_node) ):
 		return null
 	return parent_node
 

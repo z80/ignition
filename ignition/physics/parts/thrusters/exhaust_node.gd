@@ -11,9 +11,9 @@ enum ExhaustType {
 
 @export var exhaust_type: ExhaustType = ExhaustType.A
 @export var exhaust_radius: float = 1.0
-@export var pressure_low: float: float     = 0.0
-@export var pressure_optimal: float: float = 0.8e5
-@export var pressure_high: float: float    = 1.0e5
+@export var pressure_low: float     = 0.0
+@export var pressure_optimal: float = 0.8e5
+@export var pressure_high: float    = 1.0e5
 
 var _relative_to_owner: Transform3D = Transform3D.IDENTITY
 

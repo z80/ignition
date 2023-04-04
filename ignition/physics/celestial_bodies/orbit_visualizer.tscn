@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=4 format=3 uid="uid://hwt6mbf5m636"]
 
-[ext_resource path="res://physics/celestial_bodies/orbit_visualizer.gd" type="Script" id=1]
-[ext_resource path="res://physics/celestial_bodies/material_orbit_visual.tres" type="Material" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" type="Resource" id=3]
+[ext_resource type="Script" path="res://physics/celestial_bodies/orbit_visualizer.gd" id="1"]
+[ext_resource type="Material" path="res://physics/celestial_bodies/material_orbit_visual.tres" id="2"]
+[ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" id="3"]
 
-[node name="OrbitVisualizer" type="ImmediateMesh"]
-script = ExtResource( 1 )
-config_detail_level = ExtResource( 3 )
-material = ExtResource( 2 )
+[node name="OrbitVisualizer" type="MeshInstance3D"]
+script = ExtResource("1")
+config_detail_level = ExtResource("3")
+material = ExtResource("2")

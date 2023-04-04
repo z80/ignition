@@ -1,5 +1,5 @@
-extends ImmediateMesh
 
+extends MeshInstance3D
 
 @export var config_detail_level: Resource = null
 @export var color: Color = Color( 1.0, 0.0, 0.0, 1.0 )
@@ -15,8 +15,8 @@ func _ready():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta):
-	self.material_override = material
+#func _process(_delta):
+#	self.material_override = material
 
 
 
@@ -33,13 +33,14 @@ func draw( position: RefFrameMotionNode, motion: CelestialMotionRef = null ):
 	else:
 		pts = motion.orbit_points( position, camera_rf, pts_qty, _scale_distance_ratio, base_scale )
 	
-	clear()
-	begin(Mesh.PRIMITIVE_LINE_STRIP)
+	var im: ImmediateMesh = ImmediateMesh.new()
+	im.surface_begin(Mesh.PRIMITIVE_LINES, m )
 	
 	for pt in pts:
-		set_color( color )
-		add_vertex( pt )
-	end()
+		im.surface_add_vertex( pt )
+	im.surface_end()
+	
+	self.mesh = im
 
 
 

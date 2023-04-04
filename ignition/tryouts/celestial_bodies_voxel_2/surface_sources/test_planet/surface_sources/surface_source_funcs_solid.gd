@@ -19,8 +19,8 @@ func _init():
 	noise = FastNoiseLite.new()
 	noise.seed = 2
 	noise.fractal_octaves = 8
-	noise.period = 3.0
-	noise.persistence = 0.8
+	#noise.period = 3.0
+	#noise.persistence = 0.8
 
 
 func init_seed( v ):

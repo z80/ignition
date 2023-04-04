@@ -113,7 +113,7 @@ func let_character_in( character ):
 
 func let_character_out( ind: int ):
 	var character: Node = characters_inside[ind]
-	characters_inside.remove( ind )
+	characters_inside.remove_at( ind )
 	
 	var en: EntranceNode = entrance_nodes[0]
 	var t: Transform3D = en.relative_to_owner

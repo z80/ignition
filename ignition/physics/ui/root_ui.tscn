@@ -1,12 +1,12 @@
 [gd_scene load_steps=11 format=3 uid="uid://d164mxaj5h5it"]
 
-[ext_resource type="PackedScene" path="res://physics/ui/trajectory_summary.tscn" id="1"]
-[ext_resource type="PackedScene" path="res://physics/ui/navigation/navigation.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://bgnnh21a30uf4" path="res://physics/ui/trajectory_summary.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://bga668jgke041" path="res://physics/ui/navigation/navigation.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://physics/ui/control_groups/control_groups.tscn" id="3"]
-[ext_resource type="PackedScene" path="res://physics/ui/save_load/ui_save_load.tscn" id="4"]
+[ext_resource type="PackedScene" uid="uid://cth8j6w265f3c" path="res://physics/ui/save_load/ui_save_load.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://physics/ui/time_dilation/time_dilation.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://physics/ui/esc_menu/esc_menu.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://physics/ui/edge_buttons/edge_buttons.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://dc5ng7uobtgsv" path="res://physics/ui/edge_buttons/edge_buttons.tscn" id="7"]
 [ext_resource type="Texture2D" uid="uid://c6hrjg7y07a8g" path="res://wiki_handler/assets/help.png" id="8"]
 [ext_resource type="Script" path="res://physics/ui/root_ui.gd" id="9"]
 
@@ -18,34 +18,52 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_right = 4.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("9")
 
 [node name="EdgeButtons" parent="." instance=ExtResource("7")]
-anchors_preset = 0
+layout_mode = 1
+anchor_left = 0.498
+anchor_right = 0.498
+offset_left = -151.688
+offset_top = -48.0
+offset_right = 156.312
+offset_bottom = -7.0
 
 [node name="TrajParams" parent="." instance=ExtResource("1")]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = -1
+offset_left = 8.0
+offset_top = -176.0
+offset_right = 194.0
+offset_bottom = -3.0
 
 [node name="NavBall" parent="." instance=ExtResource("2")]
-anchors_preset = 0
+layout_mode = 1
+anchors_preset = -1
 anchor_left = 0.994
 anchor_right = 0.994
-offset_left = -199.672
-offset_top = -206.855
-offset_right = 0.32843
-offset_bottom = -6.85516
+offset_left = -197.064
+offset_right = 2.9364
+grow_horizontal = 1
+grow_vertical = 1
 
 [node name="CtrlGroups" parent="." instance=ExtResource("3")]
-layout_mode = 0
-offset_left = -128.378
-offset_top = 45.3445
-offset_right = -5.37842
-offset_bottom = 304.344
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.992
+anchor_right = 0.992
+offset_left = -122.752
+offset_top = 56.0
+offset_right = 0.247437
+offset_bottom = 314.999
 
 [node name="UiSaveLoad" parent="." instance=ExtResource("4")]
 visible = false
-anchors_preset = 0
+layout_mode = 1
+anchors_preset = -1
 anchor_left = 0.182
 anchor_top = 1.0
 anchor_right = 0.182
@@ -67,6 +85,16 @@ offset_bottom = 49.2128
 [node name="EscMenu" parent="." instance=ExtResource("6")]
 visible = false
 layout_mode = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 144.0
+offset_bottom = 120.0
+grow_horizontal = 1
+grow_vertical = 1
 
 [node name="Help" type="TextureButton" parent="."]
 layout_mode = 0
