@@ -7,8 +7,8 @@ var _axes: Node3D = null
 
 
 
-func get_class():
-	return "RefFrame"
+#func get_class():
+#	return "RefFrame"
 
 
 func process_children():

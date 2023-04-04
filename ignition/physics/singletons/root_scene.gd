@@ -18,8 +18,8 @@ func _ready():
 	_visual_layer_near = root.root
 	
 	# Setup rendering viewport result to plane texture.
-	var vp: SubViewport = _visual_layer_space.get_viewport()
-	_visual_layer_near.camera.set_viewport( vp )
+	var vp: SubViewport = _visual_layer_space.obtain_viewport()
+	_visual_layer_near.camera.setup_viewport( vp )
 
 
 func get_visual_layer_space():

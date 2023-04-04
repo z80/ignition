@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://cbnfbk58c54h1"]
 
-[ext_resource path="res://physics/singletons/visual_layer/visual_layer_near.gd" type="Script" id=1]
-[ext_resource path="res://physics/singletons/visual_layer/scene_near.tscn" type="PackedScene" id=2]
+[ext_resource type="Script" path="res://physics/singletons/visual_layer/visual_layer_near.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://ce83sbvfnvhco" path="res://physics/singletons/visual_layer/scene_near.tscn" id="2"]
 
 [node name="VisualLayerNear" type="Node3D"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 
-[node name="Root" parent="." instance=ExtResource( 2 )]
+[node name="Root" parent="." instance=ExtResource("2")]

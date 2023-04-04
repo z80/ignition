@@ -6,7 +6,7 @@ var _q: Quaternion
 var plane: Node3D = null
 
 
-func set_viewport( vp: SubViewport ):
+func setup_viewport( vp: SubViewport ):
 	var mi: MeshInstance3D = plane
 	var m: StandardMaterial3D = mi.material_override
 	var tex: ViewportTexture = m.albedo_texture

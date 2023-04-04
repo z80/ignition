@@ -3,9 +3,9 @@ extends Node
 
 
 var input: Dictionary = {}
-var inputs: Array = [ "ui_w", "ui_s", "ui_a", "ui_d", "ui_q", "ui_e", 
-					  "ui_z", "ui_x", "ui_c", "ui_v", 
-					  "ui_i", "ui_k", "ui_j", "ui_l", "ui_u", "ui_o", "ui_m", "ui_space" ]
+var inputs: Array   = [ "ui_w", "ui_s", "ui_a", "ui_d", "ui_q", "ui_e", 
+						"ui_z", "ui_x", "ui_c", "ui_v", 
+						"ui_i", "ui_k", "ui_j", "ui_l", "ui_u", "ui_o", "ui_m", "ui_space" ]
 
 var gui_controls_new: Dictionary = {}
 var gui_controls_active: Dictionary = {}
@@ -38,8 +38,8 @@ func describe_event( e: String ):
 	
 	# Add or replace.
 	if is_pressed or is_just_pressed or is_just_released:
-		var d = { pressed  = is_just_pressed, 
-				  released = is_just_released }
+		var d   = { pressed  = is_just_pressed, 
+					released = is_just_released }
 		input[e] = d
 	
 	else:

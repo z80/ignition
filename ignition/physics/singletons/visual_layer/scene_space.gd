@@ -20,12 +20,10 @@ func _get_light():
 
 
 func _set_sun_direction( b: Basis ):
-	_get_light()
 	light.transform.basis = b
 
 
 func _get_sun_direction():
-	_get_light()
 	return light.transform.basis
 
 
