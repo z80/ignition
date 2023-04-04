@@ -1,7 +1,7 @@
 
 
 static func saved_files():
-	var dir = DirAccess.new()
+	var dir = DirAccess.open( './' )
 	ensure_save_folder_exists( dir )
 	dir.change_dir( Constants.SAVE_DIR_NAME )
 	

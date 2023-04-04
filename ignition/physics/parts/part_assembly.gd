@@ -20,14 +20,13 @@ var closest_celestial_body: RefFrameNode = null
 @export var show_orbit: bool = false: get = _get_show_orbit, set = _set_show_orbit
 
 
-func get_class():
-	return "PartAssembly"
+#func get_class():
+#	return "PartAssembly"
 
 
 
-func queue_free():
-	self.name = self.name + "_to_be_deleted"
-	super.queue_free()
+#func queue_free():
+#	super.queue_free()
 
 
 
@@ -84,7 +83,7 @@ func add_sub_body( body: RefFrameNode ):
 func remove_sub_body( body: RefFrameNode ):
 	var index: int = sub_bodies.find( body )
 	if index >= 0:
-		sub_bodies.remove( index )
+		sub_bodies.remove_at( index )
 		body.set_assembly( null )
 
 
@@ -301,6 +300,7 @@ func _update_celestial_motion():
 
 
 func on_delete():
+	self.name = self.name + "_to_be_deleted"
 	var bodies: Array = sub_bodies.duplicate()
 	for b in bodies:
 		if is_instance_valid( b ):

@@ -13,7 +13,7 @@ var _orbiting_velocity: float = 100.0
 @export var orbiting_velocity: float = 100.0: get = get_orbiting_velocity, set = set_orbiting_velocity
 
 var _g: float = 9.8
-@export var g: float 9.8: get = get_g, set = set_g
+@export var g: float: get = get_g, set = set_g
 
 @export var focus_depth: float   = 40.0
 

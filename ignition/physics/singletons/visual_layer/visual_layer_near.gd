@@ -6,33 +6,26 @@ extends Node3D
 # This is actual root for adding visual content.
 var root: Node3D = null
 
-var _light: DirectionalLight3D = null
-
-
-func get_light():
-	var light: DirectionalLight3D = _get_light()
-	return light
-
-
-
-func _get_light():
-	if _light == null:
-		_light = get_node( "SunLight" )
-	return _light
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	root = get_node( "Root" )
-	get_light()
+	_get_root()
+
+
+func _get_root():
+	if root == null:
+		root = get_node( "Root" )
+	
+	return root
 
 
 func _set_sun_direction( b: Basis ):
-	_light.transform.basis = b
+	root.sun_direction = b
 
 
 func _get_sun_direction():
-	var ret: Basis = _light.transform.basis
+	var ret: Basis = root.sun_direction
 	return ret
 
 

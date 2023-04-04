@@ -59,8 +59,8 @@ var _force_source_rotational: ForceSourceRotational = null
 var _force_source_air_drag: ForceSourceAirDrag      = null
 
 
-func get_class():
-	return "CelestialSurface"
+#func get_class():
+#	return "CelestialSurface"
 
 
 func translation_rf():

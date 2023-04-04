@@ -43,16 +43,16 @@ var force: Node3D = null
 
 
 func _enter_tree():
-	var file_name: String = self.filename
-	var node_path: String = self.get_path()
+	#var file_name: String = self.filename
+	#var node_path: String = self.get_path()
 	#print( "_enter_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
 	create_physical()
 
 
 
 func _exit_tree():
-	var file_name: String = self.filename
-	var node_path: String = self.get_path()
+	#var file_name: String = self.filename
+	#var node_path: String = self.get_path()
 	#print( "_exit_tree called on PhysicsBodyBase; " + file_name + "; path: " + node_path )
 	remove_physical()
 	

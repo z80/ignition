@@ -49,7 +49,8 @@ func _ready():
 
 
 
-
+func init():
+	pass
 
 
 

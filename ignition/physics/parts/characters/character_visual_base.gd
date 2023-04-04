@@ -16,6 +16,8 @@ func set_speed_normalized( _s: float, _v: Vector3 ):
 	pass
 
 
+func init():
+	pass
 
 
 func _integrate_forces( state ):

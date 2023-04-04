@@ -61,7 +61,7 @@ static func height_source( name: String, radius: float, height: float ):
 
 static func height_source_home( radius: float, height: float ):
 	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
-	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_home.gd" )
+	var script = null #preload( "res://physics/celestial_bodies/height_sources/height_source_home.gd" )
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs
@@ -69,7 +69,7 @@ static func height_source_home( radius: float, height: float ):
 
 static func height_source_moon( radius: float, height: float ):
 	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
-	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_moon.gd" )
+	var script = null #preload( "res://physics/celestial_bodies/height_sources/height_source_moon.gd" )
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs
@@ -77,7 +77,7 @@ static func height_source_moon( radius: float, height: float ):
 
 static func height_source_rust( radius: float, height: float ):
 	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
-	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_rust.gd" )
+	var script = null #preload( "res://physics/celestial_bodies/height_sources/height_source_rust.gd" )
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs
@@ -85,7 +85,7 @@ static func height_source_rust( radius: float, height: float ):
 
 static func height_source_bolt( radius: float, height: float ):
 	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
-	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_bolt.gd" )
+	var script = null #preload( "res://physics/celestial_bodies/height_sources/height_source_bolt.gd" )
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs
@@ -93,7 +93,7 @@ static func height_source_bolt( radius: float, height: float ):
 
 static func height_source_nut( radius: float, height: float ):
 	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
-	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_nut.gd" )
+	var script = null #preload( "res://physics/celestial_bodies/height_sources/height_source_nut.gd" )
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs
@@ -101,7 +101,7 @@ static func height_source_nut( radius: float, height: float ):
 
 static func height_source_blob( radius: float, height: float ):
 	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
-	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_blob.gd" )
+	var script = null #preload( "res://physics/celestial_bodies/height_sources/height_source_blob.gd" )
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs
@@ -109,7 +109,7 @@ static func height_source_blob( radius: float, height: float ):
 
 static func height_source_01( radius: float, height: float ):
 	var hs: HeightSourceGdRef = HeightSourceGdRef.new()
-	var script = preload( "res://physics/celestial_bodies/height_sources/height_source_01.gd" )
+	var script = null #preload( "res://physics/celestial_bodies/height_sources/height_source_01.gd" )
 	hs.set_script( script )
 	hs.init( radius, height )
 	return hs

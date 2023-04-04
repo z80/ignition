@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" path="res://physics/camera_ctrl/broad_tree_visualization.gd" id="1"]
 
-[node name="BroadTreeVisualization" type="Node"]
+[node name="BroadTreeVisualization" type="MeshInstance3D"]
 script = ExtResource("1")

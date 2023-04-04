@@ -5,8 +5,8 @@ class_name StaticPhysicsBody
 var _first_parent: RefFrameNode = null
 var _first_se3: Se3Ref          = null
 
-func get_class():
-	return "StaticPhysicsBody"
+#func get_class():
+#	return "StaticPhysicsBody"
 
 
 
