@@ -2,7 +2,13 @@
 
 # ToDo list.
 
-Here is the battle plan.
+- [ ] Object placement is very annoying and poor, need drag & drop like KSP (this is very very needed ASAP almost before anything else).
+- [ ] Astronaut doesn't auto face way it moves, quite cosmetic but annoying.
+- [ ] Music is annoying and too loud by default.
+- [ ] Engine texture issue (thruster is full black, thruster_0 have some dark gray parts in addition to black ones).
+- [ ] Help menu mouse wheel is not "blocked", camera get the input too.
+- [ ] Camera can rotate and "see" under the ground.
+
 - [ ] Fix trajectory after deserialization. It is probably necessary to just call 'launch'.
 - [ ] Make dynamic objects destroyed if going under the ground. It happens when flying too fast and the game cannot build collision volumes quick enough.
 - [ ] Make an explosion object when dynamic body blows up.
@@ -11,7 +17,7 @@ Here is the battle plan.
 - [ ] Make it only possible to connect static bodies to "construction base" static node.
 - [ ] Make it save/destroy/create/restore based on the bounding volume. May be introduce asynchronous database for this purpose.
 - [ ] Resource system. May be "material" and "electricity"...
-- [ ] Make "levels" purchasable for "material".
+- [ ] Make "levels" purchasable for "material" resource.
 - [ ] May be port to Godot 4.
 - [ ] If port to Godot 4 is successful, try implement multiplayer.
 - [ ] Make it possible to pick a character.
