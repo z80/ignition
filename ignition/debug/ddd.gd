@@ -103,7 +103,7 @@ func _on_CanvasItem_draw():
 			var text: String = t.stri
 			var ss := _font.get_string_size(text)
 			#ci.draw_rect( Rect2(pos, Vector2(ss.x + xpad * 2, line_height)), TEXT_BG_COLOR )
-			ci.draw_string( _font, pos + font_offset, text, TEXT_COLOR_IMPORTANT )
+			ci.draw_string( _font, pos + font_offset, text, 0, -1, 16, TEXT_COLOR_IMPORTANT )
 			pos.y += line_height
 
 	for i in range(qty):
@@ -115,7 +115,7 @@ func _on_CanvasItem_draw():
 			var color: Color = t.color
 			var ss := _font.get_string_size(text)
 			#ci.draw_rect( Rect2(pos, Vector2(ss.x + xpad * 2, line_height)), TEXT_BG_COLOR )
-			ci.draw_string( _font, pos + font_offset, text, color )
+			ci.draw_string( _font, pos + font_offset, text, 0, -1, 16, color )
 			pos.y += line_height
 
 

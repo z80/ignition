@@ -1,18 +1,18 @@
 [gd_scene load_steps=13 format=3 uid="uid://b5ljlddno6gt5"]
 
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.gd" id="1"]
-[ext_resource type="PackedScene" path="res://physics/parts/characters/central/central.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.tscn" id="3"]
-[ext_resource type="PackedScene" path="res://physics/bodies/construction_new/construction.tscn" id="4"]
-[ext_resource type="PackedScene" path="res://physics/ui/root_ui.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://physics/celestial_bodies/sun/sun.tscn" id="6"]
+[ext_resource type="PackedScene" uid="uid://4qxv1iovjiyw" path="res://physics/parts/characters/central/central.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://b6oksm4adx8ax" path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://b716hij8htvor" path="res://physics/bodies/construction_new/construction.tscn" id="4"]
+[ext_resource type="PackedScene" uid="uid://d164mxaj5h5it" path="res://physics/ui/root_ui.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://d27mad85dvoyx" path="res://physics/celestial_bodies/sun/sun.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://physics/camera_ctrl/player_camera.tscn" id="7"]
 [ext_resource type="Material" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" id="8"]
-[ext_resource type="PackedScene" path="res://physics/ref_frames/ref_frame_physics.tscn" id="9"]
+[ext_resource type="PackedScene" uid="uid://dkuexll5bw41" path="res://physics/ref_frames/ref_frame_physics.tscn" id="9"]
 [ext_resource type="Material" uid="uid://b1fyq1lssmtkk" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" id="10"]
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="11"]
 
-[sub_resource type="Resource" id="Resource_kcmki"]
+[sub_resource type="Resource" id="Resource_kebwg"]
 resource_local_to_scene = true
 script = ExtResource("11")
 bounding_radius = 10000.0
@@ -30,8 +30,8 @@ script = ExtResource("1")
 RefFramePhysicsScene = ExtResource("9")
 
 [node name="Sun" parent="." instance=ExtResource("6")]
-surface_source = SubResource("Resource_kcmki")
 radius_km = 100.0
+surface_source = SubResource("Resource_kebwg")
 
 [node name="Translation" parent="Sun" instance=ExtResource("3")]
 rotation_period_hrs = 1.0
@@ -49,8 +49,6 @@ map_mode = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50382, 0, 0)
 
 [node name="RootUi" parent="." instance=ExtResource("5")]
-layout_mode = 3
-anchors_preset = 15
 offset_right = 0.0
 grow_horizontal = 2
 grow_vertical = 2

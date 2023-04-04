@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://bga668jgke041"]
 
-[ext_resource type="PackedScene" path="res://physics/ui/navigation/navball.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://db7i0y7lbr1h" path="res://physics/ui/navigation/navball.tscn" id="1"]
 [ext_resource type="Texture2D" uid="uid://djd8cym0g1wuj" path="res://physics/ui/navigation/assets/level_indicator.png" id="2"]
 [ext_resource type="FontFile" uid="uid://brwfhqldys5m5" path="res://assets/font_digital.tres" id="3"]
 [ext_resource type="Script" path="res://physics/ui/navigation/navigation.gd" id="4"]
@@ -16,6 +16,8 @@ anchor_bottom = 1.0
 offset_left = -200.0
 offset_top = -200.0
 offset_right = 0.455566
+grow_horizontal = 0
+grow_vertical = 0
 script = ExtResource("4")
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="."]

@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://ocv7kkmoixbp"]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="Shader" id="1"]
 code = "shader_type spatial;
 
 //render_mode specular_blinn;
@@ -83,18 +83,19 @@ void fragment()
 "
 
 [resource]
-shader = SubResource( 1 )
-shader_param/colors_qty = 3
-shader_param/color_0 = Color( 0.1, 0.1, 0.1, 1 )
-shader_param/color_1 = Color( 0.2, 0.2, 0.2, 1 )
-shader_param/height_1 = 0.2
-shader_param/d_height_1 = 0.1
-shader_param/color_2 = Color( 0.1, 0.1, 0.1, 1 )
-shader_param/height_2 = 0.3
-shader_param/d_height_2 = 0.1
-shader_param/color_3 = Color( 0.1, 0.1, 0.1, 1 )
-shader_param/height_3 = 0.4
-shader_param/d_height_3 = 0.1
-shader_param/color_4 = Color( 0.1, 0.1, 0.1, 1 )
-shader_param/height_4 = 0.5
-shader_param/d_height_4 = 0.1
+render_priority = 0
+shader = SubResource("1")
+shader_parameter/colors_qty = 3
+shader_parameter/color_0 = Color(0.1, 0.1, 0.1, 1)
+shader_parameter/color_1 = Color(0.2, 0.2, 0.2, 1)
+shader_parameter/height_1 = 0.2
+shader_parameter/d_height_1 = 0.1
+shader_parameter/color_2 = Color(0.1, 0.1, 0.1, 1)
+shader_parameter/height_2 = 0.3
+shader_parameter/d_height_2 = 0.1
+shader_parameter/color_3 = Color(0.1, 0.1, 0.1, 1)
+shader_parameter/height_3 = 0.4
+shader_parameter/d_height_3 = 0.1
+shader_parameter/color_4 = Color(0.1, 0.1, 0.1, 1)
+shader_parameter/height_4 = 0.5
+shader_parameter/d_height_4 = 0.1

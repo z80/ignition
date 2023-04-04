@@ -11,7 +11,7 @@ var _light: DirectionalLight3D = null
 var _camera: Camera3D = null
 
 
-func get_viewport():
+func get_subviewport():
 	if _viewport == null:
 		_viewport = get_node( "SubViewport" )
 	return _viewport

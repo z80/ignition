@@ -8,7 +8,7 @@ var plane: Node3D = null
 
 func set_viewport( vp: SubViewport ):
 	var mi: MeshInstance3D = plane
-	var m: StandardMaterial3D = mi.get_surface_override_material( 0 )
+	var m: StandardMaterial3D = mi.material_override
 	var tex: ViewportTexture = m.albedo_texture
 	tex.viewport_path = vp.get_path()
 	m.albedo_texture = tex

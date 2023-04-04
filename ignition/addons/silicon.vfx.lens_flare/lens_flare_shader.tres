@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://wov83fh5cde6"]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="Shader" id="1"]
 code = "shader_type spatial;
 render_mode skip_vertex_transform, unshaded, blend_add;
 
@@ -100,14 +100,5 @@ void fragment() {
 }"
 
 [resource]
-shader = SubResource( 1 )
-shader_param/lod = 0.0
-shader_param/stretch_to_aspect = 0.5
-shader_param/ghosts = 4
-shader_param/ghost_dispersal = 0.5
-shader_param/halo_width = 0.25
-shader_param/distort = 0.25
-shader_param/bloom_scale = 10.0
-shader_param/bloom_bias = 0.95
-shader_param/streak_strength = 1.0
-shader_param/distortion_quality = null
+render_priority = 0
+shader = SubResource("1")

@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=6 format=2]
+[gd_resource type="ShaderMaterial" load_steps=6 format=3 uid="uid://cp0ieag3wi4nc"]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="Shader" id="1"]
 code = "shader_type spatial;
 
 //render_mode unshaded;
@@ -51,25 +51,25 @@ void fragment()
 }
 "
 
-[sub_resource type="FastNoiseLite" id=2]
+[sub_resource type="FastNoiseLite" id="2"]
 
-[sub_resource type="NoiseTexture" id=3]
+[sub_resource type="NoiseTexture2D" id="3"]
 width = 128
 height = 128
 seamless = true
-noise = SubResource( 2 )
+noise = SubResource("2")
 
-[sub_resource type="FastNoiseLite" id=4]
+[sub_resource type="FastNoiseLite" id="4"]
 
-[sub_resource type="NoiseTexture" id=5]
+[sub_resource type="NoiseTexture2D" id="5"]
 width = 128
 height = 128
 seamless = true
-as_normalmap = true
-noise = SubResource( 4 )
+noise = SubResource("4")
 
 [resource]
-shader = SubResource( 1 )
-shader_param/height_scale = 0.5
-shader_param/noise = SubResource( 3 )
-shader_param/normalmap = SubResource( 5 )
+render_priority = 0
+shader = SubResource("1")
+shader_parameter/height_scale = 0.5
+shader_parameter/noise = SubResource("3")
+shader_parameter/normalmap = SubResource("5")

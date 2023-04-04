@@ -1,8 +1,8 @@
 [gd_scene load_steps=10 format=3 uid="uid://cxyivqxj4xnsk"]
 
-[ext_resource type="PackedScene" path="res://physics/menu/root_menu/rigid_menu_item.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://dqf13u35406io" path="res://physics/menu/root_menu/rigid_menu_item.tscn" id="1"]
 [ext_resource type="Script" path="res://physics/menu/root_menu/start_menu.gd" id="2"]
-[ext_resource type="PackedScene" path="res://physics/menu/root_menu/video_background.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://bjnp12owvy3gu" path="res://physics/menu/root_menu/video_background.tscn" id="3"]
 [ext_resource type="Texture2D" uid="uid://qxyethgv4e8q" path="res://physics/menu/root_menu/assets/title.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://d11xefbe7d7f2" path="res://physics/menu/root_menu/assets/quit.png" id="5"]
 [ext_resource type="Texture2D" uid="uid://cmxg6oujff3u5" path="res://physics/menu/root_menu/assets/start.png" id="6"]
@@ -16,6 +16,8 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 pivot_offset = Vector2(-202, 254)
 mouse_filter = 2
 script = ExtResource("2")
@@ -62,6 +64,9 @@ one_way_collision_margin = 128.0
 
 [node name="Background" parent="." instance=ExtResource("3")]
 layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
 
 [node name="Timer" type="Timer" parent="."]
 wait_time = 7.0

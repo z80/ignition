@@ -9,7 +9,7 @@ var _camera: Camera3D = null
 var _real_camera: Camera3D = null
 
 
-func get_viewport():
+func get_subviewport():
 	var vp: SubViewport = get_node( "Container/SubViewport" )
 	return vp
 
