@@ -661,8 +661,7 @@ func create_assembly():
 
 
 
-func serialize():
-	var data: Dictionary = super.serialize()
+func _serialize( var data: Dictionary ):
 	data["control_group"] = int(control_group)
 	
 	var atts: Array = get_attachments()
@@ -679,7 +678,7 @@ func serialize():
 
 
 
-func deserialize( data: Dictionary ):
+func _deserialize( data: Dictionary ):
 	# Reset body state to something impossible to force it to initialize.
 	body_state = -1
 	

@@ -73,18 +73,13 @@ func process_ref_frames( celestial_bodies: Array ):
 
 
 
-func serialize():
-	var data: Dictionary = super.serialize()
-	
-	return data
+func _serialize( var data: Dictionary ):
+	pass
 
 
 
 
-func deserialize( data: Dictionary ):
-	var ret: bool = super.deserialize( data )
-	if not ret:
-		return false
+func _deserialize( data: Dictionary ):
 	init_forces()
 	return true
 

@@ -430,16 +430,12 @@ func remove_physical():
 
 
 
-func change_parent( p: Node = null ):
+func _change_parent( p: Node = null ):
 	var sb: Node = get_assembly_raw()
 	if (sb != null) and is_instance_valid( sb ):
 		sb.change_parent( p )
-	else:
-		change_parent_inner( p )
 
 
-func change_parent_inner( p: Node ):
-	super.change_parent( p )
 
 
 # Nothing here by default.
@@ -565,9 +561,7 @@ func create_assembly():
 
 
 
-func serialize():
-	var data: Dictionary = super.serialize()
-	
+func _serialize( var data: Dictionary ):
 	data["body_state"]         = int(body_state)
 	
 	# Need to save this in order to restore it correctly.
@@ -580,7 +574,7 @@ func serialize():
 
 # When this thing is called all objects are created.
 # So can assume that all saved paths should be valid.
-func deserialize( data: Dictionary ):
+func _deserialize( data: Dictionary ):
 	var ok: bool = super.deserialize( data )
 	if not ok:
 		return false

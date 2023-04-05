@@ -149,9 +149,7 @@ func _process_boarded_characters():
 
 
 
-func serialize():
-	var data: Dictionary = super.serialize()
-	
+func _serialize( var data: Dictionary ):
 	var paths: Array = []
 	for ch in characters_inside:
 		var path: String = ch.get_path()
@@ -162,7 +160,7 @@ func serialize():
 
 
 
-func deserialize( data: Dictionary ):
+func _deserialize( data: Dictionary ):
 	var ok: bool = super.deserialize( data )
 	
 	if data.has( "characters_inside" ):

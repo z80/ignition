@@ -387,17 +387,13 @@ func rotation_control( state ):
 
 
 
-func serialize():
-	var data: Dictionary = super.serialize()
+func _serialize( var data: Dictionary ):
 	data["boarding_mode"] = boarding_mode
 	return data
 
 
 
-func deserialize( data: Dictionary ):
-	var _ok: bool = super.deserialize( data )
-	if not _ok:
-		return false
+func _deserialize( data: Dictionary ):
 	
 	if data.has( "boarding_mode" ):
 		boarding_mode = data["boarding_mode"]

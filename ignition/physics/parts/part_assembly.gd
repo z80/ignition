@@ -111,10 +111,11 @@ func has_player_control():
 
 
 
-func change_parent( p: Node = null ):
+func _change_parent( p: Node = null ):
 	#var t_before: Transform = self.transform
 	#var se3: Se3Ref = self.relative_to( p )
-	super.change_parent( p )
+	var d = super.serialize()
+	#super.change_parent( p )
 	
 	# First need to remove all physical joints.
 	# Physical joints are being removed within 

@@ -39,13 +39,12 @@ func decoupler_activate():
 	decoupled = true
 
 
-func serialize():
-	var data: Dictionary = super.serialize()
+func _serialize( var data: Dictionary ):
 	data["decoupled"] = decoupled
 	return data
 
 
-func deserialize( data: Dictionary ):
+func _deserialize( data: Dictionary ):
 	var ret: bool = super.deserialize( data )
 	if not ret:
 		return false

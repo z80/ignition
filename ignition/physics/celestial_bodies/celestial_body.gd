@@ -120,15 +120,12 @@ func gravitational_influence( se3: Se3Ref ):
 
 
 
-func serialize():
-	var data: Dictionary = super.serialize()
-	return data
+func _serialize( var data: Dictionary ):
+	pass
 
 
-
-func deserialize( data: Dictionary ):
-	var ret: bool = super.deserialize( data )
-	return ret
+func _deserialize( data: Dictionary ):
+	return true
 
 
 

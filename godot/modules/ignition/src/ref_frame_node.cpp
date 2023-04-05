@@ -21,15 +21,15 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("v"),      &RefFrameNode::v );
 	ClassDB::bind_method( D_METHOD("w"),      &RefFrameNode::w );
 
-	ClassDB::bind_method( D_METHOD("set_se3"), &RefFrameNode::set_se3 );
-	ClassDB::bind_method( D_METHOD("get_se3"), &RefFrameNode::get_se3 );
+	ClassDB::bind_method( D_METHOD("set_se3", "se3"), &RefFrameNode::set_se3 );
+	ClassDB::bind_method( D_METHOD("get_se3"),        &RefFrameNode::get_se3 );
 
 	ClassDB::bind_method( D_METHOD("relative_to", "origin"), &RefFrameNode::relative_to );
 	ClassDB::bind_method( D_METHOD("relative_to_se3", "origin", "origin_se3"), &RefFrameNode::relative_to_se3 );
 	ClassDB::bind_method( D_METHOD("se3_relative_to", "object_se3", "origin"), &RefFrameNode::se3_relative_to );
 
-	//ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent );
-	GDVIRTUAL_BIND(change_parent, "node");
+	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent );
+	GDVIRTUAL_BIND(_change_parent, "node");
 
 
 	ClassDB::bind_method( D_METHOD("jump_to", "dest", "dest_se3"), &RefFrameNode::jump_to );
@@ -37,10 +37,10 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameNode::set_debug );
 	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug );
 
-	//ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
-	//ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
-	GDVIRTUAL_BIND(serialize);
-	GDVIRTUAL_BIND(deserialize, "data");
+	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
+	GDVIRTUAL_BIND(_serialize, "data");
+	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
+	GDVIRTUAL_BIND(_deserialize, "data");
 
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM3D, "transform" ),        "set_t", "t" );
@@ -272,6 +272,11 @@ void RefFrameNode::change_parent( Node * parent )
 		const String unique_name = _unique_name( this->get_name(), parent );
 		this->set_name( unique_name );
 		parent->add_child( this );
+	}
+
+	if ( GDVIRTUAL_IS_OVERRIDDEN( _change_parent ) )
+	{
+		GDVIRTUAL_CALL( _change_parent, parent );
 	}
 }
 
@@ -644,6 +649,12 @@ Dictionary RefFrameNode::serialize()
 	Dictionary data;
 	const Dictionary se3_data = se3_.serialize();
 	data["se3"] = se3_data;
+
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_serialize) )
+	{
+		GDVIRTUAL_CALL(_serialize, data);
+	}
+
 	return data;
 }
 
@@ -658,6 +669,13 @@ bool RefFrameNode::deserialize( const Dictionary & data )
 		const bool ok = se3_.deserialize( se3_data );
 		if ( !ok )
 			return false;
+	}
+
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_deserialize) )
+	{
+		bool ret;
+		GDVIRTUAL_CALL(_deserialize, data, ret );
+		return ret;
 	}
 
 	return true;

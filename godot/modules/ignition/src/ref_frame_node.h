@@ -52,7 +52,7 @@ public:
 
 	/// Change origin without changing absolute position in space.
 	virtual void change_parent( Node * origin );
-	GDVIRTUAL1(change_parent, Node *);
+	GDVIRTUAL1(_change_parent, Node *);
 
 
 	/// Related to jump.
@@ -109,9 +109,9 @@ public:
 
 
 	virtual Dictionary serialize();
-	GDVIRTUAL0R(Dictionary, serialize);
+	GDVIRTUAL1(_serialize, Dictionary);
 	virtual bool deserialize( const Dictionary & data );
-	GDVIRTUAL1R(bool, deserialize, Dictionary);
+	GDVIRTUAL1R(bool, _deserialize, Dictionary);
 };
 
 }

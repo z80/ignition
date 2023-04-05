@@ -680,14 +680,12 @@ func _re_parent_children_on_delete():
 
 
 
-func serialize():
-	var data: Dictionary = super.serialize()
-	return data
+func _serialize( var data: Dictionary ):
+	pass
 
 
 
-func deserialize( data: Dictionary ):
-	var ret: bool  = super.deserialize( data )
+func _deserialize( data: Dictionary ):
 	return true
 
 

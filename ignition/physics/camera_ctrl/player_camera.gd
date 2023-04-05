@@ -624,20 +624,18 @@ func distance( other: RefFrameNode ):
 	return d
 
 
-func serialize():
-	var data: Dictionary = {}
+func _serialize( var data: Dictionary ):
 	data.mode = int(mode)
 	data.ctrl_enabled = _ctrl_enabled
 	data.mouse_displacement_x = _mouse_displacement.x
 	data.mouse_displacement_y = _mouse_displacement.y
 	data.zoom_displacement   =  _zoom_displacement
-	return data
 
 
 
 
 
-func deserialize( data: Dictionary ):
+func _deserialize( data: Dictionary ):
 	mode = data.mode
 	_ctrl_enabled = data.ctrl_enabled
 	_mouse_displacement.x = data.mouse_displacement_x

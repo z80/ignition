@@ -524,25 +524,22 @@ func _get_radius_km():
 
 
 
-func serialize():
+func _serialize( ret_data: Dictionary ):
 	var rotation: RefFrameNode = rotation_rf()
 	var rotation_data: Dictionary = rotation.serialize()
 	var translation_data: Dictionary = super.serialize()
-	var ret_data: Dictionary = { rotation = rotation_data, position = translation_data }
+
+	ret_data.rotation = rotation_data
+
 	return ret_data
 
 
-func deserialize( data: Dictionary ):
+func _deserialize( data: Dictionary ):
 	var rotation_data: Dictionary    = data.rotation
-	var translation_data: Dictionary = data.position
 	var rotation: RefFrameNode = rotation_rf()
 	
 	var rot_ok: bool = rotation.deserialize( rotation_data )
 	if not rot_ok:
-		return false
-	
-	var ok: bool = super.deserialize( translation_data )
-	if not ok:
 		return false
 	
 	var rot: Node = rotation_rf()

@@ -42,7 +42,7 @@ func _input(event):
 func _on_group_pressed( play_sound: bool = true ):
 	for msg in _msgs:
 		var check = msg[2]
-		var pressed: bool = check.pressed
+		var pressed: bool = check.button_pressed
 		var gui_input_stri: String = msg[1]
 		UserInput.gui_control_bool( gui_input_stri, pressed, pressed, not pressed )
 		if play_sound:
