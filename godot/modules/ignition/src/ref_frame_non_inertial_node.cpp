@@ -112,22 +112,22 @@ bool RefFrameNonInertialNode::deserialize( const Dictionary & data )
 	return true;
 }
 
-void RefFrameNonInertialNode::_ign_pre_process( real_t delta )
+void RefFrameNonInertialNode::ign_pre_process( real_t delta )
 {
-	RefFrameMotionNode::_ign_pre_process( delta );
+	RefFrameMotionNode::ign_pre_process( delta );
 }
 
-void RefFrameNonInertialNode::_ign_process( real_t delta )
+void RefFrameNonInertialNode::ign_process( real_t delta )
 {
-	RefFrameMotionNode::_ign_process( delta );
+	RefFrameMotionNode::ign_process( delta );
 }
 
-void RefFrameNonInertialNode::_ign_post_process( real_t delta )
+void RefFrameNonInertialNode::ign_post_process( real_t delta )
 {
-	RefFrameMotionNode::_ign_post_process( delta );
+	RefFrameMotionNode::ign_post_process( delta );
 }
 
-void RefFrameNonInertialNode::_ign_physics_pre_process( real_t delta )
+void RefFrameNonInertialNode::ign_physics_pre_process( real_t delta )
 {
 	// For now it happens every single time as in the beginning GMs are not assigned.
 	_refresh_force_source_nodes();
@@ -147,17 +147,17 @@ void RefFrameNonInertialNode::_ign_physics_pre_process( real_t delta )
 	if ( !physics_mode )
 		_integrate_super_bodies( delta );
 
-	RefFrameMotionNode::_ign_physics_pre_process( delta );
+	RefFrameMotionNode::ign_physics_pre_process( delta );
 }
 
-void RefFrameNonInertialNode::_ign_physics_process( real_t delta )
+void RefFrameNonInertialNode::ign_physics_process( real_t delta )
 {
-	RefFrameMotionNode::_ign_physics_process( delta );
+	RefFrameMotionNode::ign_physics_process( delta );
 }
 
-void RefFrameNonInertialNode::_ign_physics_post_process( real_t delta )
+void RefFrameNonInertialNode::ign_physics_post_process( real_t delta )
 {
-	RefFrameMotionNode::_ign_physics_post_process( delta );
+	RefFrameMotionNode::ign_physics_post_process( delta );
 }
 
 

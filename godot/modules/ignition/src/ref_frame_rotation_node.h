@@ -30,11 +30,11 @@ public:
 	virtual bool deserialize( const Dictionary & data ) override;
 
 	// Compute forces, integrate dynamics.
-	virtual void _ign_physics_pre_process( real_t delta ) override;
+	virtual void ign_physics_pre_process( real_t delta ) override;
 	// Set positions, place visuals.
-	virtual void _ign_physics_process( real_t delta ) override;
+	virtual void ign_physics_process( real_t delta ) override;
 	// Place camera.
-	virtual void _ign_physics_post_process( real_t delta ) override;
+	virtual void ign_physics_post_process( real_t delta ) override;
 
 	//void dbg_process( real_t delta );
 	//void dbg_reset();

@@ -72,11 +72,11 @@ public:
 	virtual bool get_debug() const override;
 
 	// Compute forces, integrate dynamics.
-	virtual void _ign_physics_pre_process( real_t delta ) override;
+	virtual void ign_physics_pre_process( real_t delta ) override;
 	// Set positions, place visuals.
-	virtual void _ign_physics_process( real_t delta ) override;
+	virtual void ign_physics_process( real_t delta ) override;
 	// Place camera.
-	virtual void _ign_physics_post_process( real_t delta ) override;
+	virtual void ign_physics_post_process( real_t delta ) override;
 
 public:
 	CelestialMotion cm;

@@ -31,11 +31,23 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent );
 	GDVIRTUAL_BIND(_change_parent, "node");
 
+	GDVIRTUAL_BIND(_jumped);
+	GDVIRTUAL_BIND(_parent_jumped);
+	GDVIRTUAL_BIND(_child_jumped, "child");
+	GDVIRTUAL_BIND(_child_entered, "child");
+	GDVIRTUAL_BIND(_child_left, "child");
 
 	ClassDB::bind_method( D_METHOD("jump_to", "dest", "dest_se3"), &RefFrameNode::jump_to );
 
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameNode::set_debug );
 	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug );
+
+	GDVIRTUAL_BIND(_ign_pre_process, "delta");
+	GDVIRTUAL_BIND(_ign_process, "delta");
+	GDVIRTUAL_BIND(_ign_post_process, "delta");
+	GDVIRTUAL_BIND(_ign_physics_pre_process, "delta");
+	GDVIRTUAL_BIND(_ign_physics_process, "delta");
+	GDVIRTUAL_BIND(_ign_physics_post_process, "delta");
 
 	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
 	GDVIRTUAL_BIND(_serialize, "data");
@@ -51,73 +63,6 @@ void RefFrameNode::_bind_methods()
 	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
 }
 
-
-
-void RefFrameNode::_jumped()
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		Callable::CallError err;
-		si->callp( "_jumped", nullptr, 0, err );
-	}
-	if ( debug_ )
-		print_line( "jumped" );
-}
-
-void RefFrameNode::_parent_jumped()
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		Callable::CallError err;
-		si->callp( "_parent_jumped", nullptr, 0, err );
-	}
-	if ( debug_ )
-		print_line( "parent jumped" );
-}
-
-void RefFrameNode::_child_jumped( RefFrameNode * child_ref_frame )
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		const Variant arg( child_ref_frame );
-		const Variant *ptr[1] = { &arg };
-		Callable::CallError err;
-		si->callp( "_child_jumped", ptr, 1, err );
-	}
-	if ( debug_ )
-		print_line( "child jumped" );
-}
-
-void RefFrameNode::_child_entered( RefFrameNode * child_ref_frame )
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		const Variant arg( child_ref_frame );
-		const Variant *ptr[1] = { &arg };
-		Callable::CallError err;
-		si->callp( "_child_entered", ptr, 1, err );
-	}
-	if ( debug_ )
-		print_line( "child entered" );
-}
-
-void RefFrameNode::_child_left( RefFrameNode * child_ref_frame )
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		const Variant arg( child_ref_frame );
-		const Variant *ptr[1] = { &arg };
-		Callable::CallError err;
-		si->callp( "_child_left", ptr, 1, err );
-	}
-	if ( debug_ )
-		print_line( "child left" );
-}
 
 
 RefFrameNode::RefFrameNode()
@@ -366,7 +311,8 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 
 	// Call script notifications.
 	// For the node itself.
-	_jumped();
+	if (GDVIRTUAL_IS_OVERRIDDEN(_jumped) )
+		GDVIRTUAL_CALL(_jumped );
 	// And for all the children.
 	for ( int i=0; i<qty; i++ )
 	{
@@ -374,25 +320,35 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 		RefFrameNode * ch = Object::cast_to<RefFrameNode>( n );
 		if ( ch == nullptr )
 			continue;
-		ch->_parent_jumped();
+		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(ch, _parent_jumped) )
+			GDVIRTUAL_CALL_PTR(ch, _parent_jumped);
 	}
 
 	// Call child jumped in parent.
 	if ( p != dest_rf )
 	{
 		if ( dest_rf != nullptr )
-			dest_rf->_child_entered( this );
+		{
+			if (GDVIRTUAL_IS_OVERRIDDEN_PTR(dest_rf, _child_entered) )
+				GDVIRTUAL_CALL_PTR(dest_rf, _child_entered, this);
+		}
 		if ( p != nullptr )
 		{
 			RefFrameNode * parent_rf = Object::cast_to<RefFrameNode>( p );
 			if ( parent_rf != nullptr )
-				parent_rf->_child_left( this );
+			{
+				if (GDVIRTUAL_IS_OVERRIDDEN_PTR(parent_rf, _child_left) )
+					GDVIRTUAL_CALL_PTR(parent_rf, _child_left, this);
+			}
 		}
 	}
 	else
 	{
 		if ( dest_rf != nullptr )
-			dest_rf->_child_jumped( this );
+		{
+			if (GDVIRTUAL_IS_OVERRIDDEN_PTR(dest_rf, _child_jumped) )
+				GDVIRTUAL_CALL_PTR(dest_rf, _child_jumped, this);
+		}
 	}
 }
 
@@ -570,77 +526,56 @@ String RefFrameNode::_unique_name( const String & name_base, Node * parent )
 }
 
 
-void RefFrameNode::_ign_pre_process( real_t delta )
+void RefFrameNode::ign_pre_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_pre_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		Callable::CallError err;
-		inst->callp( "_ign_pre_process", ptr, 1, err );
+		GDVIRTUAL_CALL(_ign_pre_process, delta);
 	}
 }
 
-void RefFrameNode::_ign_process( real_t delta )
+void RefFrameNode::ign_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		Callable::CallError err;
-		inst->callp( "_ign_process", ptr, 1, err );
+		GDVIRTUAL_CALL(_ign_process, delta);
 	}
 }
 
-void RefFrameNode::_ign_post_process( real_t delta )
+void RefFrameNode::ign_post_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_post_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		Callable::CallError err;
-		inst->callp( "_ign_post_process", ptr, 1, err );
+		GDVIRTUAL_CALL(_ign_post_process, delta);
 	}
 }
 
 
-void RefFrameNode::_ign_physics_pre_process( real_t delta )
+void RefFrameNode::ign_physics_pre_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_physics_pre_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		Callable::CallError err;
-		inst->callp( "_ign_physics_pre_process", ptr, 1, err );
+		GDVIRTUAL_CALL(_ign_physics_pre_process, delta);
 	}
+
 }
 
-void RefFrameNode::_ign_physics_process( real_t delta )
+void RefFrameNode::ign_physics_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_physics_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		Callable::CallError err;
-		inst->callp( "_ign_physics_process", ptr, 1, err );
+		GDVIRTUAL_CALL(_ign_physics_process, delta);
 	}
+
 }
 
-void RefFrameNode::_ign_physics_post_process( real_t delta )
+void RefFrameNode::ign_physics_post_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_physics_post_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		Callable::CallError err;
-		inst->callp( "_ign_physics_post_process", ptr, 1, err );
+		GDVIRTUAL_CALL(_ign_physics_post_process, delta);
 	}
+
 }
 
 

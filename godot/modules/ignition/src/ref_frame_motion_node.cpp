@@ -413,21 +413,21 @@ bool RefFrameMotionNode::get_debug() const
 	return cm._debug;
 }
 
-void RefFrameMotionNode::_ign_physics_pre_process( real_t delta )
+void RefFrameMotionNode::ign_physics_pre_process( real_t delta )
 {
 	if ( cm.is_orbiting() )
 		this->se3_ = cm.process( delta );
-	RefFrameNode::_ign_physics_pre_process( delta );
+	RefFrameNode::ign_physics_pre_process( delta );
 }
 
-void RefFrameMotionNode::_ign_physics_process( real_t delta )
+void RefFrameMotionNode::ign_physics_process( real_t delta )
 {
-	RefFrameNode::_ign_physics_process( delta );
+	RefFrameNode::ign_physics_process( delta );
 }
 
-void RefFrameMotionNode::_ign_physics_post_process( real_t delta )
+void RefFrameMotionNode::ign_physics_post_process( real_t delta )
 {
-	RefFrameNode::_ign_physics_post_process( delta );
+	RefFrameNode::ign_physics_post_process( delta );
 }
 
 

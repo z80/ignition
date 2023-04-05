@@ -62,11 +62,11 @@ public:
 	// inform other functionality pieces about SE3 change.
 	void jump_to_( Node * dest, const SE3 & dest_se3 );
 	// Callbacks for script notification.
-	void _jumped();
-	void _parent_jumped();
-	void _child_jumped( RefFrameNode * child_ref_frame );
-	void _child_entered( RefFrameNode * child_ref_frame );
-	void _child_left( RefFrameNode * child_ref_frame );
+	GDVIRTUAL0(_jumped);
+	GDVIRTUAL0(_parent_jumped);
+	GDVIRTUAL1(_child_jumped, Node *);
+	GDVIRTUAL1(_child_entered, Node *);
+	GDVIRTUAL1(_child_left, Node *);
 
 	/// Compute relative state in the most generic way.
 	/// Provide two points in local and in root frames.
@@ -93,19 +93,25 @@ public:
 
 
 	// Compute forces, integrate dynamics.
-	virtual void _ign_pre_process( real_t delta );
+	virtual void ign_pre_process( real_t delta );
+	GDVIRTUAL1(_ign_pre_process, real_t);
 	// Set positions, place visuals.
-	virtual void _ign_process( real_t delta );
+	virtual void ign_process( real_t delta );
+	GDVIRTUAL1(_ign_process, real_t);
 	// Place camera.
-	virtual void _ign_post_process( real_t delta );
+	virtual void ign_post_process( real_t delta );
+	GDVIRTUAL1(_ign_post_process, real_t);
 
 
 	// Compute forces, integrate dynamics.
-	virtual void _ign_physics_pre_process( real_t delta );
+	virtual void ign_physics_pre_process( real_t delta );
+	GDVIRTUAL1(_ign_physics_pre_process, real_t);
 	// Set positions, place visuals.
-	virtual void _ign_physics_process( real_t delta );
+	virtual void ign_physics_process( real_t delta );
+	GDVIRTUAL1(_ign_physics_process, real_t);
 	// Place camera.
-	virtual void _ign_physics_post_process( real_t delta );
+	virtual void ign_physics_post_process( real_t delta );
+	GDVIRTUAL1(_ign_physics_post_process, real_t);
 
 
 	virtual Dictionary serialize();

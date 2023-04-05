@@ -50,9 +50,9 @@ void RefFrameRoot::_notification( int p_notification )
 		{
 			const real_t delta = get_process_delta_time();
 			const real_t total_delta = delta * time_dilation;
-			_pre_process_children( this, total_delta );
-			_process_children( this, total_delta );
-			_post_process_children( this, total_delta );
+			pre_process_children( this, total_delta );
+			process_children( this, total_delta );
+			post_process_children( this, total_delta );
 			break;
 		}
 
@@ -60,17 +60,17 @@ void RefFrameRoot::_notification( int p_notification )
 		{
 			const real_t delta = get_physics_process_delta_time();
 			const real_t total_delta = delta * time_dilation;
-			_physics_pre_process_children( this, total_delta );
-			_physics_process_children( this, total_delta );
-			_physics_post_process_children( this, total_delta );
+			physics_pre_process_children( this, total_delta );
+			physics_process_children( this, total_delta );
+			physics_post_process_children( this, total_delta );
 			break;
 		}
 	}
 }
 
-void RefFrameRoot::_pre_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRoot::pre_process_children( RefFrameNode * ref_frame, real_t delta )
 {
-	ref_frame->_ign_pre_process( delta );
+	ref_frame->ign_pre_process( delta );
 
 	int qty = ref_frame->get_child_count();
 	for ( int i=0; i<qty; i++ )
@@ -78,13 +78,13 @@ void RefFrameRoot::_pre_process_children( RefFrameNode * ref_frame, real_t delta
 		Node * n = ref_frame->get_child( i );
 		RefFrameNode * ch_ref_frame = Object::cast_to<RefFrameNode>( n );
 		if ( ch_ref_frame != nullptr )
-			_pre_process_children( ch_ref_frame, delta );
+			pre_process_children( ch_ref_frame, delta );
 	}
 }
 
-void RefFrameRoot::_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRoot::process_children( RefFrameNode * ref_frame, real_t delta )
 {
-	ref_frame->_ign_process( delta );
+	ref_frame->ign_process( delta );
 
 	int qty = ref_frame->get_child_count();
 	for ( int i=0; i<qty; i++ )
@@ -92,13 +92,13 @@ void RefFrameRoot::_process_children( RefFrameNode * ref_frame, real_t delta )
 		Node * n = ref_frame->get_child( i );
 		RefFrameNode * ch_ref_frame = Object::cast_to<RefFrameNode>( n );
 		if ( ch_ref_frame != nullptr )
-			_process_children( ch_ref_frame, delta );
+			process_children( ch_ref_frame, delta );
 	}
 }
 
-void RefFrameRoot::_post_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRoot::post_process_children( RefFrameNode * ref_frame, real_t delta )
 {
-	ref_frame->_ign_post_process( delta );
+	ref_frame->ign_post_process( delta );
 
 	int qty = ref_frame->get_child_count();
 	for ( int i=0; i<qty; i++ )
@@ -106,13 +106,13 @@ void RefFrameRoot::_post_process_children( RefFrameNode * ref_frame, real_t delt
 		Node * n = ref_frame->get_child( i );
 		RefFrameNode * ch_ref_frame = Object::cast_to<RefFrameNode>( n );
 		if ( ch_ref_frame != nullptr )
-			_post_process_children( ch_ref_frame, delta );
+			post_process_children( ch_ref_frame, delta );
 	}
 }
 
-void RefFrameRoot::_physics_pre_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRoot::physics_pre_process_children( RefFrameNode * ref_frame, real_t delta )
 {
-	ref_frame->_ign_physics_pre_process( delta );
+	ref_frame->ign_physics_pre_process( delta );
 
 	int qty = ref_frame->get_child_count();
 	for ( int i=0; i<qty; i++ )
@@ -120,13 +120,13 @@ void RefFrameRoot::_physics_pre_process_children( RefFrameNode * ref_frame, real
 		Node * n = ref_frame->get_child( i );
 		RefFrameNode * ch_ref_frame = Object::cast_to<RefFrameNode>( n );
 		if ( ch_ref_frame != nullptr )
-			_physics_pre_process_children( ch_ref_frame, delta );
+			physics_pre_process_children( ch_ref_frame, delta );
 	}
 }
 
-void RefFrameRoot::_physics_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRoot::physics_process_children( RefFrameNode * ref_frame, real_t delta )
 {
-	ref_frame->_ign_physics_process( delta );
+	ref_frame->ign_physics_process( delta );
 
 	int qty = ref_frame->get_child_count();
 	for ( int i=0; i<qty; i++ )
@@ -134,13 +134,13 @@ void RefFrameRoot::_physics_process_children( RefFrameNode * ref_frame, real_t d
 		Node * n = ref_frame->get_child( i );
 		RefFrameNode * ch_ref_frame = Object::cast_to<RefFrameNode>( n );
 		if ( ch_ref_frame != nullptr )
-			_physics_process_children( ch_ref_frame, delta );
+			physics_process_children( ch_ref_frame, delta );
 	}
 }
 
-void RefFrameRoot::_physics_post_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRoot::physics_post_process_children( RefFrameNode * ref_frame, real_t delta )
 {
-	ref_frame->_ign_physics_post_process( delta );
+	ref_frame->ign_physics_post_process( delta );
 
 	int qty = ref_frame->get_child_count();
 	for ( int i=0; i<qty; i++ )
@@ -148,7 +148,7 @@ void RefFrameRoot::_physics_post_process_children( RefFrameNode * ref_frame, rea
 		Node * n = ref_frame->get_child( i );
 		RefFrameNode * ch_ref_frame = Object::cast_to<RefFrameNode>( n );
 		if ( ch_ref_frame != nullptr )
-			_physics_post_process_children( ch_ref_frame, delta );
+			physics_post_process_children( ch_ref_frame, delta );
 	}
 }
 
