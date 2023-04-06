@@ -4,7 +4,7 @@ extends TextureButton
 signal icon_clicked
 
 
-@export var title: String: String = "": get = _get_title, set = _set_title
+@export var title: String = "": get = _get_title, set = _set_title
 
 
 # Called when the node enters the scene tree for the first time.

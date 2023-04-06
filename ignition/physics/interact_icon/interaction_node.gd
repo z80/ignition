@@ -94,7 +94,7 @@ func _create_icon():
 
 
 func distance_to_camera_ray():
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport  = get_viewport()
 	var cam: Camera3D = vp.get_camera_3d()
 	if (cam == null) or (not is_instance_valid(cam)):
 		return -1.0
@@ -128,8 +128,8 @@ func distance_to_camera_ray():
 
 
 func _position_on_screen() -> Vector2:
-	var vp: SubViewport   = get_viewport()
-	var cam: Camera3D    = vp.get_camera_3d()
+	var vp: Viewport   = get_viewport()
+	var cam: Camera3D  = vp.get_camera_3d()
 	var at_3d: Vector3 = self.global_transform.origin
 	var at_2d: Vector2 =  cam.unproject_position( at_3d )
 	

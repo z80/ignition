@@ -139,7 +139,7 @@ func on_delete():
 
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	pass
 
 

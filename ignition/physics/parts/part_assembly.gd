@@ -111,12 +111,7 @@ func has_player_control():
 
 
 
-func _change_parent( p: Node = null ):
-	#var t_before: Transform = self.transform
-	#var se3: Se3Ref = self.relative_to( p )
-	var d = super.serialize()
-	#super.change_parent( p )
-	
+func _change_parent( p: Node, recursive_call: bool ):
 	# First need to remove all physical joints.
 	# Physical joints are being removed within 
 	# remove_physical() call.
@@ -124,7 +119,7 @@ func _change_parent( p: Node = null ):
 	#var t_after: Transform = self.transform
 	for b in sub_bodies:
 		#t_before = b.transform
-		b.change_parent_inner( p )
+		b.change_parent( p, true )
 		#t_after = b.transform
 	
 	# The thing is it is necessary to be sure that rigid bodies 

@@ -1,20 +1,17 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://due3j2wc0uhj4"]
 
-[ext_resource path="res://physics/interact_icon/assets/icon_48.png" type="Texture2D" id=1]
-[ext_resource path="res://physics/interact_icon/icon.gd" type="Script" id=2]
+[ext_resource type="Texture2D" uid="uid://v8wlnh0jlpaq" path="res://physics/interact_icon/assets/icon_48.png" id="1"]
+[ext_resource type="Script" path="res://physics/interact_icon/icon.gd" id="2"]
 
 [node name="IconButton" type="TextureButton"]
 offset_right = 48.0
 offset_bottom = 48.0
 focus_mode = 0
-texture_normal = ExtResource( 1 )
-texture_pressed = ExtResource( 1 )
-texture_hover = ExtResource( 1 )
-texture_disabled = ExtResource( 1 )
-texture_focused = ExtResource( 1 )
-script = ExtResource( 2 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+texture_normal = ExtResource("1")
+texture_pressed = ExtResource("1")
+texture_hover = ExtResource("1")
+texture_disabled = ExtResource("1")
+texture_focused = ExtResource("1")
+script = ExtResource("2")
 
 [connection signal="pressed" from="." to="." method="_on_pressed"]

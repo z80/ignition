@@ -63,7 +63,7 @@ func _create_cells():
 		var cell: Node = VisualSurfaceOne.instantiate()
 		rotation.add_child( cell )
 		visual_cells[i] = cell
-
+	pass
 
 
 

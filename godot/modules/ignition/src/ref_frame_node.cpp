@@ -28,8 +28,8 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("relative_to_se3", "origin", "origin_se3"), &RefFrameNode::relative_to_se3 );
 	ClassDB::bind_method( D_METHOD("se3_relative_to", "object_se3", "origin"), &RefFrameNode::se3_relative_to );
 
-	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent );
-	GDVIRTUAL_BIND(_change_parent, "node");
+	ClassDB::bind_method( D_METHOD("change_parent", "node", "recursive_call"), &RefFrameNode::change_parent );
+	GDVIRTUAL_BIND(_change_parent, "node", "recursive_call");
 
 	GDVIRTUAL_BIND(_jumped);
 	GDVIRTUAL_BIND(_parent_jumped);
@@ -190,7 +190,7 @@ Ref<Se3Ref> RefFrameNode::se3_relative_to( const Ref<Se3Ref> & object_se3, Node 
 }
 
 
-void RefFrameNode::change_parent( Node * parent )
+void RefFrameNode::change_parent( Node * parent, bool recursive_call )
 {
 	RefFrameNode * parent_rf;
 	if ( parent == nullptr )
@@ -221,7 +221,7 @@ void RefFrameNode::change_parent( Node * parent )
 
 	if ( GDVIRTUAL_IS_OVERRIDDEN( _change_parent ) )
 	{
-		GDVIRTUAL_CALL( _change_parent, parent );
+		GDVIRTUAL_CALL( _change_parent, parent, recursive_call );
 	}
 }
 

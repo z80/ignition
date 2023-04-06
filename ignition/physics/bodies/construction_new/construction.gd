@@ -332,7 +332,7 @@ func set_show_coupling_nodes( en: bool ):
 func create_assembly():
 	var sb = ConstructionSuperBodyNew.new()
 	var p = get_parent()
-	sb.change_parent( p )
+	sb.change_parent( p, false )
 	# Place own reference there.
 	sb.construction = self
 	# And in the list of sub-bodies.

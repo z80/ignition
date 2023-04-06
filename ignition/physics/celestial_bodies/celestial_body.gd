@@ -120,7 +120,7 @@ func gravitational_influence( se3: Se3Ref ):
 
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	pass
 
 

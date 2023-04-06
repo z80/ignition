@@ -387,7 +387,7 @@ func rotation_control( state ):
 
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	data["boarding_mode"] = boarding_mode
 	return data
 

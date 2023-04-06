@@ -39,7 +39,7 @@ func decoupler_activate():
 	decoupled = true
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	data["decoupled"] = decoupled
 	return data
 

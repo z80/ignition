@@ -21,7 +21,7 @@ func place( parent: RefFrameNode, se3: Se3Ref ):
 		_se3 = Se3Ref.new()
 	_se3.copy_from( se3 )
 	
-	change_parent( parent )
+	change_parent( parent, false )
 	set_se3( _se3 )
 
 

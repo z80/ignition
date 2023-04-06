@@ -343,6 +343,10 @@ bool RefFrameMotionNode::deserialize( const Dictionary & data )
 	cm.se3_local.deserialize( data["se3_local"] );
 	cm.se3_global.deserialize( data["se3_global"] );
 
+	const bool yes = is_orbiting();
+	if ( yes )
+		launch();
+
 	return true;
 }
 

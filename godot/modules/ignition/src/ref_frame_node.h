@@ -51,8 +51,8 @@ public:
 	Ref<Se3Ref> se3_relative_to( const Ref<Se3Ref> & object_se3, Node * origin );
 
 	/// Change origin without changing absolute position in space.
-	virtual void change_parent( Node * origin );
-	GDVIRTUAL1(_change_parent, Node *);
+	virtual void change_parent( Node * origin, bool recursive_call );
+	GDVIRTUAL2(_change_parent, Node *, bool);
 
 
 	/// Related to jump.

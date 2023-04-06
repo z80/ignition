@@ -351,7 +351,7 @@ static func _find_camera( node: Node ):
 	return null
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	if player_select != null:
 		data["select"] = player_select.get_path()
 	else:

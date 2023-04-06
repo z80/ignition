@@ -430,10 +430,12 @@ func remove_physical():
 
 
 
-func _change_parent( p: Node = null ):
-	var sb: Node = get_assembly_raw()
-	if (sb != null) and is_instance_valid( sb ):
-		sb.change_parent( p )
+func _change_parent( p: Node, recursive_call: bool ):
+	if recursive_call:
+		return
+	var assembly: Node = get_assembly_raw()
+	if (assembly != null) and is_instance_valid( assembly ):
+		assembly.change_parent( p )
 
 
 
@@ -561,7 +563,7 @@ func create_assembly():
 
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	data["body_state"]         = int(body_state)
 	
 	# Need to save this in order to restore it correctly.

@@ -343,7 +343,7 @@ func process_ref_frames_rotating_to_orbiting():
 	var dist: float = se3.r.length()
 	var exclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.RF_CHANGE_DELTA
 	if dist >= exclusion_dist:
-		rf.change_parent( tr )
+		rf.change_parent( tr, false )
 		#rf.jump_to( tr, se3 )
 		rf.allow_orbiting = true
 		rf.set_se3( se3 )
@@ -379,7 +379,7 @@ func process_ref_frames_orbiting_to_rotating():
 	var height_km: float = config_atmosphere.height_km
 	var inclusion_dist: float = (radius_km + height_km)*1000.0 - Constants.RF_CHANGE_DELTA
 	if dist <= inclusion_dist:
-		rf.change_parent( rot )
+		rf.change_parent( rot, false )
 		rf.allow_orbiting = false
 		rf.set_se3( se3 )
 		print( "orbiting -> rotating" )
@@ -435,7 +435,7 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 	# Check if the strongest influence is caused by other celestial body.
 	if (biggest_influence_body != null) and (biggest_influence_body != tr):
 		# Need to teleport celestial body to that other celestial body
-		rf.change_parent( biggest_influence_body )
+		rf.change_parent( biggest_influence_body, false )
 		rf.allow_orbiting = true
 		rf.launch()
 		print( "orbiting -> another orbiting" )
@@ -545,7 +545,7 @@ func _deserialize( data: Dictionary ):
 	var rot: Node = rotation_rf()
 	rot.on_deserialize()
 	
-	return ok
+	return true
 	
 
 

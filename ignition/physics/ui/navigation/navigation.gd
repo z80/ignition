@@ -244,7 +244,7 @@ func _on_ModeTarget_pressed():
 func _on_Sas_pressed():
 	UiSound.play( Constants.ButtonClick )
 	var check = get_node( "Sas" )
-	var down: bool = check.pressed
+	var down: bool = check.button_pressed
 	UserInput.gui_control_bool( "gui_sas", true, down, not down )
 
 
@@ -256,7 +256,7 @@ func _on_Sas_pressed():
 func _on_ShowOrbits_pressed():
 	UiSound.play( Constants.ButtonClick )
 	var check = get_node( "ShowOrbits" )
-	var down: bool = check.pressed
+	var down: bool = check.button_pressed
 	RootScene.ref_frame_root.visualize_orbits = down
 
 

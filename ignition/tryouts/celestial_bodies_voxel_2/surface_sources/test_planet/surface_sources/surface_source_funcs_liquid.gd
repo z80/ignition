@@ -18,8 +18,8 @@ var height: float           = 20.0
 func _init():
 	noise = FastNoiseLite.new()
 	noise.fractal_octaves = 4
-	noise.period = 0.2
-	noise.persistence = 0.8
+	#noise.period = 0.2
+	#noise.persistence = 0.8
 
 
 func init_seed( v ):

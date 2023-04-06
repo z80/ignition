@@ -543,7 +543,7 @@ func on_delete_rescue_camera():
 	# This node is being destroyed. If camera is parented to this node, 
 	# parent it to the parent of this node.
 	p = self.get_parent()
-	cam.change_parent( p )
+	cam.change_parent( p, false )
 
 
 # Depth first search for all the parts connected with each other.
@@ -640,7 +640,7 @@ func create_assembly():
 	var p = self.get_parent()
 	var sb = PartAssembly.new()
 #	sb.debug = true
-	sb.change_parent( p )
+	sb.change_parent( p, false )
 #	sb.debug = false
 	var se3: Se3Ref = self.get_se3()
 	sb.set_se3( se3 )
@@ -661,7 +661,7 @@ func create_assembly():
 
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	data["control_group"] = int(control_group)
 	
 	var atts: Array = get_attachments()

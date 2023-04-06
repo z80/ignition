@@ -81,7 +81,8 @@ func _process(delta: float):
 	_texts = new_texts
 
 	# Update canvas
-	_canvas_item.update()
+	#_canvas_item.update()
+	_canvas_item.queue_redraw()
 
 
 func _on_CanvasItem_draw():

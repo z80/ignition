@@ -282,7 +282,7 @@ func exclude_too_far_bodies():
 		var r: Vector3 = body.r()
 		var d: float = r.length()
 		if d > max_dist:
-			body.change_parent( pt )
+			body.change_parent( pt, false )
 
 
 
@@ -301,7 +301,7 @@ func include_close_enough_bodies():
 		var d: float = r.length()
 		
 		if d < min_dist:
-			body.change_parent( self )
+			body.change_parent( self, false )
 
 
 
@@ -373,7 +373,7 @@ func split_if_needed() -> bool:
 	var p: Node = get_parent()
 	var root: RefFrameRoot = get_ref_frame_root()
 	var rf: RefFramePhysics = root.create_ref_frame_physics()
-	rf.change_parent( p )
+	rf.change_parent( p, false )
 #	var orig_se3: Se3Ref = self.get_se3()
 	
 	# Compute centers of the two clusters.
@@ -658,7 +658,7 @@ func _on_delete_rescue_camera():
 	# This node is being destroyed. If camera is parented to this node, 
 	# parent it to the parent of this node.
 	p = self.get_parent()
-	cam.change_parent( p )
+	cam.change_parent( p, false )
 
 
 
@@ -680,7 +680,7 @@ func _re_parent_children_on_delete():
 
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	pass
 
 

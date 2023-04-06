@@ -188,7 +188,7 @@ func _wait_for_workers_to_finish():
 	for t in threads:
 		var valid: bool = is_instance_valid( t )
 		if valid:
-			if t.is_active():
+			if t.is_alive():
 				t.wait_to_finish()
 
 

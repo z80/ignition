@@ -149,7 +149,7 @@ func _process_boarded_characters():
 
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	var paths: Array = []
 	for ch in characters_inside:
 		var path: String = ch.get_path()

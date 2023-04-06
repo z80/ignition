@@ -160,7 +160,7 @@ func set_mode_tps():
 
 func apply_target():
 	var p: RefFrameNode = RootScene.ref_frame_root.player_control
-	self.change_parent( p )
+	self.change_parent( p, false )
 	if is_instance_valid( p ):
 		if mode == Mode.FPS:
 			_target = p.pivot_fps()
@@ -624,7 +624,7 @@ func distance( other: RefFrameNode ):
 	return d
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	data.mode = int(mode)
 	data.ctrl_enabled = _ctrl_enabled
 	data.mouse_displacement_x = _mouse_displacement.x

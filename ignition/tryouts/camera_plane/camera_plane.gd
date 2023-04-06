@@ -32,7 +32,7 @@ func _process(_delta):
 
 	var cam: Camera3D = self
 	var dist: float = cam.far
-	var vp: SubViewport = get_viewport()
+	var vp: Window = get_viewport()
 	var sz: Vector2 = vp.size
 	
 	var a: Vector3 = cam.project_local_ray_normal( Vector2.ZERO )
