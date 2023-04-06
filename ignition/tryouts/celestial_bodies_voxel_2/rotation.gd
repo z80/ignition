@@ -7,12 +7,10 @@ var _visual_surface: Node = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	return
 	call_deferred( "_create_collision_surfaces" )
 
 
 func _child_jumped( child_ref_frame ):
-	return
 	var phys: RefFramePhysics = child_ref_frame as RefFramePhysics
 	if phys == null:
 		return
@@ -33,7 +31,6 @@ func _child_jumped( child_ref_frame ):
 
 
 func _child_entered( child_ref_frame ):
-	return
 	var ref_frame_physics: RefFramePhysics = child_ref_frame as RefFramePhysics
 	if ref_frame_physics == null:
 		return
@@ -49,7 +46,6 @@ func _child_entered( child_ref_frame ):
 
 
 func _child_left( child_ref_frame ):
-	return
 	var ref_frame_physics: RefFramePhysics = child_ref_frame as RefFramePhysics
 	if (ref_frame_physics == null) or (not is_instance_valid(ref_frame_physics)):
 		return
