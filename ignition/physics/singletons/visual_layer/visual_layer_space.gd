@@ -39,7 +39,7 @@ func _ready():
 
 func _on_resized():
 	var sz: Vector2 = get_tree().get_viewport().size #self.get_rect().size
-	get_viewport()
+	obtain_viewport()
 	_viewport.size = sz
 
 

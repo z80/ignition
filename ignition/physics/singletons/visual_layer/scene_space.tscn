@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://physics/singletons/visual_layer/scene_space.gd" id="1"]
 [ext_resource type="Environment" uid="uid://bvgt0j6hyvjd2" path="res://default_env.tres" id="2"]
-[ext_resource type="Material" path="res://physics/camera_ctrl/material_background_sky.tres" id="3"]
+[ext_resource type="Material" uid="uid://dyug62ew2jy46" path="res://physics/camera_ctrl/material_background_sky.tres" id="3"]
 
 [sub_resource type="SphereMesh" id="8"]
 flip_faces = true
