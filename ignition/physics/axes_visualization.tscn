@@ -1,74 +1,28 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://b8h778w21nb57"]
 
-[ext_resource path="res://physics/blue.tres" type="Material" id=1]
-[ext_resource path="res://physics/red.tres" type="Material" id=2]
-[ext_resource path="res://physics/axes_visualization.gd" type="Script" id=3]
+[ext_resource type="Script" path="res://physics/axes_visualization.gd" id="3"]
 
-[sub_resource type="BoxMesh" id=1]
-
-[sub_resource type="StandardMaterial3D" id=2]
-flags_unshaded = true
-
-[sub_resource type="VisualShaderNodeVec3Constant" id=3]
-constant = Vector3( 0, 1, 0 )
-
-[sub_resource type="VisualShader" id=4]
-code = "shader_type spatial;
-render_mode specular_schlick_ggx, async_visible;
-
-
-
-
-void vertex() {
-// Output:0
-
-}
-
-void fragment() {
-// Vector:2
-	vec3 n_out2p0 = vec3(0.000000, 1.000000, 0.000000);
-
-// Output:0
-	ALBEDO = n_out2p0;
-
-}
-
-void light() {
-// Output:0
-
-}
-"
-nodes/fragment/0/position = Vector2( 740, 100 )
-nodes/fragment/2/node = SubResource( 3 )
-nodes/fragment/2/position = Vector2( 282, 147 )
-nodes/fragment/connections = PackedInt32Array( 2, 0, 0, 0 )
-
-[sub_resource type="ShaderMaterial" id=5]
-shader = SubResource( 4 )
+[sub_resource type="BoxMesh" id="1"]
 
 [node name="Node3D" type="Node3D"]
-script = ExtResource( 3 )
+script = ExtResource("3")
 
 [node name="O" type="MeshInstance3D" parent="."]
-transform = Transform3D( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0 )
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0, 0, 0)
 cast_shadow = 0
-mesh = SubResource( 1 )
-material/0 = SubResource( 2 )
+mesh = SubResource("1")
 
 [node name="X" type="MeshInstance3D" parent="."]
-transform = Transform3D( 1, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 5, 0, 0 )
+transform = Transform3D(1, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 5, 0, 0)
 cast_shadow = 0
-mesh = SubResource( 1 )
-material/0 = ExtResource( 2 )
+mesh = SubResource("1")
 
 [node name="Y" type="MeshInstance3D" parent="."]
-transform = Transform3D( 0.2, 0, 0, 0, 1, 0, 0, 0, 0.2, 0, 4, 0 )
+transform = Transform3D(0.2, 0, 0, 0, 1, 0, 0, 0, 0.2, 0, 4, 0)
 cast_shadow = 0
-mesh = SubResource( 1 )
-material/0 = SubResource( 5 )
+mesh = SubResource("1")
 
 [node name="Z" type="MeshInstance3D" parent="."]
-transform = Transform3D( 0.2, 0, 0, 0, 0.2, 0, 0, 0, 1, 0, 0, 5 )
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 1, 0, 0, 5)
 cast_shadow = 0
-mesh = SubResource( 1 )
-material/0 = ExtResource( 1 )
+mesh = SubResource("1")

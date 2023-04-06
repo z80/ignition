@@ -4,7 +4,8 @@
 [ext_resource type="Script" path="res://physics/interact_icon/icon.gd" id="2"]
 
 [node name="IconButton" type="TextureButton"]
-offset_right = 48.0
+offset_left = 2.0
+offset_right = 50.0
 offset_bottom = 48.0
 focus_mode = 0
 texture_normal = ExtResource("1")

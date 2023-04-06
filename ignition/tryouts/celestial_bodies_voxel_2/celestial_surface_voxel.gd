@@ -77,6 +77,7 @@ func _create_visuals():
 
 
 func _ready():
+	super()
 	_create_visuals()
 
 	call_deferred( "init_forces" )
@@ -133,6 +134,8 @@ func update( force_player_rf: RefFrameNode = null ):
 
 
 func _process_geometry( force_player_rf: RefFrameNode = null ):
+	return
+	
 	var root: RefFrameRoot = RootScene.ref_frame_root
 	var player_rf: RefFrameNode
 	var player_ctrl: RefFrameNode

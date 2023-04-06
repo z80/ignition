@@ -19,7 +19,7 @@ var dynamic_blocks: Array = []
 var static_blocks: Array  = []
 
 func _ready():
-	init()
+	super()
 	
 
 

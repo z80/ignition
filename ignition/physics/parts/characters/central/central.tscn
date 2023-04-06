@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://4qxv1iovjiyw"]
 
 [ext_resource type="Script" path="res://physics/parts/characters/central/central.gd" id="1"]
-[ext_resource type="PackedScene" path="res://physics/parts/characters/central/visual.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://ba4qaneb2nx18" path="res://physics/parts/characters/central/visual.tscn" id="2"]
 
 [node name="Central" type="RefFrameBodyNode"]
 script = ExtResource("1")

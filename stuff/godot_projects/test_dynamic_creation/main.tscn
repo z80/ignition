@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://dvut6ae6bnlmh"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_n3g0r"]
+[ext_resource type="PackedScene" uid="uid://we8acdrd5swu" path="res://physics/interact_icon/container_window.tscn" id="2_lxsqg"]
+
+[node name="main" type="Node2D"]
+script = ExtResource("1_n3g0r")
+scene = ExtResource("2_lxsqg")

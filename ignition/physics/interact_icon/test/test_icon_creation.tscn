@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://x1cwqbep2jpi"]
+
+[ext_resource type="Script" path="res://physics/interact_icon/test/test_icon_creation.gd" id="1_568qb"]
+
+[node name="test_icon_creation" type="Node2D"]
+script = ExtResource("1_568qb")

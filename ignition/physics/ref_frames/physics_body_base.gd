@@ -527,11 +527,8 @@ func set_process_physics( en: bool ):
 func _parent_physics_ref_frame():
 	# Check if parent is RefFramePhysics
 	var parent_node: Node = get_parent()
-	var cl_name: String = parent_node.get_class()
-	if cl_name != "RefFramePhysics":
-		return null
-	var parent_rf = parent_node as RefFrameNode
-	return parent_rf
+	var rf: RefFrameNonInertialNode = parent_node as RefFrameNonInertialNode
+	return rf
 
 
 
