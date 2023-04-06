@@ -5,4 +5,4 @@
 
 [node name="main" type="Node2D"]
 script = ExtResource("1_n3g0r")
-scene = ExtResource("2_lxsqg")
+container_window_scene = ExtResource("2_lxsqg")

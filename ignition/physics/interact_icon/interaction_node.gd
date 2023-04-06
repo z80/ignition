@@ -2,6 +2,9 @@
 extends Node3D
 class_name InteractionNode
 
+const icon_scene: PackedScene = preload( "res://physics/interact_icon/icon.tscn" )
+const container_window_scene: PackedScene = preload( "res://physics/interact_icon/container_window.tscn" )
+
 var target: Node = null: get = _get_target, set = _set_target
 var icon_visible: bool = false: get = _get_icon_visible, set = _set_icon_visible
 
@@ -10,13 +13,13 @@ var _container_window: Control = null
 
 
 # Can be overwritten in order to show different icon.
-func get_icon_scene():
-	return load( "res://physics/interact_icon/icon.tscn" )
+#func get_icon_scene():
+#	return icon_scene
 
 
 # Can be overwritten in order to show different container window.
-func get_container_scene():
-	return load( "res://physics/interact_icon/container_window.tscn" )
+#func get_container_scene():
+#	return container_window_scene
 
 
 
@@ -31,6 +34,8 @@ func _get_target():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	add_to_group( Constants.INTERACT_NODES_GROUP_NAME )
+
+
 
 
 func _process( delta ):
@@ -78,8 +83,7 @@ func _create_icon():
 	if (_icon != null) and is_instance_valid(_icon):
 		return _icon
 	
-	var Icon: PackedScene = get_icon_scene()
-	_icon = Icon.instantiate()
+	_icon = icon_scene.instantiate()
 	var root_node: Node = RootScene.get_root_for_gui_popups()
 	root_node.add_child( _icon )
 	
@@ -153,8 +157,8 @@ func _on_clicked():
 	if (_container_window != null) and (is_instance_valid(_container_window)):
 		return
 	
-	var Window: PackedScene = get_container_scene()
-	_container_window = Window.instantiate()
+	#var Window: PackedScene = get_container_scene()
+	_container_window = container_window_scene.instantiate()
 
 	var parent_for_windows: Control = RootScene.get_root_for_gui_windows()
 	parent_for_windows.add_child( _container_window )

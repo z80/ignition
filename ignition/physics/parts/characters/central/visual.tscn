@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://ba4qaneb2nx18"]
 
 [ext_resource type="Script" path="res://physics/parts/characters/central/visual.gd" id="1"]
-[ext_resource type="PackedScene" path="res://physics/parts/characters/central/visual_model_raw.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://d3tpyd1ox2ky1" path="res://physics/parts/characters/central/visual_model_raw.tscn" id="2"]
 
 [sub_resource type="CapsuleShape3D" id="1"]
 height = 1.7
