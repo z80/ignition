@@ -574,7 +574,7 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	
 	var sky: MeshInstance3D = RootScene.get_visual_layer_space().background_sky
 	
-	var m: StandardMaterial3D = sky.get_surface_override_material( 0 ) as StandardMaterial3D
+	var m: StandardMaterial3D = sky.get_surface_material( 0 ) as StandardMaterial3D
 	var ms: ShaderMaterial = m.next_pass as ShaderMaterial
 	ms.set_shader_parameter( "light_dir", light_dir )
 	ms.set_shader_parameter( "light_size", sz )

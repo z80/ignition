@@ -115,10 +115,10 @@ func build_surface_finished( args ):
 	#print( "surface done, nodes qty: ", qty )
 	if solid_ok:
 		voxel_surface_solid.apply_to_mesh_only( _visual.solid )
-		#voxel_surface.apply_to_mesh_only_wireframe( _visual.surface )
+		#voxel_surface_solid.apply_to_mesh_only_wireframe( _visual.solid )
 		_visual.solid.visible = true
 		var surface_source: Resource = args.surface_source
-		var sm: ShaderMaterial = _visual.solid.material_override
+		var sm: ShaderMaterial = _visual.solid.material_override as ShaderMaterial
 		if sm == null:
 			sm = surface_source.materials_solid[0].duplicate()
 		
@@ -128,7 +128,7 @@ func build_surface_finished( args ):
 		sm.set_shader_parameter( "to_planet_rf", b )
 		_visual.solid.material_override = sm
 	
-	#_visual.surface.material_override = surface_source_solid.override_material
+		#_visual.solid.material_override = surface_source.override_material
 	
 	if voxel_surface_liquid != null:
 		#var qty_liquid: int = voxel_surface_liquid.get_nodes_qty()

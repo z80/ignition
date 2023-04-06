@@ -117,9 +117,9 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 		args.visual = visual
 		args.surface_args = surface_args
 		
-		WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
-		#_rebuild_process( args )
-		#_rebuild_finished( args )
+		#WorkersPool.push_back_with_arg( self, "_rebuild_process", "_rebuild_finished", args )
+		_rebuild_process( args )
+		_rebuild_finished( args )
 
 
 

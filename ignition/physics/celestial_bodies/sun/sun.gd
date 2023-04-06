@@ -66,14 +66,14 @@ func process_ref_frames( celestial_bodies: Array ):
 	# Check if the strongest influence is caused by other celestial body.
 	if (biggest_influence_body != null) and (biggest_influence_body != self):
 		# Need to teleport celestial body to that other celestial body
-		rf.change_parent( biggest_influence_body )
+		rf.change_parent( biggest_influence_body, false )
 
 
 
 
 
 
-func _serialize( var data: Dictionary ):
+func _serialize( data: Dictionary ):
 	pass
 
 
