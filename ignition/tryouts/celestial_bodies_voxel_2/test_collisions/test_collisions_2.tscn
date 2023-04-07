@@ -6,13 +6,13 @@
 [ext_resource type="PackedScene" uid="uid://b716hij8htvor" path="res://physics/bodies/construction_new/construction.tscn" id="4"]
 [ext_resource type="PackedScene" uid="uid://d164mxaj5h5it" path="res://physics/ui/root_ui.tscn" id="5"]
 [ext_resource type="PackedScene" uid="uid://d27mad85dvoyx" path="res://physics/celestial_bodies/sun/sun.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://physics/camera_ctrl/player_camera.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://chonhgqhxgjxr" path="res://physics/camera_ctrl/player_camera.tscn" id="7"]
 [ext_resource type="Material" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" id="8"]
 [ext_resource type="PackedScene" uid="uid://dkuexll5bw41" path="res://physics/ref_frames/ref_frame_physics.tscn" id="9"]
 [ext_resource type="Material" uid="uid://b1fyq1lssmtkk" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" id="10"]
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="11"]
 
-[sub_resource type="Resource" id="Resource_1jshq"]
+[sub_resource type="Resource" id="Resource_sa407"]
 resource_local_to_scene = true
 script = ExtResource("11")
 override_material = ExtResource("8")
@@ -31,7 +31,7 @@ RefFramePhysicsScene = ExtResource("9")
 
 [node name="Sun" parent="." instance=ExtResource("6")]
 radius_km = 100.0
-surface_source = SubResource("Resource_1jshq")
+surface_source = SubResource("Resource_sa407")
 
 [node name="Translation" parent="Sun" instance=ExtResource("3")]
 rotation_period_hrs = 1.0

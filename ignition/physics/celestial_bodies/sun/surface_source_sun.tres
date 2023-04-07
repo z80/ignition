@@ -1,18 +1,18 @@
-[gd_resource type="Resource" load_steps=4 format=2]
+[gd_resource type="Resource" load_steps=4 format=3 uid="uid://cerwr7ncyh3bm"]
 
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" type="Material" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" type="Material" id=3]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="1"]
+[ext_resource type="Material" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" id="2"]
+[ext_resource type="Material" uid="uid://b1fyq1lssmtkk" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" id="3"]
 
 [resource]
 resource_local_to_scene = true
-script = ExtResource( 1 )
+script = ExtResource("1")
+override_material = ExtResource("2")
 bounding_radius = 10000.0
 source_radius = 10000.0
 radius_km = 10.0
 orbiting_velocity = 1000.0
-g = 100.0
+g = 0.0
 focus_depth = 40.0
-materials_solid = [ ExtResource( 3 ) ]
-materials_liquid = [ ExtResource( 3 ) ]
-override_material = ExtResource( 2 )
+materials_solid = [ExtResource("3")]
+materials_liquid = [ExtResource("3")]

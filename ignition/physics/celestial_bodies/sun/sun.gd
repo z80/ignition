@@ -20,6 +20,7 @@ var ref_frame_to_check_index: int = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	super()
 	init_forces()
 
 

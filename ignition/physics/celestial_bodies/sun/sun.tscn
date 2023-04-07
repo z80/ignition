@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://d27mad85dvoyx"]
 
 [ext_resource type="Script" path="res://physics/celestial_bodies/sun/sun.gd" id="1"]
-[ext_resource type="Resource" path="res://physics/celestial_bodies/sun/surface_source_sun.tres" id="2"]
+[ext_resource type="Resource" uid="uid://cerwr7ncyh3bm" path="res://physics/celestial_bodies/sun/surface_source_sun.tres" id="2"]
 
 [node name="Sun" type="RefFrameMotionNode"]
 script = ExtResource("1")
