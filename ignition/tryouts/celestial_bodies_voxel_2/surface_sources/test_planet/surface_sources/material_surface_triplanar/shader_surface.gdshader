@@ -1,35 +1,18 @@
 
 shader_type spatial;
 
+const int LAYERS_QTY = 4;
+
 uniform float metallic : hint_range(0.0, 1.0) = 0.0;
 uniform float roughness : hint_range(0.0, 1.0) = 0.02;
 
 uniform int layers_qty: hint_range( 1, 4 ) = 1;
 
-uniform sampler2D tex_albedo_0;
-uniform sampler2D tex_normal_0;
-uniform float     scale_0 = 1.0;
-uniform float     mean_0 = 0.0;
-uniform float     sigma_0 = 3.0;
-
-uniform sampler2D tex_albedo_1;
-uniform sampler2D tex_normal_1;
-uniform float     scale_1 = 1.0;
-uniform float     mean_1 = 0.0;
-uniform float     sigma_1 = 3.0;
-
-uniform sampler2D tex_albedo_2;
-uniform sampler2D tex_normal_2;
-uniform float     scale_2 = 1.0;
-uniform float     mean_2 = 0.0;
-uniform float     sigma_2 = 3.0;
-
-uniform sampler2D tex_albedo_3;
-uniform sampler2D tex_normal_3;
-uniform float     scale_3 = 1.0;
-uniform float     mean_3 = 0.0;
-uniform float     sigma_3 = 3.0;
-
+uniform sampler2D [LAYERS_QTY] tex_albedo;
+uniform sampler2D [LAYERS_QTY] tex_normal;
+uniform float     [LAYERS_QTY] scale;
+uniform float     [LAYERS_QTY] mean;
+uniform float     [LAYERS_QTY] sigma;
 
 uniform sampler2D tex_albedo_slope;
 uniform sampler2D tex_normal_slope;
@@ -81,11 +64,11 @@ vec3 compute_tex_triplanar( sampler2D tex, float tex_scale, highp vec3 vertex, v
 	return color;
 }
 
-float tex_intensity( float dist, float mean, float sigma )
+float tex_intensity( float dist_, float mean_, float sigma_ )
 {
-	highp float num = dist - mean;
-	num = num * num;
-	highp float den = sigma * sigma;
+	highp float num = abs(dist_ - mean_) + 1.0;
+	num = num;
+	highp float den = sigma_;
 	highp float ret = den / num; //exp( -num/den );
 	return ret;
 }
@@ -115,68 +98,35 @@ void vertex()
 }
 
 
-void color_1( out vec3 albedo, out vec3 normal )
+
+
+void compute_combined_color( out vec3 albedo, out vec3 normal )
 {
-	albedo = compute_tex_triplanar( tex_albedo_0, scale_0, vertex_w, normal_w );
-	normal = compute_tex_triplanar( tex_normal_0, scale_0, vertex_w, normal_w );
+	float accum = 0.0;
+	albedo = vec3(0.0, 0.0, 0.0);
+	normal = vec3(0.0, 0.0, 0.0);
+	for ( int i=0; i<1; i++ )
+	{
+		vec3 albedo_ = compute_tex_triplanar( tex_albedo[i], scale[i], vertex_w, normal_w );
+		vec3 normal_ = compute_tex_triplanar( tex_normal[i], scale[i], vertex_w, normal_w );
+		float coeff_  = tex_intensity( dist_w, mean[i], sigma[i] );
+		accum += coeff_;
+		albedo += albedo_ * coeff_;
+		normal += normal_ * coeff_;
+	}
+//	vec3 albedo_ = compute_tex_triplanar( tex_albedo[0], scale[0], vertex_w, normal_w );
+//	vec3 normal_ = compute_tex_triplanar( tex_normal[0], scale[0], vertex_w, normal_w );
+//	float coeff_  = tex_intensity( dist_w, mean[0], sigma[0] );
+//
+//	albedo = albedo_;
+//	normal = normal_;
+
+	accum = 1.0 / (accum + 1.0e-6);
+	albedo *= accum;
+	normal *= accum;
 }
 
-void color_2( out vec3 albedo, out vec3 normal )
-{
-	vec3 albedo_0 = compute_tex_triplanar( tex_albedo_0, scale_0, vertex_w, normal_w );
-	vec3 normal_0 = compute_tex_triplanar( tex_normal_0, scale_0, vertex_w, normal_w );
-	float coeff_0  = tex_intensity( dist_w, mean_0, sigma_0 );
-	
-	vec3 albedo_1 = compute_tex_triplanar( tex_albedo_1, scale_1, vertex_w, normal_w );
-	vec3 normal_1 = compute_tex_triplanar( tex_normal_1, scale_1, vertex_w, normal_w );
-	float coeff_1  = tex_intensity( dist_w, mean_1, sigma_1 );
-	
-	float sum = coeff_0 + coeff_1;
-	albedo = (albedo_0*coeff_0 + albedo_1*coeff_1) / sum;
-	normal = (normal_0*coeff_0 + normal_1*coeff_1) / sum;
-}
 
-void color_3( out vec3 albedo, out vec3 normal )
-{
-	vec3 albedo_0 = compute_tex_triplanar( tex_albedo_0, scale_0, vertex_w, normal_w );
-	vec3 normal_0 = compute_tex_triplanar( tex_normal_0, scale_0, vertex_w, normal_w );
-	float coeff_0  = tex_intensity( dist_w, mean_0, sigma_0 );
-	
-	vec3 albedo_1 = compute_tex_triplanar( tex_albedo_1, scale_1, vertex_w, normal_w );
-	vec3 normal_1 = compute_tex_triplanar( tex_normal_1, scale_1, vertex_w, normal_w );
-	float coeff_1  = tex_intensity( dist_w, mean_1, sigma_1 );
-	
-	vec3 albedo_2 = compute_tex_triplanar( tex_albedo_2, scale_2, vertex_w, normal_w );
-	vec3 normal_2 = compute_tex_triplanar( tex_normal_2, scale_2, vertex_w, normal_w );
-	float coeff_2  = tex_intensity( dist_w, mean_2, sigma_2 );
-	
-	float sum = coeff_0 + coeff_1 + coeff_2;
-	albedo = (albedo_0*coeff_0 + albedo_1*coeff_1 + albedo_2*coeff_2) / sum;
-	normal = (normal_0*coeff_0 + normal_1*coeff_1 + normal_2*coeff_2) / sum;
-}
-
-void color_4( out vec3 albedo, out vec3 normal )
-{
-	vec3 albedo_0 = compute_tex_triplanar( tex_albedo_0, scale_0, vertex_w, normal_w );
-	vec3 normal_0 = compute_tex_triplanar( tex_normal_0, scale_0, vertex_w, normal_w );
-	float coeff_0  = tex_intensity( dist_w, mean_0, sigma_0 );
-	
-	vec3 albedo_1 = compute_tex_triplanar( tex_albedo_1, scale_1, vertex_w, normal_w );
-	vec3 normal_1 = compute_tex_triplanar( tex_normal_1, scale_1, vertex_w, normal_w );
-	float coeff_1  = tex_intensity( dist_w, mean_1, sigma_1 );
-	
-	vec3 albedo_2 = compute_tex_triplanar( tex_albedo_2, scale_2, vertex_w, normal_w );
-	vec3 normal_2 = compute_tex_triplanar( tex_normal_2, scale_2, vertex_w, normal_w );
-	float coeff_2  = tex_intensity( dist_w, mean_2, sigma_2 );
-	
-	vec3 albedo_3 = compute_tex_triplanar( tex_albedo_3, scale_3, vertex_w, normal_w );
-	vec3 normal_3 = compute_tex_triplanar( tex_normal_3, scale_3, vertex_w, normal_w );
-	float coeff_3  = tex_intensity( dist_w, mean_3, sigma_3 );
-	
-	float sum = coeff_0 + coeff_1 + coeff_2 + coeff_3;
-	albedo = (albedo_0*coeff_0 + albedo_1*coeff_1 + albedo_2*coeff_2 + albedo_3*coeff_3) / sum;
-	normal = (normal_0*coeff_0 + normal_1*coeff_1 + normal_2*coeff_2 + normal_3*coeff_3) / sum;
-}
 
 
 
@@ -184,22 +134,7 @@ void fragment()
 {
 	vec3 albedo_c;
 	vec3 normal_c;
-	if ( layers_qty == 1 )
-	{
-		color_1( albedo_c, normal_c );
-	}
-	else if ( layers_qty == 2 )
-	{
-		color_2( albedo_c, normal_c );
-	}
-	else if ( layers_qty == 3 )
-	{
-		color_3( albedo_c, normal_c );
-	}
-	else
-	{
-		color_4( albedo_c, normal_c );
-	}
+	compute_combined_color( albedo_c, normal_c );
 	
 	//float coeff_rocks = rocks_intensity( vertex_w, normal_w );
 	//vec3  color_rocks = compute_tex_triplanar( tex_rocks, scale_rocks, vertex_w, normal_w );
@@ -208,9 +143,9 @@ void fragment()
 	
 	//color = color*coeff_color + color_rocks*coeff_rocks;
 	
-	ALBEDO = albedo_c;
-	NORMAL = normal_c * 0.8;
-	METALLIC = metallic;
+	ALBEDO    = albedo_c;
+	NORMAL    = normal_c * 0.8;
+	METALLIC  = metallic;
 	ROUGHNESS = roughness;
 	//ALBEDO = mix( surface_color, depth_color_edge, 0.75 );
 }
