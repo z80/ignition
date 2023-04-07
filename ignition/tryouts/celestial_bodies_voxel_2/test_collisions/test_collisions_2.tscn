@@ -12,15 +12,15 @@
 [ext_resource type="Material" uid="uid://b1fyq1lssmtkk" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" id="10"]
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="11"]
 
-[sub_resource type="Resource" id="Resource_sa407"]
+[sub_resource type="Resource" id="Resource_70mqf"]
 resource_local_to_scene = true
 script = ExtResource("11")
 override_material = ExtResource("8")
-bounding_radius = 10000.0
-source_radius = 10000.0
-radius_km = 10.0
-orbiting_velocity = 0.0
-g = 0.0
+bounding_radius = 200000.0
+source_radius = 200000.0
+radius_km = 200.0
+orbiting_velocity = 8944.27
+g = 400.0
 focus_depth = 40.0
 materials_solid = [ExtResource("10")]
 materials_liquid = [ExtResource("10")]
@@ -30,8 +30,8 @@ script = ExtResource("1")
 RefFramePhysicsScene = ExtResource("9")
 
 [node name="Sun" parent="." instance=ExtResource("6")]
-radius_km = 100.0
-surface_source = SubResource("Resource_sa407")
+human_readable_name = "Sun"
+surface_source = SubResource("Resource_70mqf")
 
 [node name="Translation" parent="Sun" instance=ExtResource("3")]
 rotation_period_hrs = 1.0

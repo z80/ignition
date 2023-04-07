@@ -66,7 +66,7 @@ func get_radius_km():
 func set_orbiting_velocity( v: float ):
 	_orbiting_velocity = v
 	_g = v*v/_source_radius
-	#notify_property_list_changed()
+	notify_property_list_changed()
 
 
 func get_orbiting_velocity():
@@ -76,11 +76,11 @@ func get_orbiting_velocity():
 func set_g( gg: float ):
 	_g = gg
 	_orbiting_velocity = sqrt(_g*_source_radius)
-	#notify_property_list_changed()
+	notify_property_list_changed()
 
 
 func get_g():
-	return g
+	return _g
 
 
 func get_gm():

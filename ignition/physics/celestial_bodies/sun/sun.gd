@@ -4,7 +4,7 @@ class_name Sun
 
 
 # Defining geometry and GM based on surface orbiting velocity.
-@export var radius_km: float = 5.0
+@export var radius_km: float: get = _get_radius_km
 
 @export var glow_size: float = 0.2
 @export var ray_scale: float = 10.0
@@ -16,6 +16,10 @@ var ref_frame_to_check_index: int = 0
 
 #func get_class():
 #	return "Sun"
+
+func _get_radius_km():
+	var ret: float = surface_source.radius_km
+	return ret
 
 
 # Called when the node enters the scene tree for the first time.

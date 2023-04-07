@@ -134,7 +134,7 @@ func _compute_bone_transforms():
 		_bone_skeleton_positions.push_back( bone_t.origin )
 		
 		var rest_t: Transform3D         = s.get_bone_rest( i )
-		var custom_t: Transform3D       = s.get_bone_custom_pose( i )
+		var custom_t: Transform3D       = Transform3D.IDENTITY #s.get_bone_custom_pose( i )
 		var bone_to_global: Transform3D = total_t * rest_t * custom_t
 		var global_to_bone: Transform3D = bone_to_global.inverse()
 		_mesh_to_local_bone.push_back( global_to_bone )

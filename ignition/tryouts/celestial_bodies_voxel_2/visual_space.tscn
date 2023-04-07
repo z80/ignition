@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/visual_space.gd" id="2"]
 [ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.tres" id="3"]
 [ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" id="4"]
-[ext_resource type="PackedScene" path="res://tryouts/celestial_bodies_voxel_2/atmosphere/atmosphere.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://cuw0ilooy062h" path="res://tryouts/celestial_bodies_voxel_2/atmosphere/atmosphere.tscn" id="5"]
 
 [node name="VisualSpace" type="Node3D"]
 script = ExtResource("2")
