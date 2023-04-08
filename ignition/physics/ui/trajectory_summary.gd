@@ -48,8 +48,8 @@ func _update_celestial_motion():
 	_target_name = cb.name
 	_do_show = true
 	
-	var h: float = _cm.specific_angular_momentum()
-	print( "h: ", h, " type: ", _cm.movement_type() )
+	#var h: float = _cm.specific_angular_momentum()
+	#print( "h: ", h, " type: ", _cm.movement_type() )
 	
 
 func _visualize():

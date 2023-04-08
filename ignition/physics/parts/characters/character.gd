@@ -9,9 +9,9 @@ class_name Character
 
 @export var ang_vel: float        = 1.0
 @export var max_ang_vel: float    = 2.0
-@export var gain_angular: float   = 10.0
-@export var gain_d_angular: float = 10.0
-@export var max_torque: float     = 5.0
+@export var gain_angular: float   = 1000.0
+@export var gain_d_angular: float = 100.0
+@export var max_torque: float     = 50.0
 
 @export var translation_abolute: bool = false
 @export var rotation_abolute: bool    = false

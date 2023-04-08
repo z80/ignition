@@ -14,7 +14,7 @@ dest_files=["res://.godot/imported/astronaut.gltf-5214c3840772010b380eb029154bba
 [params]
 
 nodes/root_type="Node3D"
-nodes/root_name="Scene Root"
+nodes/root_name="Scene"
 nodes/apply_root_scale=true
 nodes/root_scale=1.0
 meshes/ensure_tangents=true
