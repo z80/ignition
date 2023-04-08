@@ -14,5 +14,5 @@ radius_km = 10.0
 orbiting_velocity = 0.0
 g = 0.0
 focus_depth = 40.0
-materials_solid = [ExtResource("3"), null]
-materials_liquid = [ExtResource("3"), null]
+materials_solid = [ExtResource("3"), null, null]
+materials_liquid = [ExtResource("3"), null, null]
