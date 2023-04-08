@@ -1,0 +1,79 @@
+[gd_scene load_steps=8 format=3 uid="uid://dl3tdsfumo405"]
+
+[ext_resource type="PackedScene" uid="uid://c0o0pl1g18vwq" path="res://test/astronaut_raw.tscn" id="1_jg0gf"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_5k4c5"]
+animation = &"Idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_dhx8m"]
+animation = &"WalkForward"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_kkpgn"]
+animation = &"WalkBackward"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_a1mmp"]
+animation = &"WalkRight"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_gwr1e"]
+animation = &"WalkLeft"
+
+[sub_resource type="AnimationNodeBlendSpace2D" id="AnimationNodeBlendSpace2D_shr0p"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_5k4c5")
+blend_point_0/pos = Vector2(0, 0)
+blend_point_1/node = SubResource("AnimationNodeAnimation_dhx8m")
+blend_point_1/pos = Vector2(0, 1)
+blend_point_2/node = SubResource("AnimationNodeAnimation_kkpgn")
+blend_point_2/pos = Vector2(0, -1)
+blend_point_3/node = SubResource("AnimationNodeAnimation_a1mmp")
+blend_point_3/pos = Vector2(1, 0)
+blend_point_4/node = SubResource("AnimationNodeAnimation_gwr1e")
+blend_point_4/pos = Vector2(-1, 0)
+
+[node name="main" type="Node3D"]
+
+[node name="Scene" parent="." instance=ExtResource("1_jg0gf")]
+
+[node name="Skeleton3D" parent="Scene/Armature" index="0"]
+bones/0/position = Vector3(-0.019264, -0.0488446, 0.0820954)
+bones/0/rotation = Quaternion(0.180325, 0.00795451, 0.00900021, 0.983534)
+bones/1/rotation = Quaternion(-0.136199, 0.227336, 0.909784, -0.319468)
+bones/2/rotation = Quaternion(-0.0742308, -0.0181865, 0.256401, -0.963544)
+bones/3/rotation = Quaternion(6.46469e-09, 3.8101e-08, 0.0121952, 0.999926)
+bones/4/rotation = Quaternion(0.652465, 0.292599, 0.671874, 0.193029)
+bones/5/rotation = Quaternion(-0.0108112, -0.000188279, 0.343431, 0.939116)
+bones/6/rotation = Quaternion(-0.0673188, -0.0368567, -0.622362, 0.778958)
+bones/7/rotation = Quaternion(0.0785412, 0.0359052, 0.963783, 0.252319)
+bones/8/rotation = Quaternion(0.252015, 0.0557659, 0.252164, 0.932626)
+bones/9/rotation = Quaternion(9.27412e-06, -0.000176083, -0.0121638, 0.999926)
+bones/10/rotation = Quaternion(-0.657183, 0.281064, 0.669597, -0.201874)
+bones/11/rotation = Quaternion(-0.011904, 0.000185584, -0.378143, 0.925671)
+bones/12/rotation = Quaternion(-0.0271889, 0.021869, 0.659846, 0.75059)
+bones/13/rotation = Quaternion(-0.1362, 0.227336, 0.909784, -0.319468)
+bones/14/rotation = Quaternion(-0.0742308, -0.0181865, 0.256401, -0.963544)
+bones/15/rotation = Quaternion(-5.19503e-09, 2.40151e-08, 0.0121952, 0.999926)
+bones/16/rotation = Quaternion(0.0785412, 0.0359053, 0.963783, 0.252319)
+bones/17/rotation = Quaternion(0.252015, 0.055766, 0.252164, 0.932626)
+bones/18/rotation = Quaternion(9.27068e-06, -0.000176021, -0.0121638, 0.999926)
+bones/19/position = Vector3(0.250724, -0.732395, 0.0574361)
+bones/19/rotation = Quaternion(-0.499275, 0.500723, -0.498968, 0.501031)
+bones/20/position = Vector3(-0.242056, -0.734696, 0.0345871)
+bones/20/rotation = Quaternion(-0.499275, -0.500723, 0.498968, 0.501031)
+bones/21/rotation = Quaternion(0.4938, 0.506124, 0.506124, 0.4938)
+bones/22/rotation = Quaternion(-0.4938, 0.506124, 0.506124, -0.4938)
+bones/23/position = Vector3(-0.019264, -0.0488446, 0.0820954)
+bones/23/rotation = Quaternion(-0.567954, -0.00073942, 0.0119888, 0.822973)
+bones/24/position = Vector3(0.433411, -0.186163, -0.580492)
+bones/24/rotation = Quaternion(0.628094, 0.333549, 0.617446, 0.336161)
+bones/25/position = Vector3(-0.424742, -0.188464, -0.603341)
+bones/25/rotation = Quaternion(-0.618706, 0.340651, 0.621375, -0.339194)
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+tree_root = SubResource("AnimationNodeBlendSpace2D_shr0p")
+anim_player = NodePath("../Scene/AnimationPlayer")
+active = true
+parameters/blend_position = Vector2(0, 0.0106382)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.40738, 30.95)
+
+[editable path="Scene"]
