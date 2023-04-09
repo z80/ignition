@@ -85,7 +85,7 @@ func _set_show_visual( en: bool ):
 			_visual = Visual.instantiate()
 			_visual.size = snap_size()
 			_visual.surface = allows_surface_coupling
-			var vp: SubViewport = RootScene.get_visual_layer_overlay()
+			var vp: Viewport = RootScene.get_visual_layer_overlay()
 			vp.add_child( _visual )
 		_visual.visible = true
 	else:
