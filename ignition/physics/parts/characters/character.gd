@@ -9,7 +9,7 @@ class_name Character
 
 @export var ang_vel: float        = 1.0
 @export var max_ang_vel: float    = 2.0
-@export var gain_angular: float   = 1000.0
+@export var gain_angular: float   = 400.0
 @export var gain_d_angular: float = 100.0
 @export var max_torque: float     = 50.0
 
@@ -318,7 +318,7 @@ func _preserve_vertical( state, preserving_vertical: bool = true ):
 	wanted_w = wanted_w - up * ( up.dot( wanted_w ) )
 	
 	var dw = wanted_w - current_w
-	var torque: Vector3 = dt * (gain_angular * dw - current_w * gain_d_angular)
+	var torque: Vector3 = dt * (gain_angular * dw) # - current_w * gain_d_angular)
 	var L = torque.length()
 
 	if L > max_torque:

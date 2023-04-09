@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=4 format=2]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://cpwbtjhomkiwd"]
 
-[sub_resource type="Shader" id=8]
+[sub_resource type="Shader" id="8"]
 code = "// NOTE: Shader automatically converted from Godot Engine 3.5.stable's StandardMaterial3D.
 
 shader_type spatial;
@@ -82,25 +82,6 @@ void fragment() {
 }
 "
 
-[sub_resource type="FastNoiseLite" id=6]
-period = 1.0
-
-[sub_resource type="NoiseTexture" id=7]
-width = 64
-height = 64
-seamless = true
-noise = SubResource( 6 )
-
 [resource]
-shader = SubResource( 8 )
-shader_param/albedo = Color( 1, 1, 1, 1 )
-shader_param/specular = 0.5
-shader_param/metallic = 0.0
-shader_param/roughness = 1.0
-shader_param/uv_scale = 0.1
-shader_param/displacement = null
-shader_param/source_tr = Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )
-shader_param/inv_scaled_source_tr = Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )
-shader_param/plain_dist = 100.0
-shader_param/log_scale = 1.0
-shader_param/texture_albedo = SubResource( 7 )
+render_priority = 0
+shader = SubResource("8")
