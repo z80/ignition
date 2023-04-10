@@ -34,6 +34,7 @@ offset_right = 1.52588e-05
 offset_bottom = 1.52588e-05
 
 [node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+own_world_3d = true
 world_3d = SubResource("World3D_8absw")
 transparent_bg = true
 handle_input_locally = false
