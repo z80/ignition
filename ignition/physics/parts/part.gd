@@ -131,11 +131,8 @@ func _process_destruction():
 
 
 func _parent_jumped():
-	parent_jumped()
+	super()
 
-
-
-func parent_jumped():
 	_last_vel_initialized = true
 	var se3: Se3Ref = get_se3()
 	_last_vel = se3.v

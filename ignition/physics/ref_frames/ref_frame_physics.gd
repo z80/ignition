@@ -262,6 +262,7 @@ func jump_if_needed():
 	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = r
 	jump( t, v )
+	pass
 
 
 
@@ -404,7 +405,7 @@ func split_if_needed() -> bool:
 	rf.call_deferred( "clone_collision_surface", self )
 	
 	for body in bodies_b:
-		body.call_deferred( "change_parent", rf )
+		body.call_deferred( "change_parent", rf, false )
 	
 	DDD.important()
 	DDD.print( "new rf created " + rf. name )

@@ -89,7 +89,8 @@ func apply( broad_tree: BroadTreeGd, meshes: Array, vel_in_mesh: Vector3, se3_me
 			var in_bone_at: Vector3 = to_local_t * (at_in_rf)
 			bone_t.origin = in_bone_at
 		
-		s.set_bone_pose( i, bone_t )
+		#s.set_bone_pose( i, bone_t )
+		s.set_bone_pose_position( i, bone_t.origin )
 		
 		var gt: Vector3 = s.get_bone_global_pose( i ).origin
 		global_poses.push_back( gt )
