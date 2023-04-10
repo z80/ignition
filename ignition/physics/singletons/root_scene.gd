@@ -33,7 +33,7 @@ func get_visual_layer_near():
 func get_visual_layer_overlay():
 	if vp_container == null:
 		vp_container = get_node( "VisualLayerOverlay" )
-	var vp: Viewport = vp_container.get_viewport()
+	var vp: Viewport = vp_container.get_subviewport()
 	return vp
 
 
