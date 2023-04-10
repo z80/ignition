@@ -25,5 +25,11 @@ Here is the battle plan.
 - [ ] important: precise control gizmos must be kept even with drag & drop, to allow precise placement of parts (for the most tight and crazy players)
 
 
+# Another feedback as-is.
 
-
+Eeally, this music is painful, menu is awful and we can't go back to menu, it's annoying to quit & restart the game !
+I don't know why, after adding some (too much) command pods, all further items (decoupler, fuel tank) are put in game horizontally ! Very annoying, again, to build anything with this.
+There is not enough feedback when we put something in game, so I add about 6 pods at the same location, no physics issue by the way !
+UI is not very practical to use.
+I tried TPS cam on the astronaut, bas idea, camera was completely messes up, no way to change it, no available key yet.
+Building system need to be improved FIRST, it should be the top priority IMHO.
