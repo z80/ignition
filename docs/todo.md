@@ -33,3 +33,13 @@ There is not enough feedback when we put something in game, so I add about 6 pod
 UI is not very practical to use.
 I tried TPS cam on the astronaut, bas idea, camera was completely messes up, no way to change it, no available key yet.
 Building system need to be improved FIRST, it should be the top priority IMHO.
+
+I watch a bit of the first video on the itch.io page, and wonder why not provide the savegame you used in it ? It would allow to test the core of the game without being (almost) killed first by the wall of building a rocket with boring building process.
+
+I guess you misunderstood me, I click on add command pod button, but I've got pretty much no visual feedback and sound, so I click more time until I figured out command pod is out of view, but there is not one, instead, many command pods in one single space (objects overlapping them all as they have no physical mesh at this stage yet maybe), so another boring step to delete all those unneeded pods.
+
+I really would like to test how rocket behave in atmosphere and space, staying on the ground is boring for a space exploration game
+
+
+
+
