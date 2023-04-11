@@ -419,7 +419,7 @@ func _init_rotating( axis: Vector3 ):
 	
 	
 	
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
 	var camera: Camera3D = vp.get_camera_3d()
