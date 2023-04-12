@@ -161,9 +161,12 @@ func activate():
 	_joint.set( "node_a", body_a.get_path() )
 	_joint.set( "node_b", body_b.get_path() )
 	#_joint.precision = 100
-	_joint.set( "linear_limit_x/softness", 0.70001 )
-	_joint.set( "linear_limit_y/softness", 0.70001 )
-	_joint.set( "linear_limit_z/softness", 0.70001 )
+#	_joint.set( "linear_limit_x/softness", 0.50 )
+#	_joint.set( "linear_limit_y/softness", 0.50 )
+#	_joint.set( "linear_limit_z/softness", 0.50 )
+#	_joint.set( "angular_limit_x/softness", 0.50 )
+#	_joint.set( "angular_limit_y/softness", 0.50 )
+#	_joint.set( "angular_limit_z/softness", 0.50 )
 
 
 

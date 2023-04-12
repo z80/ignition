@@ -185,8 +185,6 @@ name_num_separator=2
 
 common/physics_ticks_per_second=120
 3d/default_gravity=0.0
-3d/default_linear_damp=0.0
-3d/default_angular_damp=0.01
 2d/default_gravity=981
 2d/default_linear_damp=0.02
 2d/default_angular_damp=0.3
