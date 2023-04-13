@@ -31,10 +31,10 @@
 #ifndef COLLISION_OBJECT_BULLET_H
 #define COLLISION_OBJECT_BULLET_H
 
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector3.h"
-#include "core/object.h"
-#include "core/vset.h"
+#include "core/object/object.h"
+#include "core/templates/vset.h"
 #include "shape_owner_bullet.h"
 
 #if defined(__clang__) && (__clang_major__ >= 13)
@@ -50,6 +50,7 @@
 
 /**
 	@author AndreaCatania
+	FatherTedd
 */
 
 class AreaBullet;
@@ -59,7 +60,8 @@ class btCompoundShape;
 class btCollisionShape;
 class SpaceBullet;
 
-class CollisionObjectBullet : public RIDBullet {
+class CollisionObjectBullet //: public RIDBullet
+{
 public:
 	enum GodotObjectFlags {
 		GOF_IS_MONITORING_AREA = 1 << 0
@@ -96,7 +98,7 @@ public:
 			set_transform(p_transform);
 		}
 
-		ShapeWrapper(ShapeBullet *p_shape, const Transform &p_transform, bool p_active) :
+		ShapeWrapper(ShapeBullet *p_shape, const Transform3D &p_transform, bool p_active) :
 				shape(p_shape),
 				bt_shape(nullptr),
 				active(p_active) {

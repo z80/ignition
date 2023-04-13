@@ -47,13 +47,15 @@
 
 /**
 	@author AndreaCatania
+	FatherTedd
 */
 
 class RigidBodyBullet;
 class SpaceBullet;
 class btTypedConstraint;
 
-class ConstraintBullet : public RIDBullet {
+class ConstraintBullet //: public RIDBullet
+{
 protected:
 	SpaceBullet *space;
 	btTypedConstraint *constraint;
@@ -70,7 +72,8 @@ public:
 	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
 
 public:
-	virtual ~ConstraintBullet() {
+	virtual ~ConstraintBullet()
+	{
 		bulletdelete(constraint);
 		constraint = nullptr;
 	}
