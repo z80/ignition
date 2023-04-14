@@ -86,7 +86,7 @@ private:
 	int _find_overlapping_shape(CollisionObjectBullet *p_other_object, uint32_t p_other_shape_id, uint32_t p_our_shape_id);
 	bool monitorable;
 
-	PhysicsServer::AreaSpaceOverrideMode spOv_mode;
+	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode;
 	bool spOv_gravityPoint;
 	real_t spOv_gravityPointDistanceScale;
 	real_t spOv_gravityPointAttenuation;
@@ -111,8 +111,8 @@ public:
 
 	bool is_monitoring() const;
 
-	_FORCE_INLINE_ void set_spOv_mode(PhysicsServer::AreaSpaceOverrideMode p_mode) { spOv_mode = p_mode; }
-	_FORCE_INLINE_ PhysicsServer::AreaSpaceOverrideMode get_spOv_mode() { return spOv_mode; }
+	_FORCE_INLINE_ void set_spOv_mode(PhysicsServer3D::AreaSpaceOverrideMode p_mode) { spOv_mode = p_mode; }
+	_FORCE_INLINE_ PhysicsServer3D::AreaSpaceOverrideMode get_spOv_mode() { return spOv_mode; }
 
 	_FORCE_INLINE_ void set_spOv_gravityPoint(bool p_isGP) { spOv_gravityPoint = p_isGP; }
 	_FORCE_INLINE_ bool is_spOv_gravityPoint() { return spOv_gravityPoint; }
