@@ -1011,7 +1011,7 @@ Variant BulletPhysicsServer::soft_body_get_state(RID p_body, BodyState p_state) 
 	return Variant();
 }
 
-void BulletPhysicsServer::soft_body_set_transform(RID p_body, const Transform &p_transform) {
+void BulletPhysicsServer::soft_body_set_transform(RID p_body, const Transform3D &p_transform) {
 	SoftBodyBullet *body = soft_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -1285,7 +1285,7 @@ Vector3 BulletPhysicsServer::pin_joint_get_local_b(RID p_joint) const {
 	return pin_joint->getPivotInB();
 }
 
-RID BulletPhysicsServer::joint_create_hinge(RID p_body_A, const Transform &p_hinge_A, RID p_body_B, const Transform &p_hinge_B) {
+RID BulletPhysicsServer::joint_create_hinge(RID p_body_A, const Transform3D &p_hinge_A, RID p_body_B, const Transform3D &p_hinge_B) {
 	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
@@ -1357,7 +1357,7 @@ bool BulletPhysicsServer::hinge_joint_get_flag(RID p_joint, HingeJointFlag p_fla
 	return hinge_joint->get_flag(p_flag);
 }
 
-RID BulletPhysicsServer::joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
+RID BulletPhysicsServer::joint_create_slider(RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) {
 	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
@@ -1393,7 +1393,7 @@ float BulletPhysicsServer::slider_joint_get_param(RID p_joint, SliderJointParam 
 	return slider_joint->get_param(p_param);
 }
 
-RID BulletPhysicsServer::joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
+RID BulletPhysicsServer::joint_create_cone_twist(RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) {
 	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());
@@ -1427,7 +1427,7 @@ float BulletPhysicsServer::cone_twist_joint_get_param(RID p_joint, ConeTwistJoin
 	return coneTwist_joint->get_param(p_param);
 }
 
-RID BulletPhysicsServer::joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
+RID BulletPhysicsServer::joint_create_generic_6dof(RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) {
 	RigidBodyBullet *body_A = rigid_body_owner.get(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 	JointAssertSpace(body_A, "A", RID());

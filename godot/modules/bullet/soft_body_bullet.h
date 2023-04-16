@@ -43,7 +43,7 @@
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "collision_object_bullet.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 #ifdef x11_None
 /// This is required to re add the macro None defined by x11 compiler
@@ -105,9 +105,9 @@ public:
 	void destroy_soft_body();
 
 	// Special function. This function has bad performance
-	void set_soft_transform(const Transform &p_transform);
+	void set_soft_transform(const Transform3D &p_transform);
 
-	void move_all_nodes(const Transform &p_transform);
+	void move_all_nodes(const Transform3D &p_transform);
 	void set_node_position(int node_index, const Vector3 &p_global_position);
 	void set_node_position(int node_index, const btVector3 &p_global_position);
 	void get_node_position(int node_index, Vector3 &r_position) const;
@@ -151,7 +151,7 @@ public:
 	_FORCE_INLINE_ real_t get_drag_coefficient() const { return drag_coefficient; }
 
 private:
-	void set_trimesh_body_shape(PoolVector<int> p_indices, PoolVector<Vector3> p_vertices);
+	void set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices);
 	void setup_soft_body();
 
 	void pin_node(int p_node_index);

@@ -34,21 +34,25 @@
 #include "core/templates/rid.h"
 
 /**
-	@author FatherTedd
+	@authod AndreaCatania
+	@author FatherTed
 */
 
 class BulletPhysicsServer;
 
-//class RIDBullet : public RID_Data {
-//	RID self;
-//	BulletPhysicsServer *physicsServer;
-//
-//public:
-//	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
-//	_FORCE_INLINE_ RID get_self() const { return self; }
-//
-//	_FORCE_INLINE_ void _set_physics_server(BulletPhysicsServer *p_physicsServer) { physicsServer = p_physicsServer; }
-//	_FORCE_INLINE_ BulletPhysicsServer *get_physics_server() const { return physicsServer; }
-//};
+class RIDBullet //: public RID_Data
+{
+	RID self;
+	BulletPhysicsServer *physicsServer;
+
+public:
+	_FORCE_INLINE_ void set_self(const RID &p_self) { self = p_self; }
+	_FORCE_INLINE_ RID get_self() const { return self; }
+
+	_FORCE_INLINE_ void _set_physics_server(BulletPhysicsServer *p_physicsServer) { physicsServer = p_physicsServer; }
+	_FORCE_INLINE_ BulletPhysicsServer *get_physics_server() const { return physicsServer; }
+};
 
 #endif // RID_BULLET_H
+
+

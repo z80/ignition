@@ -50,7 +50,7 @@ public:
 		StringName event_callback_method;
 
 		InOutEventCallback() :
-				event_callback_id(0) {}
+				event_callback_id((uint64_t)0) {}
 	};
 
 	enum OverlapState {
@@ -143,7 +143,7 @@ public:
 	virtual void set_space(SpaceBullet *p_space);
 
 	virtual void dispatch_callbacks();
-	void call_event(const OverlappingShapeData &p_overlapping_shape, PhysicsServer::AreaBodyStatus p_status);
+	void call_event(const OverlappingShapeData &p_overlapping_shape, PhysicsServer3D::AreaBodyStatus p_status);
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start() {}
@@ -156,8 +156,8 @@ public:
 	void remove_object_overlaps(CollisionObjectBullet *p_object);
 	void clear_overlaps();
 
-	void set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value);
-	Variant get_param(PhysicsServer::AreaParameter p_param) const;
+	void set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value);
+	Variant get_param(PhysicsServer3D::AreaParameter p_param) const;
 
 	void set_event_callback(Type p_callbackObjectType, ObjectID p_id, const StringName &p_method);
 	bool has_event_callback(Type p_callbackObjectType);

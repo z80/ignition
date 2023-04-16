@@ -60,7 +60,7 @@ class btCompoundShape;
 class btCollisionShape;
 class SpaceBullet;
 
-class CollisionObjectBullet //: public RIDBullet
+class CollisionObjectBullet : public RIDBullet
 {
 public:
 	enum GodotObjectFlags {

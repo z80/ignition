@@ -117,7 +117,7 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 	}
 }
 
-int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Transform &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
+int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Transform3D &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	if (p_result_max <= 0) {
 		return 0;
 	}
@@ -152,7 +152,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 	return btQuery.m_count;
 }
 
-bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform &p_xform, const Vector3 &p_motion, float p_margin, float &r_closest_safe, float &r_closest_unsafe, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
+bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transform3D &p_xform, const Vector3 &p_motion, float p_margin, float &r_closest_safe, float &r_closest_unsafe, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, ShapeRestInfo *r_info) {
 	r_closest_safe = 0.0f;
 	r_closest_unsafe = 0.0f;
 
@@ -215,7 +215,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 }
 
 /// Returns the list of contacts pairs in this order: Local contact, other body contact
-bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &p_shape_xform, float p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
+bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform3D &p_shape_xform, float p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	if (p_result_max <= 0) {
 		return false;
 	}
@@ -251,7 +251,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	return btQuery.m_count;
 }
 
-bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
+bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform3D &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
@@ -378,30 +378,30 @@ void SpaceBullet::step(real_t p_delta_time) {
 	dynamicsWorld->stepSimulation(p_delta_time, 0, 0);
 }
 
-void SpaceBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value) {
+void SpaceBullet::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value) {
 	assert(dynamicsWorld);
 
 	switch (p_param) {
-		case PhysicsServer::AREA_PARAM_GRAVITY:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY:
 			gravityMagnitude = p_value;
 			update_gravity();
 			break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR:
 			gravityDirection = p_value;
 			update_gravity();
 			break;
-		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
 			linear_damp = p_value;
 			break;
-		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
+		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
 			angular_damp = p_value;
 			break;
-		case PhysicsServer::AREA_PARAM_PRIORITY:
+		case PhysicsServer3D::AREA_PARAM_PRIORITY:
 			// Priority is always 0, the lower
 			break;
-		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT:
-		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			break;
 		default:
 			WARN_PRINT("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
@@ -409,23 +409,23 @@ void SpaceBullet::set_param(PhysicsServer::AreaParameter p_param, const Variant 
 	}
 }
 
-Variant SpaceBullet::get_param(PhysicsServer::AreaParameter p_param) {
+Variant SpaceBullet::get_param(PhysicsServer3D::AreaParameter p_param) {
 	switch (p_param) {
-		case PhysicsServer::AREA_PARAM_GRAVITY:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY:
 			return gravityMagnitude;
-		case PhysicsServer::AREA_PARAM_GRAVITY_VECTOR:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR:
 			return gravityDirection;
-		case PhysicsServer::AREA_PARAM_LINEAR_DAMP:
+		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP:
 			return linear_damp;
-		case PhysicsServer::AREA_PARAM_ANGULAR_DAMP:
+		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP:
 			return angular_damp;
-		case PhysicsServer::AREA_PARAM_PRIORITY:
+		case PhysicsServer3D::AREA_PARAM_PRIORITY:
 			return 0; // Priority is always 0, the lower
-		case PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
 			return false;
-		case PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
 			return 0;
-		case PhysicsServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
+		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			return 0;
 		default:
 			WARN_PRINT("This get parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
@@ -433,32 +433,32 @@ Variant SpaceBullet::get_param(PhysicsServer::AreaParameter p_param) {
 	}
 }
 
-void SpaceBullet::set_param(PhysicsServer::SpaceParameter p_param, real_t p_value) {
+void SpaceBullet::set_param(PhysicsServer3D::SpaceParameter p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
-		case PhysicsServer::SPACE_PARAM_CONTACT_MAX_SEPARATION:
-		case PhysicsServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
-		case PhysicsServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
-		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
-		case PhysicsServer::SPACE_PARAM_BODY_TIME_TO_SLEEP:
-		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
-		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION:
+		case PhysicsServer3D::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
+		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
+		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
+		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP:
+		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
+		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
 		default:
 			WARN_PRINT("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
 			break;
 	}
 }
 
-real_t SpaceBullet::get_param(PhysicsServer::SpaceParameter p_param) {
+real_t SpaceBullet::get_param(PhysicsServer3D::SpaceParameter p_param) {
 	switch (p_param) {
-		case PhysicsServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
-		case PhysicsServer::SPACE_PARAM_CONTACT_MAX_SEPARATION:
-		case PhysicsServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
-		case PhysicsServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
-		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
-		case PhysicsServer::SPACE_PARAM_BODY_TIME_TO_SLEEP:
-		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
-		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_RECYCLE_RADIUS:
+		case PhysicsServer3D::SPACE_PARAM_CONTACT_MAX_SEPARATION:
+		case PhysicsServer3D::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION:
+		case PhysicsServer3D::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_THRESHOLD:
+		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD:
+		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP:
+		case PhysicsServer3D::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO:
+		case PhysicsServer3D::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS:
 		default:
 			WARN_PRINT("The SpaceBullet doesn't support this get parameter (" + itos(p_param) + "), 0 is returned.");
 			return 0.f;
@@ -882,7 +882,7 @@ static Ref<SpatialMaterial> red_mat;
 static Ref<SpatialMaterial> blue_mat;
 #endif
 
-bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes, const RBSet<RID> &p_exclude) {
+bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult *r_result, bool p_exclude_raycast_shapes, const RBSet<RID> &p_exclude) {
 #if debug_test_motion
 	/// Yes I know this is not good, but I've used it as fast debugging hack.
 	/// I'm leaving it here just for speedup the other eventual debugs
@@ -1055,7 +1055,7 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 	return has_penetration;
 }
 
-int SpaceBullet::test_ray_separation(RigidBodyBullet *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer::SeparationResult *r_results, int p_result_max, float p_margin) {
+int SpaceBullet::test_ray_separation(RigidBodyBullet *p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer3D::SeparationResult *r_results, int p_result_max, float p_margin) {
 	btTransform body_transform;
 	G_TO_B(p_transform, body_transform);
 	UNSCALE_BT_BASIS(body_transform);
@@ -1070,7 +1070,7 @@ int SpaceBullet::test_ray_separation(RigidBodyBullet *p_body, const Transform &p
 	int rays_found_this_round = 0;
 
 	for (int t(RECOVERING_MOVEMENT_CYCLES); 0 < t; --t) {
-		PhysicsServer::SeparationResult *next_results = &r_results[rays_found];
+		PhysicsServer3D::SeparationResult *next_results = &r_results[rays_found];
 		rays_found_this_round = recover_from_penetration_ray(p_body, body_transform, RECOVERING_MOVEMENT_SCALE, p_infinite_inertia, p_result_max - rays_found, recover_motion, next_results);
 
 		rays_found += rays_found_this_round;
@@ -1321,7 +1321,7 @@ bool SpaceBullet::RFP_convex_convex_test(const btConvexShape *p_shapeA, const bt
 bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btCollisionShape *p_shapeB, btCollisionObject *p_objectA, btCollisionObject *p_objectB, int p_shapeId_A, int p_shapeId_B, const btTransform &p_transformA, const btTransform &p_transformB, btScalar p_recover_movement_scale, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result) {
 	/// Contact test
 
-	btTransform tA(p_transformA);
+	btTransform3D tA(p_transformA);
 	// Avoid repeat penetrations
 	tA.getOrigin() += r_delta_recover_movement;
 
@@ -1356,7 +1356,7 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 	return false;
 }
 
-int SpaceBullet::add_separation_result(PhysicsServer::SeparationResult *r_result, const SpaceBullet::RecoverResult &p_recover_result, int p_shape_id, const btCollisionObject *p_other_object) const {
+int SpaceBullet::add_separation_result(PhysicsServer3D::SeparationResult *r_result, const SpaceBullet::RecoverResult &p_recover_result, int p_shape_id, const btCollisionObject *p_other_object) const {
 	// optimize results (ignore non-colliding)
 	if (p_recover_result.penetration_distance < 0.0) {
 		const btRigidBody *btRigid = static_cast<const btRigidBody *>(p_other_object);
@@ -1377,7 +1377,7 @@ int SpaceBullet::add_separation_result(PhysicsServer::SeparationResult *r_result
 	}
 }
 
-int SpaceBullet::recover_from_penetration_ray(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, int p_result_max, btVector3 &r_delta_recover_movement, PhysicsServer::SeparationResult *r_results) {
+int SpaceBullet::recover_from_penetration_ray(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, int p_result_max, btVector3 &r_delta_recover_movement, PhysicsServer3D::SeparationResult *r_results) {
 	// Calculate the cumulative AABB of all shapes of the kinematic body
 	btVector3 aabb_min, aabb_max;
 	bool shapes_found = false;

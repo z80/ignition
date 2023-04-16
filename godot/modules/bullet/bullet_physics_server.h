@@ -32,20 +32,22 @@
 #define BULLET_PHYSICS_SERVER_H
 
 #include "area_bullet.h"
-#include "core/rid.h"
+#include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
 #include "joint_bullet.h"
 #include "rigid_body_bullet.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 #include "shape_bullet.h"
 #include "soft_body_bullet.h"
 #include "space_bullet.h"
 
 /**
 	@author AndreaCatania
+	FatherTed
 */
 
-class BulletPhysicsServer : public PhysicsServer {
-	GDCLASS(BulletPhysicsServer, PhysicsServer);
+class BulletPhysicsServer : public PhysicsServer3D {
+	GDCLASS(BulletPhysicsServer, PhysicsServer3D);
 
 	friend class BulletPhysicsDirectSpaceState;
 
@@ -111,7 +113,7 @@ public:
 	/// Not supported
 	virtual real_t space_get_param(RID p_space, SpaceParameter p_param) const;
 
-	virtual PhysicsDirectSpaceState *space_get_direct_state(RID p_space);
+	virtual PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space);
 
 	virtual void space_set_debug_contacts(RID p_space, int p_max_contacts);
 	virtual Vector<Vector3> space_get_contacts(RID p_space) const;
@@ -133,12 +135,12 @@ public:
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode);
 	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false);
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape);
-	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform);
+	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform3D &p_transform);
 	virtual int area_get_shape_count(RID p_area) const;
 	virtual RID area_get_shape(RID p_area, int p_shape_idx) const;
-	virtual Transform area_get_shape_transform(RID p_area, int p_shape_idx) const;
+	virtual Transform3D area_get_shape_transform(RID p_area, int p_shape_idx) const;
 	virtual void area_remove_shape(RID p_area, int p_shape_idx);
 	virtual void area_clear_shapes(RID p_area);
 	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled);
@@ -152,8 +154,8 @@ public:
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value);
 	virtual Variant area_get_param(RID p_area, AreaParameter p_param) const;
 
-	virtual void area_set_transform(RID p_area, const Transform &p_transform);
-	virtual Transform area_get_transform(RID p_area) const;
+	virtual void area_set_transform(RID p_area, const Transform3D &p_transform);
+	virtual Transform3D area_get_transform(RID p_area) const;
 
 	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask);
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer);
@@ -174,14 +176,14 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode);
 	virtual BodyMode body_get_mode(RID p_body) const;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform3D &p_transform = Transform3D(), bool p_disabled = false);
 	// Not supported, Please remove and add new shape
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape);
-	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform);
+	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform3D &p_transform);
 
 	virtual int body_get_shape_count(RID p_body) const;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const;
-	virtual Transform body_get_shape_transform(RID p_body, int p_shape_idx) const;
+	virtual Transform3D body_get_shape_transform(RID p_body, int p_shape_idx) const;
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled);
 
@@ -190,7 +192,7 @@ public:
 
 	// Used for Rigid and Soft Bodies
 	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
-	virtual uint32_t body_get_object_instance_id(RID p_body) const;
+	virtual ObjectID body_get_object_instance_id(RID p_body) const;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable);
 	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const;
@@ -207,7 +209,7 @@ public:
 	virtual uint32_t body_get_user_flags(RID p_body) const;
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
-	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
+	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const;
 
 	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin);
 	virtual real_t body_get_kinematic_safe_margin(RID p_body) const;
@@ -252,7 +254,7 @@ public:
 	virtual bool body_is_ray_pickable(RID p_body) const;
 
 	// this function only works on physics process, errors and returns null otherwise
-	virtual PhysicsDirectBodyState *body_get_direct_state(RID p_body);
+	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body);
 
 	virtual bool body_test_motion(RID p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true, const RBSet<RID> &p_exclude = RBSet<RID>());
 	virtual int body_test_ray_separation(RID p_body, const Transform3D &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001);
@@ -266,7 +268,7 @@ public:
 	virtual void soft_body_set_space(RID p_body, RID p_space);
 	virtual RID soft_body_get_space(RID p_body) const;
 
-	virtual void soft_body_set_mesh(RID p_body, const REF &p_mesh);
+	virtual void soft_body_set_mesh(RID p_body, const Ref<RefCounted> &p_mesh);
 
 	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer);
 	virtual uint32_t soft_body_get_collision_layer(RID p_body) const;
@@ -282,7 +284,7 @@ public:
 	virtual Variant soft_body_get_state(RID p_body, BodyState p_state) const;
 
 	/// Special function. This function has bad performance
-	virtual void soft_body_set_transform(RID p_body, const Transform &p_transform);
+	virtual void soft_body_set_transform(RID p_body, const Transform3D &p_transform);
 	virtual Vector3 soft_body_get_vertex_position(RID p_body, int vertex_index) const;
 
 	virtual void soft_body_set_ray_pickable(RID p_body, bool p_enable);
@@ -345,7 +347,7 @@ public:
 	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B);
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const;
 
-	virtual RID joint_create_hinge(RID p_body_A, const Transform &p_hinge_A, RID p_body_B, const Transform &p_hinge_B);
+	virtual RID joint_create_hinge(RID p_body_A, const Transform3D &p_hinge_A, RID p_body_B, const Transform3D &p_hinge_B);
 	virtual RID joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B);
 
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, float p_value);
@@ -355,19 +357,19 @@ public:
 	virtual bool hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const;
 
 	/// Reference frame is A
-	virtual RID joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B);
+	virtual RID joint_create_slider(RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B);
 
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, float p_value);
 	virtual float slider_joint_get_param(RID p_joint, SliderJointParam p_param) const;
 
 	/// Reference frame is A
-	virtual RID joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B);
+	virtual RID joint_create_cone_twist(RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B);
 
 	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, float p_value);
 	virtual float cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const;
 
 	/// Reference frame is A
-	virtual RID joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B);
+	virtual RID joint_create_generic_6dof(RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B);
 
 	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, float p_value);
 	virtual float generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param);
