@@ -249,7 +249,9 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 			case PhysicsServer3D::SHAPE_CAPSULE:
 			case PhysicsServer3D::SHAPE_CYLINDER:
 			case PhysicsServer3D::SHAPE_CONVEX_POLYGON:
-			case PhysicsServer3D::SHAPE_RAY: {
+			//case PhysicsServer3D::SHAPE_RAY:
+			case PhysicsServer3D::SHAPE_SEPARATION_RAY:
+			{
 				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
@@ -524,7 +526,7 @@ void RigidBodyBullet::set_param(PhysicsServer3D::BodyParameter p_param, real_t p
 	}
 }
 
-real_t RigidBodyBullet::get_param(PhysicsServer::BodyParameter p_param) const {
+real_t RigidBodyBullet::get_param(PhysicsServer3D::BodyParameter p_param) const {
 	switch (p_param) {
 		case PhysicsServer3D::BODY_PARAM_BOUNCE:
 			return btBody->getRestitution();
