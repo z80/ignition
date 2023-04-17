@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dv706ei38pgit"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_lqx1u"]
+
+[node name="body" type="RigidBody3D"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_lqx1u")

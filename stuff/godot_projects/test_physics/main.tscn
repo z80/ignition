@@ -1,0 +1,40 @@
+[gd_scene load_steps=5 format=3 uid="uid://bxone8o8yx1v8"]
+
+[ext_resource type="PackedScene" uid="uid://cx5sfek0itxe1" path="res://pad.tscn" id="1_tsjb1"]
+[ext_resource type="PackedScene" uid="uid://dv706ei38pgit" path="res://body.tscn" id="1_vef5j"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8ihby"]
+size = Vector3(100, 0.1, 100)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_g8wol"]
+size = Vector3(7.12052, 1, 7.13176)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("BoxShape3D_8ihby")
+
+[node name="StaticBody3D2" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.04128, 0.600024)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D2"]
+transform = Transform3D(0.965672, -0.259763, 0, 0.256003, 0.951693, 0.169539, -0.0440399, -0.163719, 0.985524, 1, 0, 3.05454)
+shape = SubResource("BoxShape3D_g8wol")
+
+[node name="pad" parent="." instance=ExtResource("1_tsjb1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.52322)
+
+[node name="body" parent="." instance=ExtResource("1_vef5j")]
+transform = Transform3D(1, 0, 0, 0, 0.5393, -0.842114, 0, 0.842114, 0.5393, 0, 4.60454, 0.842114)
+
+[node name="body2" parent="." instance=ExtResource("1_vef5j")]
+transform = Transform3D(1, 0, 0, 0, 0.5393, -0.842114, 0, 0.842114, 0.5393, 0, 3.52594, -0.842114)
+
+[node name="Generic6DOFJoint3D" type="Generic6DOFJoint3D" parent="."]
+node_a = NodePath("../body")
+node_b = NodePath("../body2")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 10)
