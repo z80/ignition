@@ -91,7 +91,7 @@ void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_s
 CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		RIDBullet(),
 		type(p_type),
-		instance_id(0),
+		instance_id(),
 		collisionLayer(0),
 		collisionMask(0),
 		collisionsEnabled(true),
@@ -288,7 +288,7 @@ void RigidCollisionObjectBullet::remove_shape_full(ShapeBullet *p_shape) {
 	for (int i = shapes.size() - 1; 0 <= i; --i) {
 		if (p_shape == shapes[i].shape) {
 			internal_shape_destroy(i);
-			shapes.remove(i);
+			shapes.remove_at(i);
 		}
 	}
 	reload_shapes();
@@ -297,7 +297,7 @@ void RigidCollisionObjectBullet::remove_shape_full(ShapeBullet *p_shape) {
 void RigidCollisionObjectBullet::remove_shape_full(int p_index) {
 	ERR_FAIL_INDEX(p_index, get_shape_count());
 	internal_shape_destroy(p_index);
-	shapes.remove(p_index);
+	shapes.remove_at(p_index);
 	reload_shapes();
 }
 

@@ -86,7 +86,7 @@ public:
 	virtual Vector3 get_closest_point_to_object_volume(RID p_object, const Vector3 p_point) const;
 };
 
-class SpaceBullet //: public RIDBullet
+class SpaceBullet : public RIDBullet
 {
 	friend class AreaBullet;
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
