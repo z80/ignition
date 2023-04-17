@@ -11,5 +11,7 @@ install_urho3d_release
 godot/projects
 .vs
 save_game.json
+.godot
+
 
 
