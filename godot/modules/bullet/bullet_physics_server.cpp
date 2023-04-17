@@ -32,9 +32,9 @@
 
 #include "bullet_utilities.h"
 #include "cone_twist_joint_bullet.h"
-#include "core/class_db.h"
-#include "core/error_macros.h"
-#include "core/ustring.h"
+#include "core/object/class_db.h"
+#include "core/error/error_macros.h"
+#include "core/string/ustring.h"
 #include "generic_6dof_joint_bullet.h"
 #include "hinge_joint_bullet.h"
 #include "pin_joint_bullet.h"
@@ -79,7 +79,7 @@ void BulletPhysicsServer::_bind_methods() {
 }
 
 BulletPhysicsServer::BulletPhysicsServer() :
-		PhysicsServer(),
+		PhysicsServer3D(),
 		active(true),
 		active_spaces_count(0) {}
 
@@ -89,7 +89,8 @@ RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 	ShapeBullet *shape = nullptr;
 
 	switch (p_shape) {
-		case SHAPE_PLANE: {
+		//case SHAPE_PLANE: {
+		case SHAPE_WORLD_BOUNDARY: {
 			shape = bulletnew(PlaneShapeBullet);
 		} break;
 		case SHAPE_SPHERE: {
@@ -113,7 +114,8 @@ RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 		case SHAPE_HEIGHTMAP: {
 			shape = bulletnew(HeightMapShapeBullet);
 		} break;
-		case SHAPE_RAY: {
+		//case SHAPE_RAY: {
+		case SHAPE_SEPARATION_RAY: {
 			shape = bulletnew(RayShapeBullet);
 		} break;
 		case SHAPE_CUSTOM:
