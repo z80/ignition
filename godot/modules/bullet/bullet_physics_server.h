@@ -191,7 +191,7 @@ public:
 	virtual void body_clear_shapes(RID p_body);
 
 	// Used for Rigid and Soft Bodies
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
+	virtual void body_attach_object_instance_id(RID p_body, ObjectID p_id);
 	virtual ObjectID body_get_object_instance_id(RID p_body) const;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable);
@@ -208,7 +208,7 @@ public:
 	/// This is not supported by physics server
 	virtual uint32_t body_get_user_flags(RID p_body) const;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
+	virtual void body_set_param(RID p_body, BodyParameter p_param, Variant p_value);
 	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const;
 
 	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin);
@@ -268,7 +268,7 @@ public:
 	virtual void soft_body_set_space(RID p_body, RID p_space);
 	virtual RID soft_body_get_space(RID p_body) const;
 
-	virtual void soft_body_set_mesh(RID p_body, const Ref<RefCounted> &p_mesh);
+	virtual void soft_body_set_mesh(RID p_body, RID p_mesh);
 
 	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer);
 	virtual uint32_t soft_body_get_collision_layer(RID p_body) const;

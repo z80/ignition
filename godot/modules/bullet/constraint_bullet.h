@@ -47,14 +47,14 @@
 
 /**
 	@author AndreaCatania
-	FatherTedd
+	FatherTed
 */
 
 class RigidBodyBullet;
 class SpaceBullet;
 class btTypedConstraint;
 
-class ConstraintBullet //: public RIDBullet
+class ConstraintBullet : public RIDBullet
 {
 protected:
 	SpaceBullet *space;

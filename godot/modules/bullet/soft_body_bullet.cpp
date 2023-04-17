@@ -116,7 +116,22 @@ void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_
 	p_visual_server_handler->set_aabb(aabb);
 }
 
-void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
+//void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
+//	destroy_soft_body();
+//
+//	soft_mesh = p_mesh;
+//
+//	if (soft_mesh.is_null()) {
+//		return;
+//	}
+//
+//	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & VS::ARRAY_FORMAT_INDEX));
+//
+//	Array arrays = soft_mesh->surface_get_arrays(0);
+//	set_trimesh_body_shape(arrays[VS::ARRAY_INDEX], arrays[VS::ARRAY_VERTEX]);
+//}
+
+void SoftBodyBullet::set_soft_mesh(RID p_mesh) {
 	destroy_soft_body();
 
 	soft_mesh = p_mesh;
@@ -125,10 +140,13 @@ void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
 		return;
 	}
 
-	ERR_FAIL_COND(!(soft_mesh->surface_get_format(0) & VS::ARRAY_FORMAT_INDEX));
+	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
+	ERR_FAIL_COND(arrays.is_empty());
 
-	Array arrays = soft_mesh->surface_get_arrays(0);
-	set_trimesh_body_shape(arrays[VS::ARRAY_INDEX], arrays[VS::ARRAY_VERTEX]);
+	bool success = create_from_trimesh(arrays[RenderingServer::ARRAY_INDEX], arrays[RenderingServer::ARRAY_VERTEX]);
+	if (!success) {
+		destroy_soft_body();
+	}
 }
 
 void SoftBodyBullet::destroy_soft_body() {

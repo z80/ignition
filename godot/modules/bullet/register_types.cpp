@@ -31,16 +31,16 @@
 #include "register_types.h"
 
 #include "bullet_physics_server.h"
-#include "core/class_db.h"
-#include "core/project_settings.h"
+#include "core/object/class_db.h"
+#include "core/config/project_settings.h"
 
 /**
 	@author AndreaCatania
 */
 
 #ifndef _3D_DISABLED
-PhysicsServer *_createBulletPhysicsCallback() {
-	return memnew(BulletPhysicsServer);
+PhysicsServer3D *_createBulletPhysicsCallback() {
+	return nullptr; //memnew(BulletPhysicsServer);
 }
 #endif
 

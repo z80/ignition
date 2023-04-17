@@ -62,7 +62,8 @@ private:
 	btSoftBody::Material *mat0; // This is just a copy of pointer managed by btSoftBody
 	bool isScratched;
 
-	Ref<Mesh> soft_mesh;
+	//Ref<Mesh> soft_mesh;
+	RID soft_mesh;
 
 	int simulation_precision;
 	real_t total_mass;
@@ -101,7 +102,8 @@ public:
 
 	void update_visual_server(class SoftBodyVisualServerHandler *p_visual_server_handler);
 
-	void set_soft_mesh(const Ref<Mesh> &p_mesh);
+	//void set_soft_mesh(const Ref<Mesh> &p_mesh);
+	void set_soft_mesh(RID p_mesh);
 	void destroy_soft_body();
 
 	// Special function. This function has bad performance

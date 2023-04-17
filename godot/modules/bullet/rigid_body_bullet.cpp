@@ -207,7 +207,7 @@ real_t BulletPhysicsDirectBodyState::get_step() const {
 	return body->get_space()->get_delta_time();
 }
 
-PhysicsDirectSpaceState *BulletPhysicsDirectBodyState::get_space_state() {
+PhysicsDirectSpaceState3D *BulletPhysicsDirectBodyState::get_space_state() {
 	return body->get_space()->get_direct_state();
 }
 
