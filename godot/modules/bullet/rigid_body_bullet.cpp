@@ -626,12 +626,12 @@ void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
 			break;
-		case PhysicsServer3D::BODY_MODE_CHARACTER:
-			mode = PhysicsServer3D::BODY_MODE_CHARACTER;
-			reload_axis_lock();
-			_internal_set_mass(0 == mass ? 1 : mass);
-			scratch_space_override_modificator();
-			break;
+		//case PhysicsServer3D::BODY_MODE_CHARACTER:
+		//	mode = PhysicsServer3D::BODY_MODE_CHARACTER;
+		//	reload_axis_lock();
+		//	_internal_set_mass(0 == mass ? 1 : mass);
+		//	scratch_space_override_modificator();
+		//	break;
 	}
 
 	btBody->setAngularVelocity(btVector3(0, 0, 0));
