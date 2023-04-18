@@ -40,3 +40,8 @@ JointBullet::JointBullet() :
 		ConstraintBullet() {}
 
 JointBullet::~JointBullet() {}
+
+PhysicsServer3D::JointType JointBullet::get_type() const
+{
+	return PhysicsServer3D::JOINT_TYPE_PIN;
+}

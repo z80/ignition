@@ -34,12 +34,12 @@
 #include "bullet_types_converter.h"
 #include "bullet_utilities.h"
 #include "constraint_bullet.h"
-#include "core/project_settings.h"
-#include "core/ustring.h"
+#include "core/config/project_settings.h"
+#include "core/string/ustring.h"
 #include "godot_collision_configuration.h"
 #include "godot_collision_dispatcher.h"
 #include "rigid_body_bullet.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 #include "soft_body_bullet.h"
 
 #include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
@@ -107,7 +107,7 @@ bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const V
 			r_result.shape = btResult.m_shapeId;
 			r_result.rid = gObj->get_self();
 			r_result.collider_id = gObj->get_instance_id();
-			r_result.collider = 0 == r_result.collider_id ? nullptr : ObjectDB::get_instance(r_result.collider_id);
+			r_result.collider = r_result.collider_id.is_null() ? nullptr : ObjectDB::get_instance(r_result.collider_id);
 		} else {
 			WARN_PRINT("The raycast performed has hit a collision object that is not part of Godot scene, please check it.");
 		}
@@ -122,7 +122,7 @@ int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Tra
 		return 0;
 	}
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
@@ -159,7 +159,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 	btVector3 bt_motion;
 	G_TO_B(p_motion, bt_motion);
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale(), p_margin);

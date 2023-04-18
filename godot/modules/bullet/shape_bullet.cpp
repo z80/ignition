@@ -64,14 +64,14 @@ btCollisionShape *ShapeBullet::prepare(btCollisionShape *p_btShape) const {
 }
 
 void ShapeBullet::notifyShapeChanged() {
-	for (Map<ShapeOwnerBullet *, int>::Element *E = owners.front(); E; E = E->next()) {
+	for (RBMap<ShapeOwnerBullet *, int>::Element *E = owners.front(); E; E = E->next()) {
 		ShapeOwnerBullet *owner = static_cast<ShapeOwnerBullet *>(E->key());
 		owner->shape_changed(owner->find_shape(this));
 	}
 }
 
 void ShapeBullet::add_owner(ShapeOwnerBullet *p_owner) {
-	Map<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
+	RBMap<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
 	if (E) {
 		E->get()++;
 	} else {
@@ -80,7 +80,7 @@ void ShapeBullet::add_owner(ShapeOwnerBullet *p_owner) {
 }
 
 void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody) {
-	Map<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
+	RBMap<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
 	if (!E) {
 		return;
 	}
@@ -94,7 +94,7 @@ bool ShapeBullet::is_owner(ShapeOwnerBullet *p_owner) const {
 	return owners.has(p_owner);
 }
 
-const Map<ShapeOwnerBullet *, int> &ShapeBullet::get_owners() const {
+const RBMap<ShapeOwnerBullet *, int> &ShapeBullet::get_owners() const {
 	return owners;
 }
 
@@ -147,7 +147,7 @@ btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(Vector<real_t>
 	const btScalar ignoredHeightScale(1);
 	const int YAxis = 1; // 0=X, 1=Y, 2=Z
 	const bool flipQuadEdges = false;
-	const void *heightsPtr = p_heights.read().ptr();
+	const void *heightsPtr = p_heights.ptr();
 
 	btHeightfieldTerrainShape *heightfield = bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, p_min_height, p_max_height, YAxis, PHY_FLOAT, flipQuadEdges));
 
@@ -179,7 +179,7 @@ Variant PlaneShapeBullet::get_data() const {
 }
 
 PhysicsServer3D::ShapeType PlaneShapeBullet::get_type() const {
-	return PhysicsServer3D::SHAPE_PLANE;
+	return PhysicsServer3D::SHAPE_WORLD_BOUNDARY;
 }
 
 void PlaneShapeBullet::setup(const Plane &p_plane) {
@@ -403,8 +403,8 @@ void ConcavePolygonShapeBullet::setup(Vector<Vector3> p_faces) {
 
 		btTriangleMesh *shapeInterface = bulletnew(btTriangleMesh);
 		src_face_count /= 3;
-		Vector<Vector3>::Read r = p_faces.read();
-		const Vector3 *facesr = r.ptr();
+		//Vector<Vector3>::Read r = p_faces.read();
+		const Vector3 *facesr = p_faces.ptr(); //r.ptr();
 
 		btVector3 supVec_0;
 		btVector3 supVec_1;
@@ -482,12 +482,16 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	Vector<real_t> l_heights;
 	Variant l_heights_v = d["heights"];
 
-	if (l_heights_v.get_type() == Variant::POOL_REAL_ARRAY) {
+	if ( (l_heights_v.get_type() == Variant::PACKED_FLOAT32_ARRAY) ||
+		 (l_heights_v.get_type() == Variant::PACKED_FLOAT64_ARRAY) )
+	{
 		// Ready-to-use heights can be passed
 
 		l_heights = l_heights_v;
 
-	} else if (l_heights_v.get_type() == Variant::OBJECT) {
+	}
+	else if (l_heights_v.get_type() == Variant::OBJECT)
+	{
 		// If an image is passed, we have to convert it to a format Bullet supports.
 		// this would be expensive to do with a script, so it's nice to have it here.
 
@@ -499,7 +503,7 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 		// We could convert here automatically but it's better to not be intrusive and let the caller do it if necessary.
 		ERR_FAIL_COND(l_image->get_format() != Image::FORMAT_RF);
 
-		PoolByteArray im_data = l_image->get_data();
+		PackedByteArray im_data = l_image->get_data();
 
 		l_heights.resize(l_image->get_width() * l_image->get_height());
 

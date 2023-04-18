@@ -75,7 +75,7 @@ public:
 	virtual ~ShapeBullet();
 
 	btCollisionShape *create_bt_shape(const Vector3 &p_implicit_scale, real_t p_extra_edge = 0);
-	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0) = 0;
+	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0) { return nullptr; };
 
 	void add_owner(ShapeOwnerBullet *p_owner);
 	void remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody = false);
@@ -86,10 +86,10 @@ public:
 	real_t get_margin() const;
 
 	/// Setup the shape
-	virtual void set_data(const Variant &p_data) = 0;
-	virtual Variant get_data() const = 0;
+	virtual void set_data(const Variant &p_data) {};
+	virtual Variant get_data() const { return Variant(); };
 
-	virtual PhysicsServer3D::ShapeType get_type() const = 0;
+	virtual PhysicsServer3D::ShapeType get_type() const { return PhysicsServer3D::SHAPE_WORLD_BOUNDARY; };
 
 public:
 	static class btEmptyShape *create_shape_empty();

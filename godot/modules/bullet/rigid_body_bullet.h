@@ -58,7 +58,8 @@ public:
 	virtual float get_total_angular_damp() const;
 	virtual float get_total_linear_damp() const;
 
-	virtual Vector3 get_center_of_mass() const;
+	virtual Vector3 get_center_of_mass() const override;
+	virtual Vector3 get_center_of_mass_local() const override;
 	virtual Basis get_principal_inertia_axes() const;
 	// get the mass
 	virtual float get_inverse_mass() const;
@@ -78,12 +79,29 @@ public:
 
 	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const;
 
-	virtual void add_central_force(const Vector3 &p_force);
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
-	virtual void add_torque(const Vector3 &p_torque);
-	virtual void apply_central_impulse(const Vector3 &p_impulse);
-	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
-	virtual void apply_torque_impulse(const Vector3 &p_impulse);
+	//virtual void add_central_force(const Vector3 &p_force);
+	//virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
+	//virtual void add_torque(const Vector3 &p_torque);
+
+	virtual void apply_central_impulse(const Vector3 &p_impulse) override;
+	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) override;
+	virtual void apply_torque_impulse(const Vector3 &p_impulse) override;
+
+	virtual void apply_central_force(const Vector3 &p_force) override;
+	virtual void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+	virtual void apply_torque(const Vector3 &p_torque) override;
+
+	virtual void add_constant_central_force(const Vector3 &p_force) override;
+	virtual void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+	virtual void add_constant_torque(const Vector3 &p_torque) override;
+
+	virtual void set_constant_force(const Vector3 &p_force) override;
+	virtual Vector3 get_constant_force() const override;
+
+	virtual void set_constant_torque(const Vector3 &p_torque) override;
+	virtual Vector3 get_constant_torque() const override;
+
+
 
 	virtual void set_sleep_state(bool p_enable);
 	virtual bool is_sleeping() const;

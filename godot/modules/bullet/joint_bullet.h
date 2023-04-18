@@ -46,7 +46,7 @@ public:
 	JointBullet();
 	virtual ~JointBullet();
 
-	virtual PhysicsServer3D::JointType get_type() const = 0;
+	virtual PhysicsServer3D::JointType get_type() const;
 };
 
 #endif // JOINT_BULLET_H

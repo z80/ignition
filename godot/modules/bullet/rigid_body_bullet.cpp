@@ -66,6 +66,12 @@ Vector3 BulletPhysicsDirectBodyState::get_center_of_mass() const {
 	return gVec;
 }
 
+Vector3 BulletPhysicsDirectBodyState::get_center_of_mass_local() const
+{
+	const Vector3 gVec( 0.0, 0.0, 0.0 );
+	return gVec;
+}
+
 Basis BulletPhysicsDirectBodyState::get_principal_inertia_axes() const {
 	return Basis();
 }
@@ -120,17 +126,17 @@ Vector3 BulletPhysicsDirectBodyState::get_velocity_at_local_position(const Vecto
 	return velocity;
 }
 
-void BulletPhysicsDirectBodyState::add_central_force(const Vector3 &p_force) {
-	body->apply_central_force(p_force);
-}
-
-void BulletPhysicsDirectBodyState::add_force(const Vector3 &p_force, const Vector3 &p_pos) {
-	body->apply_force(p_force, p_pos);
-}
-
-void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
-	body->apply_torque(p_torque);
-}
+//void BulletPhysicsDirectBodyState::add_central_force(const Vector3 &p_force) {
+//	body->apply_central_force(p_force);
+//}
+//
+//void BulletPhysicsDirectBodyState::add_force(const Vector3 &p_force, const Vector3 &p_pos) {
+//	body->apply_force(p_force, p_pos);
+//}
+//
+//void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
+//	body->apply_torque(p_torque);
+//}
 
 void BulletPhysicsDirectBodyState::apply_central_impulse(const Vector3 &p_impulse) {
 	body->apply_central_impulse(p_impulse);
@@ -143,6 +149,54 @@ void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vec
 void BulletPhysicsDirectBodyState::apply_torque_impulse(const Vector3 &p_impulse) {
 	body->apply_torque_impulse(p_impulse);
 }
+
+
+void BulletPhysicsDirectBodyState::apply_central_force(const Vector3 &p_force)
+{
+	body->apply_central_force(p_force);
+}
+
+void BulletPhysicsDirectBodyState::apply_force(const Vector3 &p_force, const Vector3 &p_position)
+{
+	body->apply_force(p_force, p_position);
+}
+
+void BulletPhysicsDirectBodyState::apply_torque(const Vector3 &p_torque)
+{
+	body->apply_torque(p_torque);
+}
+
+void BulletPhysicsDirectBodyState::add_constant_central_force(const Vector3 &p_force)
+{
+}
+
+void BulletPhysicsDirectBodyState::add_constant_force(const Vector3 &p_force, const Vector3 &p_position)
+{
+}
+
+void BulletPhysicsDirectBodyState::add_constant_torque(const Vector3 &p_torque)
+{
+}
+
+void BulletPhysicsDirectBodyState::set_constant_force(const Vector3 &p_force)
+{
+}
+
+Vector3 BulletPhysicsDirectBodyState::get_constant_force() const
+{
+	return Vector3(0.0, 0.0, 0.0);
+}
+
+void BulletPhysicsDirectBodyState::set_constant_torque(const Vector3 &p_torque)
+{
+}
+
+Vector3 BulletPhysicsDirectBodyState::get_constant_torque() const
+{
+	return Vector3(0.0, 0.0, 0.0);
+}
+
+
 
 void BulletPhysicsDirectBodyState::set_sleep_state(bool p_enable) {
 	body->set_activation_state(p_enable);
@@ -383,13 +437,13 @@ void RigidBodyBullet::dispatch_callbacks() {
 		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
 		if (!obj) {
 			// Remove integration callback
-			set_force_integration_callback(0, StringName());
+			set_force_integration_callback(ObjectID(), StringName());
 		} else {
 			const Variant *vp[2] = { &variantBodyDirect, &force_integration_callback->udata };
 
-			Variant::CallError responseCallError;
+			Callable::CallError responseCallError;
 			int argc = (force_integration_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
-			obj->call(force_integration_callback->method, vp, argc, responseCallError);
+			obj->callp(force_integration_callback->method, vp, argc, responseCallError);
 		}
 	}
 
@@ -411,7 +465,8 @@ void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const String
 		force_integration_callback = nullptr;
 	}
 
-	if (p_id != 0) {
+	if (p_id.is_valid())
+	{
 		force_integration_callback = memnew(ForceIntegrationCallback);
 		force_integration_callback->id = p_id;
 		force_integration_callback->method = p_method;
