@@ -1099,7 +1099,9 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 	// Rigidbody is dynamic if and only if mass is non Zero, otherwise static
 	const bool isDynamic = p_mass != 0.f;
 	if (isDynamic) {
-		if (PhysicsServer3D::BODY_MODE_RIGID != mode && PhysicsServer3D::BODY_MODE_CHARACTER != mode) {
+		// != rigid and simultaneously != character ??? How can it be a valid statement?
+		if (PhysicsServer3D::BODY_MODE_RIGID != mode /*&& PhysicsServer3D::BODY_MODE_CHARACTER != mode*/)
+		{
 			return;
 		}
 

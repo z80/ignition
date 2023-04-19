@@ -507,9 +507,11 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 
 		l_heights.resize(l_image->get_width() * l_image->get_height());
 
-		PoolRealArray::Write w = l_heights.write();
-		PoolByteArray::Read r = im_data.read();
-		float *rp = (float *)r.ptr();
+		//PoolRealArray::Write w = l_heights.write();
+		//PoolByteArray::Read r = im_data.read();
+		real_t * w = l_heights.ptrw();
+		const void * r = im_data.ptr();
+		float *rp = (float *)r; //r.ptr();
 		// At this point, `rp` could be used directly for Bullet, but I don't know how safe it would be.
 
 		for (int i = 0; i < l_heights.size(); ++i) {
