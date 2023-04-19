@@ -799,12 +799,12 @@ bool RigidBodyBullet::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 
 void RigidBodyBullet::reload_axis_lock() {
 	btBody->setLinearFactor(btVector3(float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z))));
-	if (PhysicsServer3D::BODY_MODE_CHARACTER == mode) {
-		/// When character angular is always locked
-		btBody->setAngularFactor(btVector3(0., 0., 0.));
-	} else {
+	//if (PhysicsServer3D::BODY_MODE_CHARACTER == mode) {
+	//	/// When character angular is always locked
+	//	btBody->setAngularFactor(btVector3(0., 0., 0.));
+	//} else {
 		btBody->setAngularFactor(btVector3(float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_X)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Y)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Z))));
-	}
+	//}
 }
 
 void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {

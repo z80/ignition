@@ -220,7 +220,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform3D
 		return false;
 	}
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getor_null(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
@@ -252,7 +252,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform3D
 }
 
 bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform3D &p_shape_xform, float p_margin, ShapeRestInfo *r_info, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
 	ERR_FAIL_COND_V(!shape, false);
 
 	btCollisionShape *btShape = shape->create_bt_shape(p_shape_xform.basis.get_scale_abs(), p_margin);
@@ -400,8 +400,8 @@ void SpaceBullet::set_param(PhysicsServer3D::AreaParameter p_param, const Varian
 			// Priority is always 0, the lower
 			break;
 		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT:
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
+		//case PhysicsServer3D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
+		//case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
 			break;
 		default:
 			WARN_PRINT("This set parameter (" + itos(p_param) + ") is ignored, the SpaceBullet doesn't support it.");
