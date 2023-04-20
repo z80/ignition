@@ -154,13 +154,13 @@ public:
 	const btCollisionObject *m_self_object;
 	PhysicsDirectSpaceState3D::ShapeResult *m_results;
 	int m_resultMax;
-	const RBSet<RID> *m_exclude;
+	const HashSet<RID> *m_exclude;
 	int m_count;
 
 	bool collide_with_bodies;
 	bool collide_with_areas;
 
-	GodotAllContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState3D::ShapeResult *p_results, int p_resultMax, const RBSet<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
+	GodotAllContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState3D::ShapeResult *p_results, int p_resultMax, const HashSet<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			m_self_object(p_self_object),
 			m_results(p_results),
 			m_resultMax(p_resultMax),

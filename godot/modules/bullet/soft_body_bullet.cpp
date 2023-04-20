@@ -76,7 +76,7 @@ void SoftBodyBullet::on_enter_area(AreaBullet *p_area) {}
 
 void SoftBodyBullet::on_exit_area(AreaBullet *p_area) {}
 
-void SoftBodyBullet::update_visual_server(SoftBodyVisualServerHandler *p_visual_server_handler) {
+void SoftBodyBullet::update_visual_server(SoftBodyRenderingServerHandler *p_visual_server_handler) {
 	if (!bt_soft_body) {
 		return;
 	}

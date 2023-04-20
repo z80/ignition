@@ -62,21 +62,47 @@ BulletPhysicsDirectSpaceState::BulletPhysicsDirectSpaceState(SpaceBullet *p_spac
 		PhysicsDirectSpaceState3D(),
 		space(p_space) {}
 
-int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	if (p_result_max <= 0) {
+//int BulletPhysicsDirectSpaceState::intersect_point(const Vector3 &p_point, ShapeResult *r_results, int p_result_max, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas)
+//{
+//	if (p_result_max <= 0) {
+//		return 0;
+//	}
+//
+//	btVector3 bt_point;
+//	G_TO_B(p_point, bt_point);
+//
+//	btSphereShape sphere_point(0.001f);
+//	btCollisionObject collision_object_point;
+//	collision_object_point.setCollisionShape(&sphere_point);
+//	collision_object_point.setWorldTransform(btTransform(btQuaternion::getIdentity(), bt_point));
+//
+//	// Setup query
+//	GodotAllContactResultCallback btResult(&collision_object_point, r_results, p_result_max, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
+//	btResult.m_collisionFilterGroup = 0;
+//	btResult.m_collisionFilterMask = p_collision_mask;
+//	space->dynamicsWorld->contactTest(&collision_object_point, btResult);
+//
+//	// The results is already populated by GodotAllConvexResultCallback
+//	return btResult.m_count;
+//}
+
+int BulletPhysicsDirectSpaceState::intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max)
+{
+	if (p_result_max <= 0)
+	{
 		return 0;
 	}
 
 	btVector3 bt_point;
-	G_TO_B(p_point, bt_point);
+	G_TO_B(p_parameters.position, bt_point);
 
 	btSphereShape sphere_point(0.001f);
 	btCollisionObject collision_object_point;
 	collision_object_point.setCollisionShape(&sphere_point);
-	collision_object_point.setWorldTransform(btTransform(btQuaternion::getIdentity(), bt_point));
+	collision_object_point.setWorldTransform( btTransform( btQuaternion::getIdentity(), bt_point ) );
 
 	// Setup query
-	GodotAllContactResultCallback btResult(&collision_object_point, r_results, p_result_max, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
+	GodotAllContactResultCallback btResult( &collision_object_point, r_results, p_result_max, &(p_parameters.exclude), p_parameters.collide_with_bodies, p_parameters.collide_with_areas );
 	btResult.m_collisionFilterGroup = 0;
 	btResult.m_collisionFilterMask = p_collision_mask;
 	space->dynamicsWorld->contactTest(&collision_object_point, btResult);

@@ -593,7 +593,7 @@ Variant RayShapeBullet::get_data() const {
 }
 
 PhysicsServer3D::ShapeType RayShapeBullet::get_type() const {
-	return PhysicsServer3D::SHAPE_RAY;
+	return PhysicsServer3D::SHAPE_SEPARATION_RAY;
 }
 
 void RayShapeBullet::setup(real_t p_length, bool p_slips_on_slope) {

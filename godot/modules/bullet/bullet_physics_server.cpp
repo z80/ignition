@@ -905,7 +905,7 @@ RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {
 	CreateThenReturnRIDPtr(soft_body_owner, body);
 }
 
-void BulletPhysicsServer::soft_body_update_visual_server(RID p_body, class SoftBodyVisualServerHandler *p_visual_server_handler) {
+void BulletPhysicsServer::soft_body_update_visual_server(RID p_body, class SoftBodyRenderingServerHandler *p_visual_server_handler) {
 	SoftBodyBullet *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 
