@@ -104,72 +104,150 @@ int BulletPhysicsDirectSpaceState::intersect_point(const PointParameters &p_para
 	// Setup query
 	GodotAllContactResultCallback btResult( &collision_object_point, r_results, p_result_max, &(p_parameters.exclude), p_parameters.collide_with_bodies, p_parameters.collide_with_areas );
 	btResult.m_collisionFilterGroup = 0;
-	btResult.m_collisionFilterMask = p_collision_mask;
-	space->dynamicsWorld->contactTest(&collision_object_point, btResult);
+	btResult.m_collisionFilterMask = p_parameters.collision_mask;
+	space->dynamicsWorld->contactTest( &collision_object_point, btResult );
 
 	// The results is already populated by GodotAllConvexResultCallback
 	return btResult.m_count;
 }
 
-bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_ray) {
+//bool BulletPhysicsDirectSpaceState::intersect_ray(const Vector3 &p_from, const Vector3 &p_to, RayResult &r_result, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_ray) {
+//	btVector3 btVec_from;
+//	btVector3 btVec_to;
+//
+//	G_TO_B(p_from, btVec_from);
+//	G_TO_B(p_to, btVec_to);
+//
+//	// setup query
+//	GodotClosestRayResultCallback btResult(btVec_from, btVec_to, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
+//	btResult.m_collisionFilterGroup = 0;
+//	btResult.m_collisionFilterMask = p_collision_mask;
+//	btResult.m_pickRay = p_pick_ray;
+//
+//	space->dynamicsWorld->rayTest(btVec_from, btVec_to, btResult);
+//	if (btResult.hasHit()) {
+//		B_TO_G(btResult.m_hitPointWorld, r_result.position);
+//		B_TO_G(btResult.m_hitNormalWorld.normalize(), r_result.normal);
+//		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btResult.m_collisionObject->getUserPointer());
+//		if (gObj) {
+//			r_result.shape = btResult.m_shapeId;
+//			r_result.rid = gObj->get_self();
+//			r_result.collider_id = gObj->get_instance_id();
+//			r_result.collider = r_result.collider_id.is_null() ? nullptr : ObjectDB::get_instance(r_result.collider_id);
+//		} else {
+//			WARN_PRINT("The raycast performed has hit a collision object that is not part of Godot scene, please check it.");
+//		}
+//		return true;
+//	} else {
+//		return false;
+//	}
+//}
+
+bool BulletPhysicsDirectSpaceState::intersect_ray(const RayParameters &p_parameters, RayResult &r_result)
+{
 	btVector3 btVec_from;
 	btVector3 btVec_to;
 
-	G_TO_B(p_from, btVec_from);
-	G_TO_B(p_to, btVec_to);
+	G_TO_B( p_parameters.from, btVec_from);
+	G_TO_B( p_parameters.to, btVec_to);
 
 	// setup query
-	GodotClosestRayResultCallback btResult(btVec_from, btVec_to, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
+	GodotClosestRayResultCallback btResult(btVec_from, btVec_to, &(p_parameters.exclude), p_parameters.collide_with_bodies, p_parameters.collide_with_areas );
 	btResult.m_collisionFilterGroup = 0;
-	btResult.m_collisionFilterMask = p_collision_mask;
-	btResult.m_pickRay = p_pick_ray;
+	btResult.m_collisionFilterMask = p_parameters.collision_mask;
+	btResult.m_pickRay = p_parameters.pick_ray;
 
 	space->dynamicsWorld->rayTest(btVec_from, btVec_to, btResult);
-	if (btResult.hasHit()) {
+	if ( btResult.hasHit() )
+	{
 		B_TO_G(btResult.m_hitPointWorld, r_result.position);
 		B_TO_G(btResult.m_hitNormalWorld.normalize(), r_result.normal);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btResult.m_collisionObject->getUserPointer());
-		if (gObj) {
+		if (gObj != nullptr)
+		{
 			r_result.shape = btResult.m_shapeId;
 			r_result.rid = gObj->get_self();
 			r_result.collider_id = gObj->get_instance_id();
 			r_result.collider = r_result.collider_id.is_null() ? nullptr : ObjectDB::get_instance(r_result.collider_id);
-		} else {
+		}
+		else
+		{
 			WARN_PRINT("The raycast performed has hit a collision object that is not part of Godot scene, please check it.");
 		}
 		return true;
-	} else {
+	}
+	else
+	{
 		return false;
 	}
 }
 
-int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Transform3D &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-	if (p_result_max <= 0) {
+
+//int BulletPhysicsDirectSpaceState::intersect_shape(const RID &p_shape, const Transform3D &p_xform, float p_margin, ShapeResult *r_results, int p_result_max, const RBSet<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
+//	if (p_result_max <= 0) {
+//		return 0;
+//	}
+//
+//	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
+//	ERR_FAIL_COND_V(!shape, 0);
+//
+//	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
+//	if (!btShape->isConvex()) {
+//		bulletdelete(btShape);
+//		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+//		return 0;
+//	}
+//	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
+//
+//	btTransform bt_xform;
+//	G_TO_B(p_xform, bt_xform);
+//	UNSCALE_BT_BASIS(bt_xform);
+//
+//	btCollisionObject collision_object;
+//	collision_object.setCollisionShape(btConvex);
+//	collision_object.setWorldTransform(bt_xform);
+//
+//	GodotAllContactResultCallback btQuery(&collision_object, r_results, p_result_max, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
+//	btQuery.m_collisionFilterGroup = 0;
+//	btQuery.m_collisionFilterMask = p_collision_mask;
+//	btQuery.m_closestDistanceThreshold = 0;
+//	space->dynamicsWorld->contactTest(&collision_object, btQuery);
+//
+//	bulletdelete(btConvex);
+//
+//	return btQuery.m_count;
+//}
+
+int BulletPhysicsDirectSpaceState::intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max)
+{
+	if (p_result_max <= 0)
+	{
 		return 0;
 	}
 
-	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_shape);
+	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->get_or_null(p_parameters.shape_rid);
 	ERR_FAIL_COND_V(!shape, 0);
 
-	btCollisionShape *btShape = shape->create_bt_shape(p_xform.basis.get_scale_abs(), p_margin);
-	if (!btShape->isConvex()) {
+	btCollisionShape *btShape = shape->create_bt_shape(p_parameters.transform.basis.get_scale_abs(), p_parameters.margin);
+	if ( !btShape->isConvex() )
+	{
 		bulletdelete(btShape);
-		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
+		ERR_PRINT( "The shape is not a convex shape, then is not supported: shape type: " + itos( shape->get_type() ) );
 		return 0;
 	}
 	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
 
 	btTransform bt_xform;
-	G_TO_B(p_xform, bt_xform);
+	G_TO_B(p_parameters.transform, bt_xform);
 	UNSCALE_BT_BASIS(bt_xform);
 
 	btCollisionObject collision_object;
 	collision_object.setCollisionShape(btConvex);
 	collision_object.setWorldTransform(bt_xform);
 
-	GodotAllContactResultCallback btQuery(&collision_object, r_results, p_result_max, &p_exclude, p_collide_with_bodies, p_collide_with_areas);
+	GodotAllContactResultCallback btQuery( &collision_object, r_results, p_result_max, &(p_parameters.exclude), p_parameters.collide_with_bodies, p_parameters.collide_with_areas );
 	btQuery.m_collisionFilterGroup = 0;
-	btQuery.m_collisionFilterMask = p_collision_mask;
+	btQuery.m_collisionFilterMask = p_parameters.collision_mask;
 	btQuery.m_closestDistanceThreshold = 0;
 	space->dynamicsWorld->contactTest(&collision_object, btQuery);
 

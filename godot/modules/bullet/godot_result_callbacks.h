@@ -65,7 +65,7 @@ struct GodotFilterCallback : public btOverlapFilterCallback {
 
 /// It performs an additional check allow exclusions.
 struct GodotClosestRayResultCallback : public btCollisionWorld::ClosestRayResultCallback {
-	const RBSet<RID> *m_exclude;
+	const HashSet<RID> *m_exclude;
 	bool m_pickRay;
 	int m_shapeId;
 
@@ -73,7 +73,7 @@ struct GodotClosestRayResultCallback : public btCollisionWorld::ClosestRayResult
 	bool collide_with_areas;
 
 public:
-	GodotClosestRayResultCallback(const btVector3 &rayFromWorld, const btVector3 &rayToWorld, const RBSet<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
+	GodotClosestRayResultCallback(const btVector3 &rayFromWorld, const btVector3 &rayToWorld, const HashSet<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld),
 			m_exclude(p_exclude),
 			m_pickRay(false),

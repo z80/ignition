@@ -143,10 +143,11 @@ void SoftBodyBullet::set_soft_mesh(RID p_mesh) {
 	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
 	ERR_FAIL_COND(arrays.is_empty());
 
-	bool success = create_from_trimesh(arrays[RenderingServer::ARRAY_INDEX], arrays[RenderingServer::ARRAY_VERTEX]);
-	if (!success) {
-		destroy_soft_body();
-	}
+	//bool success = create_from_trimesh(arrays[RenderingServer::ARRAY_INDEX], arrays[RenderingServer::ARRAY_VERTEX]);
+	//if (!success) {
+	//	destroy_soft_body();
+	//}
+	set_trimesh_body_shape( arrays[VS::ARRAY_INDEX], arrays[VS::ARRAY_VERTEX] );
 }
 
 void SoftBodyBullet::destroy_soft_body() {
