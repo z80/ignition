@@ -131,13 +131,13 @@ public:
 
 struct GodotClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
 public:
-	const RBSet<RID> *m_exclude;
+	const HashSet<RID> *m_exclude;
 	int m_shapeId;
 
 	bool collide_with_bodies;
 	bool collide_with_areas;
 
-	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RBSet<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
+	GodotClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const HashSet<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
 			m_exclude(p_exclude),
 			m_shapeId(0),
