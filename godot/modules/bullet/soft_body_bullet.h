@@ -45,6 +45,8 @@
 #include "scene/resources/mesh.h"
 #include "servers/physics_server_3d.h"
 
+#include "core/templates/rid_owner.h"
+
 #ifdef x11_None
 /// This is required to re add the macro None defined by x11 compiler
 #undef x11_None
@@ -53,6 +55,7 @@
 
 /**
 	@author AndreaCatania
+	FatherTed
 */
 
 class SoftBodyBullet : public CollisionObjectBullet {
@@ -64,6 +67,8 @@ private:
 
 	//Ref<Mesh> soft_mesh;
 	RID soft_mesh;
+	//mutable RID_Owner<Mesh> soft_mesh;
+
 
 	int simulation_precision;
 	real_t total_mass;
