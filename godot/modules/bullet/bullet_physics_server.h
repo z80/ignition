@@ -305,6 +305,7 @@ public:
 	/* SOFT BODY API */
 
 	virtual RID soft_body_create(bool p_init_sleeping = false);
+	virtual RID soft_body_create() override;
 
 	virtual void soft_body_update_visual_server(RID p_body, class SoftBodyRenderingServerHandler *p_visual_server_handler);
 
