@@ -90,6 +90,18 @@ public:
 
 	/* SHAPE API */
 	virtual RID shape_create(ShapeType p_shape);
+
+	virtual RID world_boundary_shape_create() override;
+	virtual RID separation_ray_shape_create() override;
+	virtual RID sphere_shape_create() override;
+	virtual RID box_shape_create() override;
+	virtual RID capsule_shape_create() override;
+	virtual RID cylinder_shape_create() override;
+	virtual RID convex_polygon_shape_create() override;
+	virtual RID concave_polygon_shape_create() override;
+	virtual RID heightmap_shape_create() override;
+	virtual RID custom_shape_create() override;
+
 	virtual void shape_set_data(RID p_shape, const Variant &p_data);
 	virtual ShapeType shape_get_type(RID p_shape) const;
 	virtual Variant shape_get_data(RID p_shape) const;
@@ -157,18 +169,26 @@ public:
 	virtual void area_set_transform(RID p_area, const Transform3D &p_transform);
 	virtual Transform3D area_get_transform(RID p_area) const;
 
-	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask);
-	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer);
+	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) override;
+	virtual uint32_t area_get_collision_mask(RID p_area) const override;
+
+	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) override;
+	virtual uint32_t area_get_collision_layer(RID p_area) const override;
+
 
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable);
-	virtual void area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method);
-	virtual void area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method);
+	//virtual void area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method);
+	//virtual void area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method);
+	virtual void area_set_monitor_callback(RID p_area, const Callable &p_callback) override;
+	virtual void area_set_area_monitor_callback(RID p_area, const Callable &p_callback) override;
+
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable);
 	virtual bool area_is_ray_pickable(RID p_area) const;
 
 	/* RIGID BODY API */
 
 	virtual RID body_create(BodyMode p_mode = BODY_MODE_RIGID, bool p_init_sleeping = false);
+	virtual RID body_create() override;
 
 	virtual void body_set_space(RID p_body, RID p_space);
 	virtual RID body_get_space(RID p_body) const;
@@ -203,13 +223,18 @@ public:
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
 	virtual uint32_t body_get_collision_mask(RID p_body) const;
 
+	virtual void body_set_collision_priority(RID p_body, real_t p_priority) override;
+	virtual real_t body_get_collision_priority(RID p_body) const override;
+
 	/// This is not supported by physics server
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags);
 	/// This is not supported by physics server
 	virtual uint32_t body_get_user_flags(RID p_body) const;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, Variant p_value);
-	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const;
+	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant & p_value) override;
+	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const override;
+
+	virtual void body_reset_mass_properties(RID p_body) override;
 
 	virtual void body_set_kinematic_safe_margin(RID p_body, real_t p_margin);
 	virtual real_t body_get_kinematic_safe_margin(RID p_body) const;
@@ -224,8 +249,23 @@ public:
 	virtual Vector3 body_get_applied_torque(RID p_body) const;
 
 	virtual void body_add_central_force(RID p_body, const Vector3 &p_force);
+	virtual void body_apply_central_force(RID p_body, const Vector3 &p_force) override;
+
 	virtual void body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos);
+	virtual void body_apply_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+
 	virtual void body_add_torque(RID p_body, const Vector3 &p_torque);
+	virtual void body_apply_torque(RID p_body, const Vector3 &p_torque) override;
+
+	virtual void body_add_constant_central_force(RID p_body, const Vector3 &p_force) override;
+	virtual void body_add_constant_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+	virtual void body_set_constant_force(RID p_body, const Vector3 &p_force) override;
+	virtual Vector3 body_get_constant_force(RID p_body) const override;
+	virtual void body_add_constant_torque(RID p_body, const Vector3 &p_torque) override;
+	virtual void body_set_constant_torque(RID p_body, const Vector3 &p_torque) override;
+	virtual Vector3 body_get_constant_torque(RID p_body) const override;
+
+
 
 	virtual void body_apply_central_impulse(RID p_body, const Vector3 &p_impulse);
 	virtual void body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse);
@@ -248,7 +288,9 @@ public:
 	virtual void body_set_omit_force_integration(RID p_body, bool p_omit);
 	virtual bool body_is_omitting_force_integration(RID p_body) const;
 
+	virtual void body_set_state_sync_callback(RID p_body, const Callable &p_callable) override;
 	virtual void body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata = Variant());
+	virtual void body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata = Variant()) override;
 
 	virtual void body_set_ray_pickable(RID p_body, bool p_enable);
 	virtual bool body_is_ray_pickable(RID p_body) const;

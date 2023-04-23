@@ -36,11 +36,13 @@
 
 /**
 	@author AndreaCatania
+	FatherTed
 */
 
 #ifndef _3D_DISABLED
-PhysicsServer3D *_createBulletPhysicsCallback() {
-	return nullptr; //memnew(BulletPhysicsServer);
+PhysicsServer3D *_createBulletPhysicsCallback()
+{
+	return memnew(BulletPhysicsServer);
 }
 #endif
 
@@ -49,13 +51,13 @@ void initialize_bullet_module( ModuleInitializationLevel p_level )
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
         return;
 
-//#ifndef _3D_DISABLED
-//	PhysicsServerManager::register_server("Bullet", &_createBulletPhysicsCallback);
-//	PhysicsServerManager::set_default_server("Bullet", 1);
-//
-//	GLOBAL_DEF("physics/3d/active_soft_world", true);
-//	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
-//#endif
+#ifndef _3D_DISABLED
+	//PhysicsServerManager::register_server( "Bullet", &_createBulletPhysicsCallback );
+	//PhysicsServerManager::set_default_server("Bullet", 1);
+
+	//GLOBAL_DEF("physics/3d/active_soft_world", true);
+	//ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
+#endif
 }
 
 void uninitialize_bullet_module( ModuleInitializationLevel p_level )

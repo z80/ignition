@@ -134,6 +134,66 @@ RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 	CreateThenReturnRIDPtr(shape_owner, shape)
 }
 
+RID BulletPhysicsServer::world_boundary_shape_create()
+{
+	RID ret = shape_create( SHAPE_WORLD_BOUNDARY );
+	return ret;
+}
+
+RID BulletPhysicsServer::separation_ray_shape_create()
+{
+	RID ret = shape_create( SHAPE_SEPARATION_RAY );
+	return ret;
+}
+
+RID BulletPhysicsServer::sphere_shape_create()
+{
+	RID ret = shape_create( SHAPE_SPHERE );
+	return ret;
+}
+
+RID BulletPhysicsServer::box_shape_create()
+{
+	RID ret = shape_create( SHAPE_BOX );
+	return ret;
+}
+
+RID BulletPhysicsServer::capsule_shape_create()
+{
+	RID ret = shape_create( SHAPE_CAPSULE );
+	return ret;
+}
+
+RID BulletPhysicsServer::cylinder_shape_create()
+{
+	RID ret = shape_create( SHAPE_CYLINDER );
+	return ret;
+}
+
+RID BulletPhysicsServer::convex_polygon_shape_create()
+{
+	RID ret = shape_create( SHAPE_CONVEX_POLYGON );
+	return ret;
+}
+
+RID BulletPhysicsServer::concave_polygon_shape_create()
+{
+	RID ret = shape_create( SHAPE_CONCAVE_POLYGON );
+	return ret;
+}
+
+RID BulletPhysicsServer::heightmap_shape_create()
+{
+	RID ret = shape_create( SHAPE_HEIGHTMAP );
+	return ret;
+}
+
+RID BulletPhysicsServer::custom_shape_create()
+{
+	RID ret = shape_create( SHAPE_CUSTOM );
+	return ret;
+}
+
 void BulletPhysicsServer::shape_set_data(RID p_shape, const Variant &p_data) {
 	ShapeBullet *shape = shape_owner.get_or_null(p_shape);
 	ERR_FAIL_COND(!shape);
@@ -416,10 +476,27 @@ void BulletPhysicsServer::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 	area->set_collision_mask(p_mask);
 }
 
+uint32_t BulletPhysicsServer::area_get_collision_mask(RID p_area) const
+{
+	AreaBullet *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+	const uint32_t ret = area->get_collision_mask();
+	return ret;
+}
+
+
 void BulletPhysicsServer::area_set_collision_layer(RID p_area, uint32_t p_layer) {
 	AreaBullet *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 	area->set_collision_layer(p_layer);
+}
+
+uint32_t BulletPhysicsServer::area_get_collision_layer(RID p_area) const
+{
+	AreaBullet *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+	const uint32_t ret = area->get_collision_layer();
+	return ret;
 }
 
 void BulletPhysicsServer::area_set_monitorable(RID p_area, bool p_monitorable) {
@@ -429,18 +506,35 @@ void BulletPhysicsServer::area_set_monitorable(RID p_area, bool p_monitorable) {
 	area->set_monitorable(p_monitorable);
 }
 
-void BulletPhysicsServer::area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
+//void BulletPhysicsServer::area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
+//	AreaBullet *area = area_owner.get_or_null(p_area);
+//	ERR_FAIL_COND(!area);
+//
+//	area->set_event_callback(CollisionObjectBullet::TYPE_RIGID_BODY, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
+//}
+
+void BulletPhysicsServer::area_set_monitor_callback(RID p_area, const Callable &p_callback)
+{
 	AreaBullet *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_event_callback(CollisionObjectBullet::TYPE_RIGID_BODY, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
+	//area->set_event_callback( CollisionObjectBullet::TYPE_RIGID_BODY, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
+	area->set_event_callback( CollisionObjectBullet::TYPE_RIGID_BODY, p_callback.get_object_id(), p_callback.get_method() );
 }
 
-void BulletPhysicsServer::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
+//void BulletPhysicsServer::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
+//	AreaBullet *area = area_owner.get_or_null(p_area);
+//	ERR_FAIL_COND(!area);
+//
+//	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
+//}
+
+void BulletPhysicsServer::area_set_area_monitor_callback(RID p_area, const Callable &p_callback)
+{
 	AreaBullet *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
+	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_callback.get_object_id(), p_callback.get_method() );
 }
 
 void BulletPhysicsServer::area_set_ray_pickable(RID p_area, bool p_enable) {
@@ -464,6 +558,12 @@ RID BulletPhysicsServer::body_create(BodyMode p_mode, bool p_init_sleeping) {
 		body->set_state(BODY_STATE_SLEEPING, p_init_sleeping);
 	}
 	CreateThenReturnRIDPtr(rigid_body_owner, body);
+}
+
+RID BulletPhysicsServer::body_create()
+{
+	RID ret = body_create(BODY_MODE_RIGID, false);
+	return ret;
 }
 
 void BulletPhysicsServer::body_set_space(RID p_body, RID p_space) {
@@ -632,6 +732,17 @@ uint32_t BulletPhysicsServer::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 }
 
+void BulletPhysicsServer::body_set_collision_priority(RID p_body, real_t p_priority)
+{
+	// I have no clue what it is supposed to do.
+}
+
+real_t BulletPhysicsServer::body_get_collision_priority(RID p_body) const
+{
+	// The same here. I don't know what collision priority is.
+	return 0.0;
+}
+
 void BulletPhysicsServer::body_set_user_flags(RID p_body, uint32_t p_flags) {
 	// This function si not currently supported
 }
@@ -641,18 +752,25 @@ uint32_t BulletPhysicsServer::body_get_user_flags(RID p_body) const {
 	return 0;
 }
 
-void BulletPhysicsServer::body_set_param(RID p_body, BodyParameter p_param, Variant p_value) {
+void BulletPhysicsServer::body_set_param(RID p_body, BodyParameter p_param, const Variant & p_value)
+{
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_param(p_param, p_value);
 }
 
-Variant BulletPhysicsServer::body_get_param(RID p_body, BodyParameter p_param) const {
+Variant BulletPhysicsServer::body_get_param(RID p_body, BodyParameter p_param) const
+{
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
 	return body->get_param(p_param);
+}
+
+void BulletPhysicsServer::body_reset_mass_properties(RID p_body)
+{
+	// I have no clue of what it is supposed to do.
 }
 
 void BulletPhysicsServer::body_set_kinematic_safe_margin(RID p_body, real_t p_margin) {
@@ -723,11 +841,21 @@ void BulletPhysicsServer::body_add_central_force(RID p_body, const Vector3 &p_fo
 	body->apply_central_force(p_force);
 }
 
+void BulletPhysicsServer::body_apply_central_force(RID p_body, const Vector3 &p_force)
+{
+	body_add_central_force( p_body, p_force );
+}
+
 void BulletPhysicsServer::body_add_force(RID p_body, const Vector3 &p_force, const Vector3 &p_pos) {
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->apply_force(p_force, p_pos);
+}
+
+void BulletPhysicsServer::body_apply_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position )
+{
+	body_add_force( p_body, p_force, p_position );
 }
 
 void BulletPhysicsServer::body_add_torque(RID p_body, const Vector3 &p_torque) {
@@ -736,6 +864,48 @@ void BulletPhysicsServer::body_add_torque(RID p_body, const Vector3 &p_torque) {
 
 	body->apply_torque(p_torque);
 }
+
+void BulletPhysicsServer::body_apply_torque(RID p_body, const Vector3 &p_torque)
+{
+	body_apply_force( p_body, p_torque );
+}
+
+void BulletPhysicsServer::body_add_constant_central_force(RID p_body, const Vector3 &p_force)
+{
+	// For now nothing. BulletBody doesn't yet support it.
+}
+
+void BulletPhysicsServer::body_add_constant_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position )
+{
+	// For now nothing. BulletBody doesn't yet support it.
+}
+
+void BulletPhysicsServer::body_add_constant_torque(RID p_body, const Vector3 &p_torque)
+{
+	// For now nothing. BulletBody doesn't yet support it.
+}
+
+void BulletPhysicsServer::body_set_constant_torque(RID p_body, const Vector3 &p_torque)
+{
+	// For now nothing. BulletBody doesn't yet support it.
+}
+
+Vector3 BulletPhysicsServer::body_get_constant_torque(RID p_body) const
+{
+	// For now nothing. BulletBody doesn't yet support it.
+	return Vector3( 0.0, 0.0, 0.0 );
+}
+
+void BulletPhysicsServer::body_set_constant_force(RID p_body, const Vector3 &p_force)
+{
+	// For now nothing. BulletBody doesn't yet support it.
+}
+
+Vector3 BulletPhysicsServer::body_get_constant_force(RID p_body) const
+{
+	// For now nothing. BulletBody doesn't yet support it.
+}
+
 
 void BulletPhysicsServer::body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) {
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
@@ -846,11 +1016,24 @@ bool BulletPhysicsServer::body_is_omitting_force_integration(RID p_body) const {
 	return body->get_omit_forces_integration();
 }
 
+void BulletPhysicsServer::body_set_state_sync_callback(RID p_body, const Callable &p_callable)
+{
+	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
+	ERR_FAIL_COND(!body);
+	// Not implemented in Bullet bind yet.
+}
+
 void BulletPhysicsServer::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method, p_udata);
 }
+
+void BulletPhysicsServer::body_set_force_integration_callback(RID p_body, const Callable &p_callable, const Variant &p_udata )
+{
+	body_set_force_integration_callback( p_body, p_callable.get_object(), p_callable.get_method(), p_udata );
+}
+
 
 void BulletPhysicsServer::body_set_ray_pickable(RID p_body, bool p_enable) {
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
