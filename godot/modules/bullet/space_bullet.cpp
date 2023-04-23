@@ -1133,7 +1133,7 @@ static Ref<SpatialMaterial> red_mat;
 static Ref<SpatialMaterial> blue_mat;
 #endif
 
-bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult *r_result, bool p_exclude_raycast_shapes, const RBSet<RID> &p_exclude) {
+bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform3D &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer3D::MotionResult *r_result, bool p_exclude_raycast_shapes, const HashSet<RID> &p_exclude) {
 #if debug_test_motion
 	/// Yes I know this is not good, but I've used it as fast debugging hack.
 	/// I'm leaving it here just for speedup the other eventual debugs
