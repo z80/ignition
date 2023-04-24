@@ -106,9 +106,11 @@ public:
 	_FORCE_INLINE_ btSoftBody *get_bt_soft_body() const { return bt_soft_body; }
 
 	void update_visual_server(class SoftBodyRenderingServerHandler *p_visual_server_handler);
+	void update_rendering_server(class PhysicsServer3DRenderingServerHandler *p_visual_server_handler);
 
 	//void set_soft_mesh(const Ref<Mesh> &p_mesh);
 	void set_soft_mesh(RID p_mesh);
+	AABB get_bounds() const;
 	void destroy_soft_body();
 
 	// Special function. This function has bad performance

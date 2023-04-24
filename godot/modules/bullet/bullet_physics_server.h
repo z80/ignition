@@ -60,7 +60,7 @@ class BulletPhysicsServer : public PhysicsServer3D {
 	mutable RID_Owner<AreaBullet> area_owner;
 	mutable RID_Owner<RigidBodyBullet> rigid_body_owner;
 	mutable RID_Owner<SoftBodyBullet> soft_body_owner;
-	mutable RID_Owner<JointBullet> joint_owner;
+	mutable RID_PtrOwner<JointBullet> joint_owner;
 
 protected:
 	static void _bind_methods();
@@ -84,7 +84,7 @@ public:
 	_FORCE_INLINE_ RID_Owner<SoftBodyBullet> *get_soft_body_owner() {
 		return &soft_body_owner;
 	}
-	_FORCE_INLINE_ RID_Owner<JointBullet> *get_joint_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<JointBullet> *get_joint_owner() {
 		return &joint_owner;
 	}
 
@@ -308,11 +308,15 @@ public:
 	virtual RID soft_body_create() override;
 
 	virtual void soft_body_update_visual_server(RID p_body, class SoftBodyRenderingServerHandler *p_visual_server_handler);
+	virtual void soft_body_update_rendering_server(RID p_body, PhysicsServer3DRenderingServerHandler *p_rendering_server_handler) override;
 
 	virtual void soft_body_set_space(RID p_body, RID p_space);
 	virtual RID soft_body_get_space(RID p_body) const;
 
 	virtual void soft_body_set_mesh(RID p_body, RID p_mesh);
+
+	virtual AABB soft_body_get_bounds(RID p_body) const override;
+
 
 	virtual void soft_body_set_collision_layer(RID p_body, uint32_t p_layer);
 	virtual uint32_t soft_body_get_collision_layer(RID p_body) const;
@@ -335,13 +339,14 @@ public:
 	virtual bool soft_body_is_ray_pickable(RID p_body) const;
 
 	virtual void soft_body_set_simulation_precision(RID p_body, int p_simulation_precision);
-	virtual int soft_body_get_simulation_precision(RID p_body);
+	virtual int soft_body_get_simulation_precision(RID p_body) const override;
+
 
 	virtual void soft_body_set_total_mass(RID p_body, real_t p_total_mass);
-	virtual real_t soft_body_get_total_mass(RID p_body);
+	virtual real_t soft_body_get_total_mass(RID p_body) const override;
 
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness);
-	virtual real_t soft_body_get_linear_stiffness(RID p_body);
+	virtual real_t soft_body_get_linear_stiffness(RID p_body) const override;
 
 	virtual void soft_body_set_areaAngular_stiffness(RID p_body, real_t p_stiffness);
 	virtual real_t soft_body_get_areaAngular_stiffness(RID p_body);
@@ -350,27 +355,29 @@ public:
 	virtual real_t soft_body_get_volume_stiffness(RID p_body);
 
 	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient);
-	virtual real_t soft_body_get_pressure_coefficient(RID p_body);
+	virtual real_t soft_body_get_pressure_coefficient(RID p_body) const override;
 
 	virtual void soft_body_set_pose_matching_coefficient(RID p_body, real_t p_pose_matching_coefficient);
 	virtual real_t soft_body_get_pose_matching_coefficient(RID p_body);
 
 	virtual void soft_body_set_damping_coefficient(RID p_body, real_t p_damping_coefficient);
-	virtual real_t soft_body_get_damping_coefficient(RID p_body);
+	virtual real_t soft_body_get_damping_coefficient(RID p_body) const override;
 
 	virtual void soft_body_set_drag_coefficient(RID p_body, real_t p_drag_coefficient);
-	virtual real_t soft_body_get_drag_coefficient(RID p_body);
+	virtual real_t soft_body_get_drag_coefficient(RID p_body) const override;
 
 	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position);
-	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index);
+	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const override;
 
 	virtual Vector3 soft_body_get_point_offset(RID p_body, int p_point_index) const;
 
 	virtual void soft_body_remove_all_pinned_points(RID p_body);
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin);
-	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index);
+	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const override;
 
 	/* JOINT API */
+	virtual RID joint_create() override;
+	virtual void joint_clear(RID p_joint) override;
 
 	virtual JointType joint_get_type(RID p_joint) const;
 
@@ -381,6 +388,7 @@ public:
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const;
 
 	virtual RID joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B);
+	virtual void joint_make_pin(RID p_joint, RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) override;
 
 	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, float p_value);
 	virtual float pin_joint_get_param(RID p_joint, PinJointParam p_param) const;
@@ -392,7 +400,10 @@ public:
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const;
 
 	virtual RID joint_create_hinge(RID p_body_A, const Transform3D &p_hinge_A, RID p_body_B, const Transform3D &p_hinge_B);
+	virtual void joint_make_hinge(RID p_joint, RID p_body_A, const Transform3D &p_hinge_A, RID p_body_B, const Transform3D &p_hinge_B) override;
 	virtual RID joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B);
+	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override;
+
 
 	virtual void hinge_joint_set_param(RID p_joint, HingeJointParam p_param, float p_value);
 	virtual float hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const;
@@ -402,24 +413,27 @@ public:
 
 	/// Reference frame is A
 	virtual RID joint_create_slider(RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B);
+	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override;
 
 	virtual void slider_joint_set_param(RID p_joint, SliderJointParam p_param, float p_value);
 	virtual float slider_joint_get_param(RID p_joint, SliderJointParam p_param) const;
 
 	/// Reference frame is A
 	virtual RID joint_create_cone_twist(RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B);
+	virtual void joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override;
 
 	virtual void cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, float p_value);
 	virtual float cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const;
 
 	/// Reference frame is A
 	virtual RID joint_create_generic_6dof(RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B);
+	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override;
 
 	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, float p_value);
-	virtual float generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param);
+	virtual float generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) const;
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable);
-	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag);
+	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) const;
 
 	/* MISC */
 
@@ -439,6 +453,8 @@ public:
 
 	virtual void init();
 	virtual void step(float p_deltaTime);
+	virtual void sync() override;
+	virtual void end_sync() override;
 	virtual void flush_queries();
 	virtual void finish();
 

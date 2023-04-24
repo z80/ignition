@@ -101,10 +101,10 @@ struct GodotAllConvexResultCallback : public btCollisionWorld::ConvexResultCallb
 public:
 	PhysicsDirectSpaceState3D::ShapeResult *m_results;
 	int m_resultMax;
-	const RBSet<RID> *m_exclude;
+	const HashSet<RID> *m_exclude;
 	int count;
 
-	GodotAllConvexResultCallback(PhysicsDirectSpaceState3D::ShapeResult *p_results, int p_resultMax, const RBSet<RID> *p_exclude) :
+	GodotAllConvexResultCallback(PhysicsDirectSpaceState3D::ShapeResult *p_results, int p_resultMax, const HashSet<RID> *p_exclude) :
 			m_results(p_results),
 			m_resultMax(p_resultMax),
 			m_exclude(p_exclude),
@@ -118,10 +118,10 @@ public:
 struct GodotKinClosestConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback {
 public:
 	const RigidBodyBullet *m_self_object;
-	const RBSet<RID> *m_exclude;
+	const HashSet<RID> *m_exclude;
 	const bool m_infinite_inertia;
 
-	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_infinite_inertia, const RBSet<RID> *p_exclude) :
+	GodotKinClosestConvexResultCallback(const btVector3 &convexFromWorld, const btVector3 &convexToWorld, const RigidBodyBullet *p_self_object, bool p_infinite_inertia, const HashSet<RID> *p_exclude) :
 			btCollisionWorld::ClosestConvexResultCallback(convexFromWorld, convexToWorld),
 			m_self_object(p_self_object),
 			m_exclude(p_exclude),

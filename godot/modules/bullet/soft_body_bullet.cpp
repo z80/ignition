@@ -116,6 +116,49 @@ void SoftBodyBullet::update_visual_server(SoftBodyRenderingServerHandler *p_visu
 	p_visual_server_handler->set_aabb(aabb);
 }
 
+void SoftBodyBullet::update_rendering_server(class PhysicsServer3DRenderingServerHandler *p_visual_server_handler)
+{
+	if (!bt_soft_body)
+	{
+		return;
+	}
+
+	/// Update visual server vertices
+	const btSoftBody::tNodeArray &nodes(bt_soft_body->m_nodes);
+	const int nodes_count = nodes.size();
+
+	const Vector<int> *vs_indices;
+	const void *vertex_position;
+	const void *vertex_normal;
+
+	for (int vertex_index = 0; vertex_index < nodes_count; ++vertex_index) {
+		vertex_position = reinterpret_cast<const void *>(&nodes[vertex_index].m_x);
+		vertex_normal = reinterpret_cast<const void *>(&nodes[vertex_index].m_n);
+
+		vs_indices = &indices_table[vertex_index];
+
+		const int vs_indices_size(vs_indices->size());
+		for (int x = 0; x < vs_indices_size; ++x) {
+			p_visual_server_handler->set_vertex((*vs_indices)[x], vertex_position);
+			p_visual_server_handler->set_normal((*vs_indices)[x], vertex_normal);
+		}
+	}
+
+	/// Generate AABB
+	btVector3 aabb_min;
+	btVector3 aabb_max;
+	bt_soft_body->getAabb(aabb_min, aabb_max);
+
+	btVector3 size(aabb_max - aabb_min);
+
+	AABB aabb;
+	B_TO_G(aabb_min, aabb.position);
+	B_TO_G(size, aabb.size);
+
+	p_visual_server_handler->set_aabb(aabb);
+}
+
+
 //void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
 //	destroy_soft_body();
 //
@@ -149,6 +192,12 @@ void SoftBodyBullet::set_soft_mesh(RID p_mesh) {
 	//	destroy_soft_body();
 	//}
 	set_trimesh_body_shape( arrays[RenderingServer::ARRAY_INDEX], arrays[RenderingServer::ARRAY_VERTEX] );
+}
+
+AABB SoftBodyBullet::get_bounds() const
+{
+	// For now it doesn't do anything.
+	return AABB();
 }
 
 void SoftBodyBullet::destroy_soft_body() {
