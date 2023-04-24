@@ -1,0 +1,38 @@
+[gd_scene load_steps=5 format=3 uid="uid://bggfyaf84iejy"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_2v2jr"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_11r8a"]
+size = Vector2(100, 100)
+orientation = 1
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_sqhs1"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_saovu"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("WorldBoundaryShape3D_2v2jr")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+mesh = SubResource("QuadMesh_11r8a")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="StaticBody3D/MeshInstance3D"]
+transform = Transform3D(0.866025, 0.25, 0.433013, -0.353553, -0.306186, 0.883883, 0.353553, -0.918559, -0.176777, 3, 4, 0)
+shadow_enabled = true
+
+[node name="RigidBody3D" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+can_sleep = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
+shape = SubResource("SphereShape3D_sqhs1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D"]
+mesh = SubResource("SphereMesh_saovu")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 3, 5)
