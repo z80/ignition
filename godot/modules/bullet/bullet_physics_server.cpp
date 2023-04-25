@@ -306,7 +306,7 @@ RID BulletPhysicsServer::area_create() {
 	AreaBullet *area = bulletnew(AreaBullet);
 	area->set_collision_layer(1);
 	area->set_collision_mask(1);
-	CreateThenReturnRIDPtr(area_owner, area)
+	CreateThenReturnRID(area_owner, area)
 }
 
 void BulletPhysicsServer::area_set_space(RID p_area, RID p_space) {
@@ -1098,7 +1098,7 @@ RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {
 	if (p_init_sleeping) {
 		body->set_activation_state(false);
 	}
-	CreateThenReturnRIDPtr(soft_body_owner, body);
+	CreateThenReturnRID(soft_body_owner, body);
 }
 
 RID BulletPhysicsServer::soft_body_create()

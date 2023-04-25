@@ -55,12 +55,12 @@ class BulletPhysicsServer : public PhysicsServer3D {
 	char active_spaces_count;
 	Vector<SpaceBullet *> active_spaces;
 
-	mutable RID_PtrOwner<SpaceBullet> space_owner;
-	mutable RID_PtrOwner<ShapeBullet> shape_owner;
-	mutable RID_Owner<AreaBullet> area_owner;
+	mutable RID_PtrOwner<SpaceBullet>     space_owner;
+	mutable RID_PtrOwner<ShapeBullet>     shape_owner;
+	mutable RID_PtrOwner<AreaBullet>      area_owner;
 	mutable RID_PtrOwner<RigidBodyBullet> rigid_body_owner;
-	mutable RID_Owner<SoftBodyBullet> soft_body_owner;
-	mutable RID_PtrOwner<JointBullet> joint_owner;
+	mutable RID_PtrOwner<SoftBodyBullet>  soft_body_owner;
+	mutable RID_PtrOwner<JointBullet>     joint_owner;
 
 protected:
 	static void _bind_methods();
@@ -75,13 +75,13 @@ public:
 	_FORCE_INLINE_ RID_PtrOwner<ShapeBullet> *get_shape_owner() {
 		return &shape_owner;
 	}
-	_FORCE_INLINE_ RID_Owner<AreaBullet> *get_area_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<AreaBullet> *get_area_owner() {
 		return &area_owner;
 	}
 	_FORCE_INLINE_ RID_PtrOwner<RigidBodyBullet> *get_rigid_body_owner() {
 		return &rigid_body_owner;
 	}
-	_FORCE_INLINE_ RID_Owner<SoftBodyBullet> *get_soft_body_owner() {
+	_FORCE_INLINE_ RID_PtrOwner<SoftBodyBullet> *get_soft_body_owner() {
 		return &soft_body_owner;
 	}
 	_FORCE_INLINE_ RID_PtrOwner<JointBullet> *get_joint_owner() {
