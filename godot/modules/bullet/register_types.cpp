@@ -58,7 +58,7 @@ void initialize_bullet_module( ModuleInitializationLevel p_level )
         return;
 
 #ifndef _3D_DISABLED
-	PhysicsServer3DManager::get_singleton()->register_server("Bullet(port from Godot3)", callable_mp_static(_createBulletPhysics3DCallback));
+	PhysicsServer3DManager::get_singleton()->register_server("Bullet(port from Godot-3.5.2)", callable_mp_static(_createBulletPhysics3DCallback));
 	//PhysicsServer3DManager::get_singleton()->set_default_server("BulletPhysics3D");
 #endif
 }
