@@ -131,7 +131,7 @@ RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 			break;
 	}
 
-	CreateThenReturnRIDPtr(shape_owner, shape)
+	CreateThenReturnRID(shape_owner, shape)
 }
 
 RID BulletPhysicsServer::world_boundary_shape_create()
@@ -235,7 +235,7 @@ real_t BulletPhysicsServer::shape_get_custom_solver_bias(RID p_shape) const {
 
 RID BulletPhysicsServer::space_create() {
 	SpaceBullet *space = bulletnew(SpaceBullet);
-	CreateThenReturnRIDPtr(space_owner, space);
+	CreateThenReturnRID(space_owner, space);
 }
 
 void BulletPhysicsServer::space_set_active(RID p_space, bool p_active) {
@@ -557,7 +557,7 @@ RID BulletPhysicsServer::body_create(BodyMode p_mode, bool p_init_sleeping) {
 	if (p_init_sleeping) {
 		body->set_state(BODY_STATE_SLEEPING, p_init_sleeping);
 	}
-	CreateThenReturnRIDPtr(rigid_body_owner, body);
+	CreateThenReturnRID(rigid_body_owner, body);
 }
 
 RID BulletPhysicsServer::body_create()
