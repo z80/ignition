@@ -1,4 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://bggfyaf84iejy"]
+[gd_scene load_steps=6 format=3 uid="uid://bggfyaf84iejy"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_vbmel"]
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_2v2jr"]
 
@@ -11,6 +13,7 @@ orientation = 1
 [sub_resource type="SphereMesh" id="SphereMesh_saovu"]
 
 [node name="Node3D" type="Node3D"]
+script = ExtResource("1_vbmel")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 
