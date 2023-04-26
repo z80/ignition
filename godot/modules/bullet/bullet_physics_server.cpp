@@ -873,11 +873,13 @@ void BulletPhysicsServer::body_apply_torque(RID p_body, const Vector3 &p_torque)
 void BulletPhysicsServer::body_add_constant_central_force(RID p_body, const Vector3 &p_force)
 {
 	// For now nothing. BulletBody doesn't yet support it.
+	int i=0;
 }
 
 void BulletPhysicsServer::body_add_constant_force(RID p_body, const Vector3 &p_force, const Vector3 &p_position )
 {
 	// For now nothing. BulletBody doesn't yet support it.
+	int i=0;
 }
 
 void BulletPhysicsServer::body_add_constant_torque(RID p_body, const Vector3 &p_torque)
@@ -899,6 +901,7 @@ Vector3 BulletPhysicsServer::body_get_constant_torque(RID p_body) const
 void BulletPhysicsServer::body_set_constant_force(RID p_body, const Vector3 &p_force)
 {
 	// For now nothing. BulletBody doesn't yet support it.
+	int i=0;
 }
 
 Vector3 BulletPhysicsServer::body_get_constant_force(RID p_body) const
@@ -1426,7 +1429,7 @@ bool BulletPhysicsServer::soft_body_is_point_pinned(RID p_body, int p_point_inde
 RID BulletPhysicsServer::joint_create()
 {
 	// FatheTed: not sure what this thing can be used for. But here you go.
-	JointBullet *joint = memnew(JointBullet);
+	JointBullet *joint = bulletnew(JointBullet); //memnew(JointBullet);
 	CreateThenReturnRID(joint_owner, joint);
 }
 
@@ -1436,11 +1439,11 @@ void BulletPhysicsServer::joint_clear(RID p_joint)
 	ERR_FAIL_NULL(joint);
 	if (joint->get_type() != JOINT_TYPE_MAX)
 	{
-		JointBullet *empty_joint = memnew(JointBullet);
+		JointBullet *empty_joint = bulletnew(JointBullet); //memnew(JointBullet);
 		//empty_joint->copy_settings_from(joint);
 
 		joint_owner.replace(p_joint, empty_joint);
-		memdelete(joint);
+		bulletdelete(joint); //memdelete(joint);
 	}
 }
 
@@ -1517,11 +1520,13 @@ void BulletPhysicsServer::joint_make_pin(RID p_joint, RID p_body_A, const Vector
 	JointBullet *prev_joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(prev_joint == nullptr);
 
-	JointBullet *joint = memnew( PinJointBullet(body_A, p_local_A, body_B, p_local_B) );
+	//JointBullet *joint = memnew( PinJointBullet(body_A, p_local_A, body_B, p_local_B) );
+	JointBullet *joint = bulletnew( PinJointBullet(body_A, p_local_A, body_B, p_local_B) );
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
-	memdelete(prev_joint);
+	//memdelete(prev_joint);
+	bulletdelete(prev_joint);
 }
 
 
@@ -1611,11 +1616,13 @@ void BulletPhysicsServer::joint_make_hinge(RID p_joint, RID p_body_A, const Tran
 	JointBullet *prev_joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(prev_joint == nullptr);
 
-	JointBullet *joint = memnew(HingeJointBullet(body_A, body_B, p_hinge_A, p_hinge_B));
+	//JointBullet *joint = memnew(HingeJointBullet(body_A, body_B, p_hinge_A, p_hinge_B));
+	JointBullet *joint = bulletnew(HingeJointBullet(body_A, body_B, p_hinge_A, p_hinge_B));
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
-	memdelete(prev_joint);
+	//memdelete(prev_joint);
+	bulletdelete(prev_joint);
 }
 
 
@@ -1658,11 +1665,13 @@ void BulletPhysicsServer::joint_make_hinge_simple(RID p_joint, RID p_body_A, con
 	JointBullet *prev_joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(prev_joint == nullptr);
 
-	JointBullet *joint = memnew(HingeJointBullet(body_A, body_B, p_pivot_A, p_pivot_B, p_axis_A, p_axis_B));
+	//JointBullet *joint = memnew(HingeJointBullet(body_A, body_B, p_pivot_A, p_pivot_B, p_axis_A, p_axis_B));
+	JointBullet *joint = bulletnew(HingeJointBullet(body_A, body_B, p_pivot_A, p_pivot_B, p_axis_A, p_axis_B));
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
-	memdelete(prev_joint);
+	//memdelete(prev_joint);
+	bulletdelete(prev_joint);
 }
 
 
@@ -1737,11 +1746,13 @@ void BulletPhysicsServer::joint_make_slider(RID p_joint, RID p_body_A, const Tra
 	JointBullet *prev_joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(prev_joint == nullptr);
 
-	JointBullet *joint = memnew(SliderJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
+	//JointBullet *joint = memnew(SliderJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
+	JointBullet *joint = bulletnew(SliderJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
-	memdelete(prev_joint);
+	//memdelete(prev_joint);
+	bulletdelete(prev_joint);
 }
 
 
@@ -1797,11 +1808,13 @@ void BulletPhysicsServer::joint_make_cone_twist(RID p_joint, RID p_body_A, const
 	JointBullet *prev_joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(prev_joint == nullptr);
 
-	JointBullet *joint = memnew(ConeTwistJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
+	//JointBullet *joint = memnew(ConeTwistJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
+	JointBullet *joint = bulletnew(ConeTwistJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
-	memdelete(prev_joint);
+	//memdelete(prev_joint);
+	bulletdelete(prev_joint);
 }
 
 
@@ -1859,11 +1872,13 @@ void BulletPhysicsServer::joint_make_generic_6dof(RID p_joint, RID p_body_A, con
 	JointBullet *prev_joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(prev_joint == nullptr);
 
-	JointBullet *joint = memnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
+	//JointBullet *joint = memnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
+	JointBullet *joint = bulletnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
-	memdelete(prev_joint);
+	//memdelete(prev_joint);
+	bulletdelete(prev_joint);
 }
 
 void BulletPhysicsServer::generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, float p_value) {
