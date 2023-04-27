@@ -129,6 +129,9 @@ public:
 
 class RigidBodyBullet : public RigidCollisionObjectBullet {
 public:
+
+	Callable body_state_callback;
+
 	struct CollisionData {
 		RigidBodyBullet *otherObject;
 		int other_object_shape;
@@ -217,6 +220,9 @@ private:
 	ForceIntegrationCallback *force_integration_callback;
 
 public:
+	void set_state_sync_callback(const Callable &p_callable);
+	void call_queries();
+
 	RigidBodyBullet();
 	~RigidBodyBullet();
 

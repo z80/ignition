@@ -324,6 +324,37 @@ void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
 	shapes.resize(new_size);
 }
 
+void RigidBodyBullet::set_state_sync_callback(const Callable &p_callable)
+{
+	body_state_callback = p_callable;
+}
+
+void RigidBodyBullet::call_queries()
+{
+	Variant direct_state_variant = get_direct_state();
+
+	//if (fi_callback_data) {
+	//	if (!fi_callback_data->callable.get_object()) {
+	//		set_force_integration_callback(Callable());
+	//	} else {
+	//		const Variant *vp[2] = { &direct_state_variant, &fi_callback_data->udata };
+
+	//		Callable::CallError ce;
+	//		int argc = (fi_callback_data->udata.get_type() == Variant::NIL) ? 1 : 2;
+	//		Variant rv;
+	//		fi_callback_data->callable.callp(vp, argc, rv, ce);
+	//	}
+	//}
+
+	if ( body_state_callback.get_object() != nullptr )
+	{
+		const Variant *vp[1] = { &direct_state_variant };
+		Callable::CallError ce;
+		Variant rv;
+		body_state_callback.callp(vp, 1, rv, ce);
+	}
+}
+
 RigidBodyBullet::RigidBodyBullet() :
 		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_RIGID_BODY),
 		kinematic_utilities(nullptr),

@@ -1025,6 +1025,8 @@ void BulletPhysicsServer::body_set_state_sync_callback(RID p_body, const Callabl
 	RigidBodyBullet *body = rigid_body_owner.get_or_null(p_body);
 	ERR_FAIL_COND(!body);
 	// Not implemented in Bullet bind yet.
+	// Already implemented (!!!)
+	body->set_state_sync_callback( p_callable );
 }
 
 void BulletPhysicsServer::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
@@ -1976,7 +1978,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 void BulletPhysicsServer::init() {
 }
 
-void BulletPhysicsServer::step(float p_deltaTime) {
+void BulletPhysicsServer::step(real_t p_deltaTime) {
 	if (!active) {
 		return;
 	}
@@ -1994,10 +1996,22 @@ void BulletPhysicsServer::end_sync()
 {
 }
 
-void BulletPhysicsServer::flush_queries() {
+void BulletPhysicsServer::flush_queries()
+{
+	// Need to trigger callbacks in all rigid bodies in order to
+	// update their transform.
+	body_rids.clear();
+	rigid_body_owner.get_owned_list( &body_rids );
+	for ( List<RID>::Iterator it=body_rids.begin(); it !=body_rids.end(); it.operator++() )
+	{
+		const RID rid = *it;
+		RigidBodyBullet * body = rigid_body_owner.get_or_null( rid );
+		body->call_queries();
+	}
 }
 
-void BulletPhysicsServer::finish() {
+void BulletPhysicsServer::finish()
+{
 }
 
 void BulletPhysicsServer::set_collision_iterations(int p_iterations) {

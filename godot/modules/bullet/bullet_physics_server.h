@@ -451,12 +451,14 @@ public:
 		return active;
 	}
 
-	virtual void init();
-	virtual void step(float p_deltaTime);
+	virtual void init() override;
+	virtual void step(real_t p_deltaTime) override;
 	virtual void sync() override;
 	virtual void end_sync() override;
-	virtual void flush_queries();
-	virtual void finish();
+	virtual void flush_queries() override;
+	virtual void finish() override;
+
+	List<RID> body_rids;
 
 	virtual bool is_flushing_queries() const { return false; }
 
