@@ -17,4 +17,4 @@ config/icon="res://icon.svg"
 
 [physics]
 
-3d/physics_engine="Bullet(port from Godot-3.5.2)"
+3d/physics_engine="Bullet (port from Godot-3.5.2)"

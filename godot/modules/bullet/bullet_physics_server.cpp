@@ -2002,7 +2002,7 @@ void BulletPhysicsServer::flush_queries()
 	// update their transform.
 	body_rids.clear();
 	rigid_body_owner.get_owned_list( &body_rids );
-	for ( List<RID>::Iterator it=body_rids.begin(); it !=body_rids.end(); it.operator++() )
+	for ( List<RID>::Iterator it=body_rids.begin(); it!=body_rids.end(); it.operator++() )
 	{
 		const RID rid = *it;
 		RigidBodyBullet * body = rigid_body_owner.get_or_null( rid );
