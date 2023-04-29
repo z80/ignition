@@ -13,4 +13,4 @@ func _process(delta):
 
 func _physics_process(delta):
 	var body: RigidBody3D = get_node( "RigidBody3D" )
-	body.apply_central_force( Vector3(0.0, -1.0, 0.0) )
+	body.apply_central_force( Vector3(0.2, -0.0, 0.0) )
