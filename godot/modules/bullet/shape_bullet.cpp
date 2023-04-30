@@ -44,6 +44,7 @@
 
 /**
 	@author AndreaCatania
+	FatherTed
 */
 
 ShapeBullet::ShapeBullet() :
@@ -377,7 +378,10 @@ ConcavePolygonShapeBullet::~ConcavePolygonShapeBullet() {
 }
 
 void ConcavePolygonShapeBullet::set_data(const Variant &p_data) {
-	setup(p_data);
+	const Dictionary & d = p_data;
+	const bool backface_collision    = d["backface_collision"];
+	const PackedVector3Array & faces = d["faces"];
+	setup( faces );
 }
 
 Variant ConcavePolygonShapeBullet::get_data() const {
