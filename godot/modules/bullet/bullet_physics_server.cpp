@@ -1524,6 +1524,7 @@ void BulletPhysicsServer::joint_make_pin(RID p_joint, RID p_body_A, const Vector
 
 	//JointBullet *joint = memnew( PinJointBullet(body_A, p_local_A, body_B, p_local_B) );
 	JointBullet *joint = bulletnew( PinJointBullet(body_A, p_local_A, body_B, p_local_B) );
+	AddJointToSpace(body_A, joint);
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
@@ -1620,6 +1621,7 @@ void BulletPhysicsServer::joint_make_hinge(RID p_joint, RID p_body_A, const Tran
 
 	//JointBullet *joint = memnew(HingeJointBullet(body_A, body_B, p_hinge_A, p_hinge_B));
 	JointBullet *joint = bulletnew(HingeJointBullet(body_A, body_B, p_hinge_A, p_hinge_B));
+	AddJointToSpace(body_A, joint);
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
@@ -1669,6 +1671,7 @@ void BulletPhysicsServer::joint_make_hinge_simple(RID p_joint, RID p_body_A, con
 
 	//JointBullet *joint = memnew(HingeJointBullet(body_A, body_B, p_pivot_A, p_pivot_B, p_axis_A, p_axis_B));
 	JointBullet *joint = bulletnew(HingeJointBullet(body_A, body_B, p_pivot_A, p_pivot_B, p_axis_A, p_axis_B));
+	AddJointToSpace(body_A, joint);
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
@@ -1750,6 +1753,7 @@ void BulletPhysicsServer::joint_make_slider(RID p_joint, RID p_body_A, const Tra
 
 	//JointBullet *joint = memnew(SliderJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
 	JointBullet *joint = bulletnew(SliderJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
+	AddJointToSpace(body_A, joint);
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
@@ -1812,6 +1816,7 @@ void BulletPhysicsServer::joint_make_cone_twist(RID p_joint, RID p_body_A, const
 
 	//JointBullet *joint = memnew(ConeTwistJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
 	JointBullet *joint = bulletnew(ConeTwistJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
+	AddJointToSpace(body_A, joint);
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
@@ -1876,6 +1881,7 @@ void BulletPhysicsServer::joint_make_generic_6dof(RID p_joint, RID p_body_A, con
 
 	//JointBullet *joint = memnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
 	JointBullet *joint = bulletnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
+	AddJointToSpace(body_A, joint);
 
 	//joint->copy_settings_from(prev_joint);
 	joint_owner.replace(p_joint, joint);
