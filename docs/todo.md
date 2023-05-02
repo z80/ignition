@@ -12,10 +12,11 @@ Here is the battle plan.
 - [ ] Make it save/destroy/create/restore based on the bounding volume. May be introduce asynchronous database for this purpose.
 - [ ] Resource system. May be "material" and "electricity"...
 - [ ] Make "levels" purchasable for "material".
-- [ ] May be port to Godot 4.
+- [x] May be port to Godot 4.
 - [ ] If port to Godot 4 is successful, try implement multiplayer.
 - [ ] Make it possible to pick a character.
 - [ ] Implement space suit on/off capability.
+- [ ] Make character kinematic.
 
 - [ ] Make volumes editable. Implement nodes hierarchy. Make it possible to drag/rotate the nodes and update the resulting landscape. May be implement a mode when it is possible to add/remove volumes and design landscape this way.
 
