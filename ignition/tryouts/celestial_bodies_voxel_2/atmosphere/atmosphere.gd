@@ -1,10 +1,10 @@
-extends MeshInstance
+extends MeshInstance3D
 
-export(Resource) var config_atmosphere = null
+@export var config_atmosphere: Resource = null
 # This one is for space scale.
-export(Resource) var config_space = null
+@export var config_space: Resource = null
 # This one is for planet radius.
-export(Resource) var surface_source = null
+@export var surface_source: Resource = null
 
 var _scale_dist_ratio: ScaleDistanceRatioGd = null
 
@@ -24,18 +24,18 @@ func update( rotation: RefFrameRotationNode ):
 	# Relative to the Sun.
 	var sun_se3: Se3Ref = sun.relative_to( rotation )
 	var light_dir: Vector3 = sun_se3.r.normalized()
-	light_dir = source_se3.q.xform( light_dir )
+	light_dir = source_se3.q * (light_dir)
 	
 	
 	var radius_km: float = surface_source.radius_km
 	var scale: float    = 1.0 / config_space.scale_divider
 	
 	var base_sz: float = radius_km * scale * 1000.0 * 2.0
-	var base_t: Transform = Transform.IDENTITY
+	var base_t: Transform3D = Transform3D.IDENTITY
 	base_t = base_t.scaled( Vector3( base_sz, base_sz, base_sz ) )
 	
 	var coeff: float = _scale_dist_ratio.compute_scale( source_se3, scale )
-	var t: Transform = _scale_dist_ratio.compute_transform( source_se3, scale )
+	var t: Transform3D = _scale_dist_ratio.compute_transform( source_se3, scale )
 	t = t * base_t
 	self.transform = t
 	
@@ -56,14 +56,14 @@ func update( rotation: RefFrameRotationNode ):
 #	outer_height += 1.0 * 1000.0
 #	planet_radius = 1.0
 	
-	var m: ShaderMaterial = self.get_surface_material( 0 )
-	m.set_shader_param( "planet_center",               planet_center )
-	m.set_shader_param( "planet_radius",               planet_radius )
-	m.set_shader_param( "height",                      height )
-	m.set_shader_param( "transparency_distance_inner", inner_dist )
-	m.set_shader_param( "transparency_distance_outer", outer_dist )
-	m.set_shader_param( "light_dir",                   light_dir )
-	m.set_shader_param( "displacement",                displacement )
-	m.set_shader_param( "color_day",                   color_day )
-	m.set_shader_param( "color_night",                 color_night )
+	var m: ShaderMaterial = self.get_active_material( 0 )
+	m.set_shader_parameter( "planet_center",               planet_center )
+	m.set_shader_parameter( "planet_radius",               planet_radius )
+	m.set_shader_parameter( "height",                      height )
+	m.set_shader_parameter( "transparency_distance_inner", inner_dist )
+	m.set_shader_parameter( "transparency_distance_outer", outer_dist )
+	m.set_shader_parameter( "light_dir",                   light_dir )
+	m.set_shader_parameter( "displacement",                displacement )
+	m.set_shader_parameter( "color_day",                   color_day )
+	m.set_shader_parameter( "color_night",                 color_night )
 

@@ -1,14 +1,14 @@
 
-extends StaticBody
+extends StaticBody3D
 class_name CollisionSurface
 
-export(float) var rebuild_dist = 100.0 setget _set_rebuild_dist
+@export var rebuild_dist: float = 100.0: set = _set_rebuild_dist
 
 var _voxel_surface: MarchingCubesDualGd           = null
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
 var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
-var _collision_shape: CollisionShape = null
+var _collision_shape: CollisionShape3D = null
 
 var _is_ready: bool = false
 var _initialized_strategy: bool = false
@@ -16,7 +16,7 @@ var _is_busy: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_collision_shape    = get_node( "CollisionShape" )
+	_collision_shape    = get_node( "CollisionShape3D" )
 	_is_ready = false
 	_initialized_strategy = false
 	
@@ -38,7 +38,7 @@ func rebuild_surface( ref_frame: RefFrameNode, rotation: RefFrameNode, surface_s
 	if (rotation != p):
 		if _is_ready:
 			# Clean up all the triangles and quit.
-			var shape: ConcavePolygonShape = _collision_shape.shape
+			var shape: ConcavePolygonShape3D = _collision_shape.shape
 			shape.set_faces( [] )
 			# set ready to false
 			_is_ready = false
@@ -153,11 +153,11 @@ func _update_surface_worker( data: RebuildData ):
 	var source_se3: Se3Ref       = data.source_se3
 	
 	var qty: int = _voxel_surface.get_nodes_qty()
-	var collision_triangles: PoolVector3Array = _voxel_surface.collision_faces( source_se3, identity_distance )
+	var collision_triangles: PackedVector3Array = _voxel_surface.collision_faces( source_se3, identity_distance )
 	
 	print( "Updated surface. Triangles qty: ", collision_triangles.size() )
 	
-	var shape: ConcavePolygonShape = _collision_shape.shape
+	var shape: ConcavePolygonShape3D = _collision_shape.shape
 	shape.set_faces(  collision_triangles )
 	_is_ready = true
 

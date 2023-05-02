@@ -1,18 +1,18 @@
-tool
+@tool
 extends Node
 
-export(PackedScene) var VisualSurfaceOne = null
-export(Resource) var layer_config = null
-export(Resource) var surface_source = null
-export(Resource) var drop_foliage_source_here = null setget _set_foliage_source, _get_foliage_source
+@export var VisualSurfaceOne: PackedScene = null
+@export var layer_config: Resource = null
+@export var surface_source: Resource = null
+@export var drop_foliage_source_here: Resource = null: get = _get_foliage_source, set = _set_foliage_source
 
-export(Array) var foliage_sources = []
+@export var foliage_sources: Array = []
 
 var visual_cells: Dictionary = {}
 
 #var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
-var _ready: bool = false
+var _is_ready: bool = false
 var _running: bool = false
 var _processes_running: int = 0
 var _requested_rebuild: bool = false
@@ -25,7 +25,7 @@ var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_ready = false
+	_is_ready = false
 	
 	_initialize_strategy()
 	_create_volume_surface()
@@ -60,10 +60,10 @@ func _create_volume_surface():
 func _create_cells():
 	var rotation: RefFrameRotationNode = get_parent()
 	for i in range(27):
-		var cell: Node = VisualSurfaceOne.instance()
+		var cell: Node = VisualSurfaceOne.instantiate()
 		rotation.add_child( cell )
 		visual_cells[i] = cell
-
+	pass
 
 
 
@@ -93,7 +93,7 @@ func _rebuild_start( source_se3: Se3Ref, view_point_se3: Se3Ref ):
 		return
 	
 	var nodes_to_rebuild: Array = _pick_nodes_to_rebuild( view_point_se3 )
-	var empty: bool = nodes_to_rebuild.empty()
+	var empty: bool = nodes_to_rebuild.is_empty()
 	if empty:
 		return
 	_running = true
@@ -191,7 +191,7 @@ func _set_foliage_source( c: Resource ):
 	if c != null:
 		foliage_sources.push_back( c )
 	drop_foliage_source_here = null
-	property_list_changed_notify()
+	notify_property_list_changed()
 
 
 func _get_foliage_source():

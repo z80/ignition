@@ -31,24 +31,25 @@
 #ifndef REGEX_H
 #define REGEX_H
 
-#include "core/array.h"
-#include "core/dictionary.h"
-#include "core/map.h"
-#include "core/reference.h"
-#include "core/ustring.h"
-#include "core/vector.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/rb_map.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/typed_array.h"
 
-class RegExMatch : public Reference {
-	GDCLASS(RegExMatch, Reference);
+class RegExMatch : public RefCounted {
+	GDCLASS(RegExMatch, RefCounted);
 
 	struct Range {
-		int start;
-		int end;
+		int start = 0;
+		int end = 0;
 	};
 
 	String subject;
 	Vector<Range> data;
-	Map<String, int> names;
+	HashMap<String, int> names;
 
 	friend class RegEx;
 
@@ -62,17 +63,17 @@ public:
 	int get_group_count() const;
 	Dictionary get_names() const;
 
-	Array get_strings() const;
+	PackedStringArray get_strings() const;
 	String get_string(const Variant &p_name) const;
 	int get_start(const Variant &p_name) const;
 	int get_end(const Variant &p_name) const;
 };
 
-class RegEx : public Reference {
-	GDCLASS(RegEx, Reference);
+class RegEx : public RefCounted {
+	GDCLASS(RegEx, RefCounted);
 
-	void *general_ctx;
-	void *code;
+	void *general_ctx = nullptr;
+	void *code = nullptr;
 	String pattern;
 
 	void _pattern_info(uint32_t what, void *where) const;
@@ -81,17 +82,19 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<RegEx> create_from_string(const String &p_pattern);
+
 	void clear();
 	Error compile(const String &p_pattern);
 
 	Ref<RegExMatch> search(const String &p_subject, int p_offset = 0, int p_end = -1) const;
-	Array search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;
+	TypedArray<RegExMatch> search_all(const String &p_subject, int p_offset = 0, int p_end = -1) const;
 	String sub(const String &p_subject, const String &p_replacement, bool p_all = false, int p_offset = 0, int p_end = -1) const;
 
 	bool is_valid() const;
 	String get_pattern() const;
 	int get_group_count() const;
-	Array get_names() const;
+	PackedStringArray get_names() const;
 
 	RegEx();
 	RegEx(const String &p_pattern);

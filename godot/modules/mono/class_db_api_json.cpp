@@ -32,29 +32,25 @@
 
 #ifdef DEBUG_METHODS_ENABLED
 
+#include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 #include "core/io/json.h"
-#include "core/os/file_access.h"
-#include "core/project_settings.h"
 #include "core/version.h"
 
 void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	Dictionary classes_dict;
 
-	List<StringName> names;
+	List<StringName> class_list;
+	ClassDB::get_class_list(&class_list);
+	// Must be alphabetically sorted for hash to compute.
+	class_list.sort_custom<StringName::AlphCompare>();
 
-	const StringName *k = NULL;
-
-	while ((k = ClassDB::classes.next(k))) {
-		names.push_back(*k);
-	}
-	//must be alphabetically sorted for hash to compute
-	names.sort_custom<StringName::AlphCompare>();
-
-	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E->get());
+	for (const StringName &E : class_list) {
+		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E);
 		ERR_FAIL_COND(!t);
-		if (t->api != p_api || !t->exposed)
+		if (t->api != p_api || !t->exposed) {
 			continue;
+		}
 
 		Dictionary class_dict;
 		classes_dict[t->name] = class_dict;
@@ -65,28 +61,27 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = NULL;
+			for (const KeyValue<StringName, MethodBind *> &F : t->method_map) {
+				String name = F.key.operator String();
 
-			while ((k = t->method_map.next(k))) {
-				String name = k->operator String();
+				ERR_CONTINUE(name.is_empty());
 
-				ERR_CONTINUE(name.empty());
-
-				if (name[0] == '_')
+				if (name[0] == '_') {
 					continue; // Ignore non-virtual methods that start with an underscore
+				}
 
-				snames.push_back(*k);
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			Array methods;
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
+			for (const StringName &F : snames) {
 				Dictionary method_dict;
 				methods.push_back(method_dict);
 
-				MethodBind *mb = t->method_map[F->get()];
+				MethodBind *mb = t->method_map[F];
 				method_dict["name"] = mb->get_name();
 				method_dict["argument_count"] = mb->get_argument_count();
 				method_dict["return_type"] = mb->get_argument_type(-1);
@@ -120,7 +115,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				method_dict["hint_flags"] = mb->get_hint_flags();
 			}
 
-			if (!methods.empty()) {
+			if (!methods.is_empty()) {
 				class_dict["methods"] = methods;
 			}
 		}
@@ -129,25 +124,23 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = NULL;
-
-			while ((k = t->constant_map.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, int64_t> &F : t->constant_map) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			Array constants;
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
+			for (const StringName &F : snames) {
 				Dictionary constant_dict;
 				constants.push_back(constant_dict);
 
-				constant_dict["name"] = F->get();
-				constant_dict["value"] = t->constant_map[F->get()];
+				constant_dict["name"] = F;
+				constant_dict["value"] = t->constant_map[F];
 			}
 
-			if (!constants.empty()) {
+			if (!constants.is_empty()) {
 				class_dict["constants"] = constants;
 			}
 		}
@@ -156,22 +149,20 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = NULL;
-
-			while ((k = t->signal_map.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, MethodInfo> &F : t->signal_map) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			Array signals;
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
+			for (const StringName &F : snames) {
 				Dictionary signal_dict;
 				signals.push_back(signal_dict);
 
-				MethodInfo &mi = t->signal_map[F->get()];
-				signal_dict["name"] = F->get();
+				MethodInfo &mi = t->signal_map[F];
+				signal_dict["name"] = F;
 
 				Array arguments;
 				signal_dict["arguments"] = arguments;
@@ -182,7 +173,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				}
 			}
 
-			if (!signals.empty()) {
+			if (!signals.is_empty()) {
 				class_dict["signals"] = signals;
 			}
 		}
@@ -191,28 +182,26 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 			List<StringName> snames;
 
-			k = NULL;
-
-			while ((k = t->property_setget.next(k))) {
-				snames.push_back(*k);
+			for (const KeyValue<StringName, ClassDB::PropertySetGet> &F : t->property_setget) {
+				snames.push_back(F.key);
 			}
 
 			snames.sort_custom<StringName::AlphCompare>();
 
 			Array properties;
 
-			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
+			for (const StringName &F : snames) {
 				Dictionary property_dict;
 				properties.push_back(property_dict);
 
-				ClassDB::PropertySetGet *psg = t->property_setget.getptr(F->get());
+				ClassDB::PropertySetGet *psg = t->property_setget.getptr(F);
 
-				property_dict["name"] = F->get();
+				property_dict["name"] = F;
 				property_dict["setter"] = psg->setter;
 				property_dict["getter"] = psg->getter;
 			}
 
-			if (!properties.empty()) {
+			if (!properties.is_empty()) {
 				class_dict["property_setget"] = properties;
 			}
 		}
@@ -220,26 +209,25 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 		Array property_list;
 
 		//property list
-		for (List<PropertyInfo>::Element *F = t->property_list.front(); F; F = F->next()) {
+		for (const PropertyInfo &F : t->property_list) {
 			Dictionary property_dict;
 			property_list.push_back(property_dict);
 
-			property_dict["name"] = F->get().name;
-			property_dict["type"] = F->get().type;
-			property_dict["hint"] = F->get().hint;
-			property_dict["hint_string"] = F->get().hint_string;
-			property_dict["usage"] = F->get().usage;
+			property_dict["name"] = F.name;
+			property_dict["type"] = F.type;
+			property_dict["hint"] = F.hint;
+			property_dict["hint_string"] = F.hint_string;
+			property_dict["usage"] = F.usage;
 		}
 
-		if (!property_list.empty()) {
+		if (!property_list.is_empty()) {
 			class_dict["property_list"] = property_list;
 		}
 	}
 
-	FileAccessRef f = FileAccess::open(p_output_file, FileAccess::WRITE);
-	ERR_FAIL_COND_MSG(!f, "Cannot open file '" + p_output_file + "'.");
-	f->store_string(JSON::print(classes_dict, /*indent: */ "\t"));
-	f->close();
+	Ref<FileAccess> f = FileAccess::open(p_output_file, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file '" + p_output_file + "'.");
+	f->store_string(JSON::stringify(classes_dict, "\t"));
 
 	print_line(String() + "ClassDB API JSON written to: " + ProjectSettings::get_singleton()->globalize_path(p_output_file));
 }

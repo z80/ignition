@@ -2,7 +2,7 @@
 extends Node
 class_name ExecPool
 
-export(Resource) var settings = null setget _set_settings, _get_settings
+@export var settings: Resource = null: get = _get_settings, set = _set_settings
 
 var _mutex: Mutex = null
 var _semaphore: Semaphore = null
@@ -71,7 +71,7 @@ func _ready():
 func _process( _delta ):
 	_mutex.lock()
 	var task: Task
-	var empty: bool = _finished_tasks.empty()
+	var empty: bool = _finished_tasks.is_empty()
 	
 	if empty:
 		task = null
@@ -99,7 +99,7 @@ func queue_free() -> void:
 	_finished = true
 	_mutex.unlock()
 
-	.queue_free()
+	super.queue_free()
 
 
 func _add_task(instance: Object, method: String, callback: String, parameter = null, no_argument = false, array_argument = false, prioritized=false) -> void:
@@ -134,7 +134,7 @@ func _process_tasks( thread: Thread ):
 		var task: Task
 		var qty: int = _tasks.size()
 		#print( "tasks in queue: ", qty )
-		if _tasks.empty():
+		if _tasks.is_empty():
 			task = null
 
 		else:
@@ -170,7 +170,7 @@ func _create_worker_thread():
 	
 	t = Thread.new()
 	_threads_in_work.push_back( t )
-	var ret: int = t.start( self, "_process_tasks", t )
+	var ret: int = t.start(Callable(self, "_process_tasks").bind(t))
 	#print( "task creation err code: ", ret )
 	
 	return t
@@ -188,7 +188,7 @@ func _wait_for_workers_to_finish():
 	for t in threads:
 		var valid: bool = is_instance_valid( t )
 		if valid:
-			if t.is_active():
+			if t.is_alive():
 				t.wait_to_finish()
 
 

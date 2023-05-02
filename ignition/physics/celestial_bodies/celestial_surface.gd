@@ -4,37 +4,37 @@ class_name CelestialSurface
 
 
 # Defining geometry and GM based on surface orbiting velocity.
-export(String) var height_source_name = "test"
+@export var height_source_name: String = "test"
 
 # Radius is taken from
 #var radius_km = 1.0
 #export(float) var height_km = 1.0
 
 # Subdivision levels.
-export(float) var detail_size_0 = 0.01
-export(float) var detail_dist_0 = 0.05
-export(float) var detail_size_1 = 0.03
-export(float) var detail_dist_1 = 0.2
-export(float) var detail_size_2 = 0.05
-export(float) var detail_dist_2 = 10.0
+@export var detail_size_0: float = 0.01
+@export var detail_dist_0: float = 0.05
+@export var detail_size_1: float = 0.03
+@export var detail_dist_1: float = 0.2
+@export var detail_size_2: float = 0.05
+@export var detail_dist_2: float = 10.0
 
-export(float) var atmosphere_height_inner_km = 1.0
-export(float) var atmosphere_height_outer_km = 0.1
-export(float) var transparency_dist_inner_km = 30.0
-export(float) var transparency_dist_outer_km = 5.0
-export(Color) var atmosphere_color_day   = Color(0.65, 0.8, 1.0, 1.0)
-export(Color) var atmosphere_color_night = Color(1.0, 0.43, 0.46, 1.0)
-export(float) var displacement = 0.0
+@export var atmosphere_height_inner_km: float = 1.0
+@export var atmosphere_height_outer_km: float = 0.1
+@export var transparency_dist_inner_km: float = 30.0
+@export var transparency_dist_outer_km: float = 5.0
+@export var atmosphere_color_day: Color   = Color(0.65, 0.8, 1.0, 1.0)
+@export var atmosphere_color_night: Color = Color(1.0, 0.43, 0.46, 1.0)
+@export var displacement: float = 0.0
 
-export(float) var air_density          = 1.0
-export(float) var air_viscosity        = 0.1
-export(float) var air_pressure_surface = 101000.0
+@export var air_density: float          = 1.0
+@export var air_viscosity: float        = 0.1
+@export var air_pressure_surface: float = 101000.0
 
 var motion: CelestialMotionRef = null
 var rotation: CelestialRotationRef = null
 var orbit_visualizer: Node = null
-export(Color) var orbit_color = Color( 1.0, 0.0, 0.0, 1.0 ) setget _set_orbit_color, _get_orbit_color
-export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
+@export var orbit_color: Color = Color( 1.0, 0.0, 0.0, 1.0 ): get = _get_orbit_color, set = _set_orbit_color
+@export var show_orbit: bool = false: get = _get_show_orbit, set = _set_show_orbit
 
 
 # As currently there is just one player
@@ -43,15 +43,15 @@ export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
 var _subdivide_source_visual: SubdivideSourceRef = null
 
 
-export(bool) var convert_to_global = false setget _set_convert_to_global
-export(bool) var apply_scale       = true setget _set_apply_scale
+@export var convert_to_global: bool = false: set = _set_convert_to_global
+@export var apply_scale: bool       = true: set = _set_apply_scale
 
 
 var ref_frame_to_check_rotating_index: int = 0
 var ref_frame_to_check_orbiting_index: int = 0
 
 
-export(float) var rescale_angular_distance = 1.1 / 180.0 * PI
+@export var rescale_angular_distance: float = 1.1 / 180.0 * PI
 var last_player_rf_r: Vector3 = Vector3.ZERO
 
 
@@ -59,8 +59,8 @@ var _force_source_rotational: ForceSourceRotational = null
 var _force_source_air_drag: ForceSourceAirDrag      = null
 
 
-func get_class():
-	return "CelestialSurface"
+#func get_class():
+#	return "CelestialSurface"
 
 
 func translation_rf():
@@ -80,7 +80,7 @@ func surface_node():
 
 
 func _ready():
-	._ready()
+	super._ready()
 	# It should be created only when the thing is in the tree.
 	_create_orbit_visualizer()
 
@@ -144,7 +144,7 @@ func init():
 	celestial_body.add_level( detail_size_1, detail_dist_1 )
 	celestial_body.add_level( detail_size_2, detail_dist_2 )
 	
-	.init()
+	super.init()
 
 
 
@@ -181,7 +181,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 	
 	var physics_ref_frames: Array  = root.physics_ref_frames()
 	
-	var translation: RefFrameNode = self
+	var position: RefFrameNode = self
 	var rotation: RefFrameNode    = get_node( "Rotation" )
 	var planet: CubeSphereNode = get_node( "Rotation/CelestialBody" )
 	
@@ -189,7 +189,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 	for rf in physics_ref_frames:
 		# Check if either node is direct parent of this rf
 		var p = rf.get_parent()
-		var is_child: bool = ( p == planet ) or ( p == rotation ) or ( p == translation )
+		var is_child: bool = ( p == planet ) or ( p == rotation ) or ( p == position )
 		if not is_child:
 			continue
 		
@@ -201,7 +201,7 @@ func process_geometry( force_player_rf: RefFrameNode = null ):
 			planet.apply_heightmap_2( planet.height_source )
 			var collision_dist = Constants.RF_MERGE_DISTANCE
 			var surface_relative_to_rf: Se3Ref = planet.relative_to( rf )
-			var verts: PoolVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
+			var verts: PackedVector3Array = planet.collision_triangles( rf, subdiv, collision_dist )
 			rf.set_surface_vertices( verts, surface_relative_to_rf )
 	
 	# For player ref frame rebuild mesh if needed
@@ -253,7 +253,7 @@ func _set_apply_scale( en ):
 
 # Here need to switch between orbiting and being on a rotating surface.
 func process_ref_frames( celestial_bodies: Array ):
-	.process_ref_frames( celestial_bodies )
+	super.process_ref_frames( celestial_bodies )
 	
 	# Apply gravity, centrifugal, Coriolis and Euler force to bodies in 
 	# rotational ref. frame.
@@ -285,7 +285,7 @@ func _apply_forces():
 		if debug:
 			rot.debug = false
 		var se3_local: Se3Ref       = b.get_se3()
-		var q: Quat                 = se3_local.q
+		var q: Quaternion                 = se3_local.q
 		
 		# Apply gravity and rotational forces.
 		var acc: Vector3 = self.acceleration()
@@ -298,8 +298,8 @@ func _apply_forces():
 		var force_torque: Array = _force_source_air_drag.compute_force( b, se3_rel_to_body )
 		F = force_torque[0]
 		P = force_torque[1]
-		F = q.xform( F )
-		P = q.xform( P )
+		F = q * (F)
+		P = q * (P)
 		b.add_force_torque( F, P )
 
 
@@ -341,7 +341,7 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 		var broad_tree: BroadTreeGd = ref_frame.get_broad_tree()
 		
 		# For each body compute velocity with respect to self.
-		if not octree_meshes.empty():
+		if not octree_meshes.is_empty():
 			for b in bodies:
 				var body: PhysicsBodyBase = b as PhysicsBodyBase
 				
@@ -354,10 +354,10 @@ func _draw_shock_waves( bodies_ref_frame: RefFrameNode, rot: RefFrameNode ):
 				
 				var v_in_rotation: Vector3 = se3.v
 				#var v_in_rotation: Vector3 = Vector3(60.0, 0.0, 0.0)
-				var q: Quat     = se3.q
-				var inv_q: Quat = q.inverse()
+				var q: Quaternion     = se3.q
+				var inv_q: Quaternion = q.inverse()
 				# Convert this velocity to body's ref. frame.
-				var v_in_mesh: Vector3 = inv_q.xform( v_in_rotation )
+				var v_in_mesh: Vector3 = inv_q * (v_in_rotation)
 				#var v_in_mesh: Vector3 = q.xform( v_in_rotation )
 				
 				# Body in physics ref. frame.
@@ -409,7 +409,7 @@ func process_ref_frames_rotating_to_orbiting():
 	var height_km: float = 0.0
 	var exclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_EXCLUDE_DIST
 	if dist >= exclusion_dist:
-		rf.change_parent( tr )
+		rf.change_parent( tr, false )
 		#rf.jump_to( tr, se3 )
 		rf.allow_orbiting = true
 		var _ok: bool = rf.launch()
@@ -445,7 +445,7 @@ func process_ref_frames_orbiting_to_rotating():
 	var height_km: float = 0.0
 	var inclusion_dist: float = (radius_km + height_km)*1000.0 + Constants.BODY_INCLUDE_DIST
 	if dist <= inclusion_dist:
-		rf.change_parent( rot )
+		rf.change_parent( rot, false )
 		rf.allow_orbiting = false
 		rf.set_se3( se3 )
 		print( "orbiting -> rotating" )
@@ -501,7 +501,7 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 	# Check if the strongest influence is caused by other celestial body.
 	if (biggest_influence_body != null) and (biggest_influence_body != tr):
 		# Need to teleport celestial body to that other celestial body
-		rf.change_parent( biggest_influence_body )
+		rf.change_parent( biggest_influence_body, false )
 		rf.allow_orbiting = true
 		var _ok: bool = rf.launch()
 		print( "orbiting -> another orbiting" )
@@ -513,7 +513,7 @@ func _create_orbit_visualizer():
 	if is_instance_valid( orbit_visualizer ):
 		orbit_visualizer.queue_free()
 	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
-	orbit_visualizer = Vis.instance()
+	orbit_visualizer = Vis.instantiate()
 	self.add_child( orbit_visualizer )
 	orbit_visualizer.ref_frame = self.get_parent()
 	orbit_visualizer.motion    = motion

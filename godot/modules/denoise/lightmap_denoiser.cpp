@@ -29,8 +29,9 @@
 /**************************************************************************/
 
 #include "lightmap_denoiser.h"
-
 #include "denoise_wrapper.h"
+
+#include "core/io/image.h"
 
 LightmapDenoiser *LightmapDenoiserOIDN::create_oidn_denoiser() {
 	return memnew(LightmapDenoiserOIDN);
@@ -45,15 +46,12 @@ Ref<Image> LightmapDenoiserOIDN::denoise_image(const Ref<Image> &p_image) {
 
 	img->convert(Image::FORMAT_RGBF);
 
-	PoolByteArray data = img->get_data();
-	{
-		PoolByteArray::Write w = data.write();
-		if (!oidn_denoise(device, (float *)w.ptr(), img->get_width(), img->get_height())) {
-			return p_image;
-		}
+	Vector<uint8_t> data = img->get_data();
+	if (!oidn_denoise(device, (float *)data.ptrw(), img->get_width(), img->get_height())) {
+		return p_image;
 	}
 
-	img->create(img->get_width(), img->get_height(), false, img->get_format(), data);
+	img->set_data(img->get_width(), img->get_height(), false, img->get_format(), data);
 	return img;
 }
 

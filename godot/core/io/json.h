@@ -31,9 +31,14 @@
 #ifndef JSON_H
 #define JSON_H
 
-#include "core/variant.h"
+#include "core/io/resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/variant/variant.h"
 
-class JSON {
+class JSON : public Resource {
+	GDCLASS(JSON, Resource);
+
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
 		TK_CURLY_BRACKET_CLOSE,
@@ -49,7 +54,6 @@ class JSON {
 	};
 
 	enum Expecting {
-
 		EXPECT_OBJECT,
 		EXPECT_OBJECT_KEY,
 		EXPECT_COLON,
@@ -61,18 +65,50 @@ class JSON {
 		Variant value;
 	};
 
-	static const char *tk_name[TK_MAX];
+	String text;
+	Variant data;
+	String err_str;
+	int err_line = 0;
 
-	static String _print_var(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, Set<const void *> &p_markers);
+	static const char *tk_name[];
 
-	static Error _get_token(const CharType *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
-	static Error _parse_value(Variant &value, Token &token, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
-	static Error _parse_array(Array &array, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
-	static Error _parse_object(Dictionary &object, const CharType *p_str, int &index, int p_len, int &line, String &r_err_str);
+	static String _make_indent(const String &p_indent, int p_size);
+	static String _stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision = false);
+	static Error _get_token(const char32_t *p_str, int &index, int p_len, Token &r_token, int &line, String &r_err_str);
+	static Error _parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
+	static Error _parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
+	static Error _parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str);
+	static Error _parse_string(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
+
+protected:
+	static void _bind_methods();
 
 public:
-	static String print(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true);
-	static Error parse(const String &p_json, Variant &r_ret, String &r_err_str, int &r_err_line);
+	Error parse(const String &p_json_string, bool p_keep_text = false);
+	String get_parsed_text() const;
+
+	static String stringify(const Variant &p_var, const String &p_indent = "", bool p_sort_keys = true, bool p_full_precision = false);
+	static Variant parse_string(const String &p_json_string);
+
+	inline Variant get_data() const { return data; }
+	void set_data(const Variant &p_data);
+	inline int get_error_line() const { return err_line; }
+	inline String get_error_message() const { return err_str; }
+};
+
+class ResourceFormatLoaderJSON : public ResourceFormatLoader {
+public:
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
+};
+
+class ResourceFormatSaverJSON : public ResourceFormatSaver {
+public:
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
+	virtual bool recognize(const Ref<Resource> &p_resource) const;
 };
 
 #endif // JSON_H

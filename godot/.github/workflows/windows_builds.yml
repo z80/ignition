@@ -5,8 +5,8 @@ on: [push, pull_request]
 # SCONS_CACHE for windows must be set in the build environment
 env:
   # Only used for the cache key. Increment version to force clean build.
-  GODOT_BASE_BRANCH: 3.5
-  SCONSFLAGS: verbose=yes warnings=all werror=yes debug_symbols=no
+  GODOT_BASE_BRANCH: master
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
   SCONS_CACHE_MSVC_CONFIG: true
 
 concurrency:
@@ -22,16 +22,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor (target=release_debug, tools=yes)
+          - name: Editor (target=editor, tests=yes)
             cache-name: windows-editor
-            target: release_debug
-            tools: true
-            bin: "./bin/godot.windows.opt.tools.64.exe"
+            target: editor
+            tests: true
+            # Skip debug symbols, they're way too big with MSVC.
+            sconsflags: debug_symbols=no vsproj=yes
+            bin: "./bin/godot.windows.editor.x86_64.exe"
 
-          - name: Template (target=release, tools=no)
+          - name: Template (target=template_release, tools=no)
             cache-name: windows-template
-            target: release
-            tools: false
+            target: template_release
+            tests: false
+            sconsflags: debug_symbols=no
 
     steps:
       - uses: actions/checkout@v3
@@ -51,10 +54,18 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }}
+          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
           platform: windows
           target: ${{ matrix.target }}
-          tools: ${{ matrix.tools }}
+          tests: ${{ matrix.tests }}
+
+      # Execute unit tests for the editor
+      - name: Unit tests
+        if: ${{ matrix.tests }}
+        run: |
+          ${{ matrix.bin }} --version
+          ${{ matrix.bin }} --help
+          ${{ matrix.bin }} --test
 
       - name: Prepare artifact
         run: |

@@ -2,10 +2,10 @@
 #ifndef __OCCUPANCY_TREE_H_
 #define __OCCUPANCY_TREE_H_
 
-#include "core/vector.h"
+#include "core/templates/vector.h"
 #include "core/math/face3.h"
 #include "scene/main/node.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "occupancy_tree_node.h"
 
 
@@ -24,7 +24,7 @@ public:
 	void set_node_size( real_t sz = 0.1 );
 	real_t node_size() const;
 	void clear();
-	void append( const Transform & t, const Ref<Mesh> mesh );
+	void append( const Transform3D & t, const Ref<Mesh> mesh );
 	void subdivide();
 
 	// Check if certain point is occupied.
@@ -50,7 +50,7 @@ public:
 	void set_node_position( OccupancyTreeNode & n, const Vector3 from, const Vector3 to );
 
 	// For visualization.
-	PoolVector<Vector3> lines();
+	Vector<Vector3> lines();
 
 	bool parent( const OccupancyTreeNode & node, OccupancyTreeNode * & parent );
 

@@ -4,9 +4,9 @@
 [ext_resource path="res://physics/bodies/construction/panel_parts/item_button.gd" type="Script" id=2]
 
 [node name="ItemButton" type="Button"]
-margin_right = 60.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 60, 60 )
+offset_right = 60.0
+offset_bottom = 60.0
+custom_minimum_size = Vector2( 60, 60 )
 theme = ExtResource( 1 )
 shortcut_in_tooltip = false
 script = ExtResource( 2 )
@@ -14,15 +14,15 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Sprite" type="Sprite" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="."]
 
 [node name="Desc" type="RichTextLabel" parent="."]
 process_priority = 1
 visible = false
-margin_left = 63.0502
-margin_top = 58.9117
-margin_right = 382.05
-margin_bottom = 221.912
+offset_left = 63.0502
+offset_top = 58.9117
+offset_right = 382.05
+offset_bottom = 221.912
 theme = ExtResource( 1 )
 text = "Item description"
 

@@ -1,5 +1,5 @@
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 #include "se3_ref.h"
 #include "marching_cubes_dual_node.h"
 #include "marching_cubes_dual_gd.h"
@@ -14,9 +14,9 @@ namespace Ign
 
 class MarchingCubesDualGd;
 
-class BoundingNodeGd: public Reference
+class BoundingNodeGd: public RefCounted
 {
-	GDCLASS(BoundingNodeGd, Reference);
+	GDCLASS(BoundingNodeGd, RefCounted);
 protected:
 	static void _bind_methods();
 

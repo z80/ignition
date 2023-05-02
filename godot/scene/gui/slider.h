@@ -37,29 +37,42 @@ class Slider : public Range {
 	GDCLASS(Slider, Range);
 
 	struct Grab {
-		int pos;
-		float uvalue;
-		bool active;
+		int pos = 0;
+		double uvalue = 0.0;
+		bool active = false;
 	} grab;
 
-	int ticks;
-	bool mouse_inside;
+	int ticks = 0;
+	bool mouse_inside = false;
 	Orientation orientation;
-	float custom_step;
-	bool editable;
-	bool scrollable;
+	double custom_step = -1.0;
+	bool editable = true;
+	bool scrollable = true;
+
+	struct ThemeCache {
+		Ref<StyleBox> slider_style;
+		Ref<StyleBox> grabber_area_style;
+		Ref<StyleBox> grabber_area_hl_style;
+
+		Ref<Texture2D> grabber_icon;
+		Ref<Texture2D> grabber_hl_icon;
+		Ref<Texture2D> grabber_disabled_icon;
+		Ref<Texture2D> tick_icon;
+	} theme_cache;
 
 protected:
-	void _gui_input(Ref<InputEvent> p_event);
+	bool ticks_on_borders = false;
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
-	bool ticks_on_borders;
 
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
-	void set_custom_step(float p_custom_step);
-	float get_custom_step() const;
+	void set_custom_step(double p_custom_step);
+	double get_custom_step() const;
 
 	void set_ticks(int p_count);
 	int get_ticks() const;

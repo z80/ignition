@@ -31,28 +31,38 @@
 #include "register_types.h"
 
 #include "bullet_physics_server.h"
-#include "core/class_db.h"
-#include "core/project_settings.h"
+#include "servers/physics_server_3d_wrap_mt.h"
+#include "core/object/class_db.h"
+#include "core/config/project_settings.h"
 
 /**
 	@author AndreaCatania
+	FatherTed
 */
 
 #ifndef _3D_DISABLED
-PhysicsServer *_createBulletPhysicsCallback() {
-	return memnew(BulletPhysicsServer);
+static PhysicsServer3D *_createBulletPhysics3DCallback()
+{
+	bool using_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
+
+	PhysicsServer3D *physics_server_3d = memnew( BulletPhysicsServer() );
+
+	return memnew(PhysicsServer3DWrapMT(physics_server_3d, using_threads));
 }
+
 #endif
 
-void register_bullet_types() {
+void initialize_bullet_module( ModuleInitializationLevel p_level )
+{
+    if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS)
+        return;
+
 #ifndef _3D_DISABLED
-	PhysicsServerManager::register_server("Bullet", &_createBulletPhysicsCallback);
-	PhysicsServerManager::set_default_server("Bullet", 1);
-
-	GLOBAL_DEF("physics/3d/active_soft_world", true);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
+	PhysicsServer3DManager::get_singleton()->register_server("Bullet (port from Godot-3.5.2)", callable_mp_static(_createBulletPhysics3DCallback));
+	//PhysicsServer3DManager::get_singleton()->set_default_server("BulletPhysics3D");
 #endif
 }
 
-void unregister_bullet_types() {
+void uninitialize_bullet_module( ModuleInitializationLevel p_level )
+{
 }

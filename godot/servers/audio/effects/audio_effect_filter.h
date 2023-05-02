@@ -49,7 +49,7 @@ class AudioEffectFilterInstance : public AudioEffectInstance {
 	void _process_filter(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 
 	AudioEffectFilterInstance();
 };
@@ -88,7 +88,7 @@ public:
 	void set_db(FilterDB p_db);
 	FilterDB get_db() const;
 
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instantiate() override;
 
 	AudioEffectFilter(AudioFilterSW::Mode p_mode = AudioFilterSW::LOWPASS);
 };
@@ -98,9 +98,9 @@ VARIANT_ENUM_CAST(AudioEffectFilter::FilterDB)
 class AudioEffectLowPassFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectLowPassFilter, AudioEffectFilter);
 
-	void _validate_property(PropertyInfo &property) const {
-		if (property.name == "gain") {
-			property.usage = 0;
+	void _validate_property(PropertyInfo &p_property) const {
+		if (p_property.name == "gain") {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
@@ -111,9 +111,9 @@ public:
 
 class AudioEffectHighPassFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectHighPassFilter, AudioEffectFilter);
-	void _validate_property(PropertyInfo &property) const {
-		if (property.name == "gain") {
-			property.usage = 0;
+	void _validate_property(PropertyInfo &p_property) const {
+		if (p_property.name == "gain") {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
@@ -124,9 +124,9 @@ public:
 
 class AudioEffectBandPassFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectBandPassFilter, AudioEffectFilter);
-	void _validate_property(PropertyInfo &property) const {
-		if (property.name == "gain") {
-			property.usage = 0;
+	void _validate_property(PropertyInfo &p_property) const {
+		if (p_property.name == "gain") {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 

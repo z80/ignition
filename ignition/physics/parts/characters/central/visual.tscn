@@ -1,19 +1,101 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=11 format=3 uid="uid://ba4qaneb2nx18"]
 
-[ext_resource path="res://physics/parts/characters/central/visual.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/characters/central/visual_model_raw.tscn" type="PackedScene" id=2]
+[ext_resource type="Script" path="res://physics/parts/characters/central/visual.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://dfsym5enoc01r" path="res://physics/parts/characters/central/visual_model_raw_2.tscn" id="2_2aips"]
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="3_65ms5"]
 
-[sub_resource type="CapsuleShape" id=1]
-radius = 0.326954
+[sub_resource type="CapsuleShape3D" id="1"]
+height = 1.7
 
-[node name="Character" type="RigidBody"]
-script = ExtResource( 1 )
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_scb6e"]
+animation = &"WalkForward"
 
-[node name="CollisionShape" type="CollisionShape" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.00272269, 0.999996, 0, -0.999996, 0.00272269, 0, 0.814573, 0 )
-shape = SubResource( 1 )
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_bhbwx"]
+animation = &"WalkBackward"
 
-[node name="astronaut" parent="." instance=ExtResource( 2 )]
-script = null
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_yutul"]
+animation = &"WalkRight"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_druhc"]
+animation = &"WalkLeft"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_q2323"]
+animation = &"Idle"
+
+[sub_resource type="AnimationNodeBlendSpace2D" id="AnimationNodeBlendSpace2D_i5lh6"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_scb6e")
+blend_point_0/pos = Vector2(0, 1)
+blend_point_1/node = SubResource("AnimationNodeAnimation_bhbwx")
+blend_point_1/pos = Vector2(0, -1)
+blend_point_2/node = SubResource("AnimationNodeAnimation_yutul")
+blend_point_2/pos = Vector2(1, 0)
+blend_point_3/node = SubResource("AnimationNodeAnimation_druhc")
+blend_point_3/pos = Vector2(-1, 0)
+blend_point_4/node = SubResource("AnimationNodeAnimation_q2323")
+blend_point_4/pos = Vector2(0, 0)
+
+[node name="Character" type="RigidBody3D"]
+can_sleep = false
+script = ExtResource("1")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -1, 8.74227e-08, 0, -8.74227e-08, -1, 0, 0.0436528, 0.0845541)
+shape = SubResource("1")
+
+[node name="astronaut" parent="." instance=ExtResource("2_2aips")]
+transform = Transform3D(-0.07, 0, -6.11959e-09, 0, 0.07, 0, 6.11959e-09, 0, -0.07, 0, -0.791593, 0)
+
+[node name="Skeleton3D" parent="astronaut/Armature" index="0"]
+bones/0/position = Vector3(0.00171132, 0.0700255, 0.00127829)
+bones/0/rotation = Quaternion(0.178768, -0.0102517, 0.00770515, 0.983808)
+bones/1/rotation = Quaternion(0.021715, -0.0621542, 0.971945, -0.225808)
+bones/2/rotation = Quaternion(-0.213841, 0.170126, 0.189699, -0.94305)
+bones/3/rotation = Quaternion(-0.00600522, -0.0417711, 0.0278356, 0.998721)
+bones/4/rotation = Quaternion(0.539873, 0.479251, 0.503951, 0.474225)
+bones/5/rotation = Quaternion(-0.0192699, -0.000158481, 0.612129, 0.790523)
+bones/6/rotation = Quaternion(0.00416526, 0.0188336, -0.2312, 0.972715)
+bones/7/rotation = Quaternion(0.05834, 0.085545, 0.94129, 0.321328)
+bones/8/rotation = Quaternion(0.246513, 0.00667012, 0.203738, 0.947459)
+bones/9/rotation = Quaternion(0.000851024, -0.0161456, -0.00931048, 0.999826)
+bones/10/rotation = Quaternion(-0.686684, 0.158726, 0.700288, -0.113435)
+bones/11/rotation = Quaternion(-0.0136111, 0.000180758, -0.432371, 0.901593)
+bones/12/rotation = Quaternion(-0.0870807, 0.0502356, 0.660718, 0.743871)
+bones/13/rotation = Quaternion(0.021715, -0.0621543, 0.971945, -0.225807)
+bones/14/rotation = Quaternion(-0.213841, 0.170126, 0.189699, -0.94305)
+bones/15/rotation = Quaternion(-0.00600521, -0.0417711, 0.0278357, 0.998721)
+bones/16/rotation = Quaternion(0.0583401, 0.085545, 0.94129, 0.321328)
+bones/17/rotation = Quaternion(0.246513, 0.0066701, 0.203738, 0.947459)
+bones/18/rotation = Quaternion(0.000850972, -0.0161456, -0.00931052, 0.999826)
+bones/19/position = Vector3(0.165177, -0.458927, 0.234855)
+bones/19/rotation = Quaternion(-0.521226, 0.522766, -0.475992, 0.477987)
+bones/20/position = Vector3(-0.186749, -0.542064, -0.278321)
+bones/20/rotation = Quaternion(-0.476312, -0.477666, 0.520933, 0.523059)
+bones/21/rotation = Quaternion(0.4938, 0.506124, 0.506124, 0.4938)
+bones/22/rotation = Quaternion(-0.47052, 0.483387, 0.527836, -0.516078)
+bones/23/position = Vector3(0.00171132, 0.0700255, 0.00127829)
+bones/23/rotation = Quaternion(-0.569249, -0.012698, -0.0018004, 0.822065)
+bones/24/position = Vector3(0.160307, 0.0823463, -0.388199)
+bones/24/rotation = Quaternion(0.693572, 0.0843014, 0.70748, 0.106415)
+bones/25/position = Vector3(-0.181879, -0.000790506, -0.901375)
+bones/25/rotation = Quaternion(-0.732188, 0.17121, 0.615176, -0.236952)
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+tree_root = SubResource("AnimationNodeBlendSpace2D_i5lh6")
+anim_player = NodePath("../astronaut/AnimationPlayer")
+active = true
+parameters/blend_position = Vector2(-0.00854701, 0.976048)
+
+[node name="target_tps" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.20308, 0.0497034)
+
+[node name="target_fps" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.685051, -0.797377)
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.325907, 0)
+script = ExtResource("3_65ms5")
+
+[connection signal="animation_finished" from="AnimationTree" to="." method="_on_animation_tree_animation_finished"]
+[connection signal="animation_started" from="AnimationTree" to="." method="_on_animation_tree_animation_started"]
 
 [editable path="astronaut"]

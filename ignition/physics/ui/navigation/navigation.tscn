@@ -1,232 +1,202 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=6 format=3 uid="uid://bga668jgke041"]
 
-[ext_resource path="res://physics/ui/navigation/navball.tscn" type="PackedScene" id=1]
-[ext_resource path="res://physics/ui/navigation/assets/level_indicator.png" type="Texture" id=2]
-[ext_resource path="res://assets/font_digital.tres" type="DynamicFont" id=3]
-[ext_resource path="res://physics/ui/navigation/navigation.gd" type="Script" id=4]
+[ext_resource type="PackedScene" uid="uid://db7i0y7lbr1h" path="res://physics/ui/navigation/navball.tscn" id="1"]
+[ext_resource type="Texture2D" uid="uid://djd8cym0g1wuj" path="res://physics/ui/navigation/assets/level_indicator.png" id="2"]
+[ext_resource type="FontFile" uid="uid://brwfhqldys5m5" path="res://assets/font_digital.tres" id="3"]
+[ext_resource type="Script" path="res://physics/ui/navigation/navigation.gd" id="4"]
 
-[sub_resource type="Environment" id=1]
-ambient_light_color = Color( 1, 1, 1, 1 )
-
-[sub_resource type="World" id=2]
-environment = SubResource( 1 )
+[sub_resource type="World3D" id="World3D_8absw"]
 
 [node name="Navigation" type="Control"]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 3
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -200.0
-margin_top = -200.0
-margin_right = 0.455566
-rect_min_size = Vector2( 200, 200 )
-script = ExtResource( 4 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+offset_left = -200.0
+offset_top = -200.0
+offset_right = 0.455566
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("4")
 
-[node name="ViewportContainer" type="ViewportContainer" parent="."]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -192.0
-margin_top = -192.0
-margin_right = 1.52588e-05
-margin_bottom = 1.52588e-05
-__meta__ = {
-"_edit_use_anchors_": false
-}
+offset_left = -192.0
+offset_top = -192.0
+offset_right = 1.52588e-05
+offset_bottom = 1.52588e-05
 
-[node name="Viewport" type="Viewport" parent="ViewportContainer"]
-size = Vector2( 192, 192 )
-world = SubResource( 2 )
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+own_world_3d = true
+world_3d = SubResource("World3D_8absw")
 transparent_bg = true
 handle_input_locally = false
-render_target_update_mode = 3
 gui_disable_input = true
+size = Vector2i(192, 192)
+render_target_update_mode = 4
 
-[node name="Navball" parent="ViewportContainer/Viewport" instance=ExtResource( 1 )]
+[node name="Navball" parent="SubViewportContainer/SubViewport" instance=ExtResource("1")]
 
-[node name="Sprite" type="Sprite" parent="."]
-position = Vector2( 102.233, 99.5334 )
-scale = Vector2( 1.52957, 1.5435 )
-texture = ExtResource( 2 )
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(102.233, 99.5334)
+scale = Vector2(1.52957, 1.5435)
+texture = ExtResource("2")
 
 [node name="Mode" type="Label" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -158.284
-margin_top = -285.523
-margin_right = -47.2842
-margin_bottom = -261.523
-custom_fonts/font = ExtResource( 3 )
+offset_left = -158.284
+offset_top = -285.523
+offset_right = -47.2842
+offset_bottom = -261.523
+theme_override_fonts/font = ExtResource("3")
 text = "mode: surface"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Speed" type="Label" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -158.162
-margin_top = -260.914
-margin_right = -47.1617
-margin_bottom = -236.914
-custom_fonts/font = ExtResource( 3 )
+offset_left = -158.162
+offset_top = -260.914
+offset_right = -47.1617
+offset_bottom = -236.914
+theme_override_fonts/font = ExtResource("3")
 text = "Speed: 0 m/s"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="GeoidDist" type="Label" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -158.162
-margin_top = -238.914
-margin_right = -47.1617
-margin_bottom = -214.914
-custom_fonts/font = ExtResource( 3 )
+offset_left = -158.162
+offset_top = -238.914
+offset_right = -47.1617
+offset_bottom = -214.914
+theme_override_fonts/font = ExtResource("3")
 text = "Distance: 0 km"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="AirPressure" type="Label" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -158.162
-margin_top = -218.914
-margin_right = -47.1617
-margin_bottom = -194.914
-custom_fonts/font = ExtResource( 3 )
+offset_left = -158.162
+offset_top = -218.914
+offset_right = -47.1617
+offset_bottom = -194.914
+theme_override_fonts/font = ExtResource("3")
 text = "Air pressure: 0 kPa"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Timer" type="Timer" parent="."]
 wait_time = 0.2
 autostart = true
 
 [node name="ModeMap" type="Button" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -259.646
-margin_top = -114.538
-margin_right = -194.646
-margin_bottom = -91.5383
-hint_tooltip = "Toggles camera map mode. In map mode it is possible to zoom out to see an entire solar system."
+offset_left = -259.646
+offset_top = -114.538
+offset_right = -194.646
+offset_bottom = -91.5383
+tooltip_text = "Toggles camera map mode. In map mode it is possible to zoom out to see an entire solar system."
 focus_mode = 0
-custom_fonts/font = ExtResource( 3 )
+theme_override_fonts/font = ExtResource("3")
 toggle_mode = true
-enabled_focus_mode = 0
 text = "map"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="ModeOrbit" type="Button" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -259.646
-margin_top = -85.5383
-margin_right = -194.646
-margin_bottom = -65.5383
-hint_tooltip = "Orbit mode
+offset_left = -259.646
+offset_top = -85.5383
+offset_right = -194.646
+offset_bottom = -65.5383
+tooltip_text = "Orbit mode
 Speed is relative to not rotating planet center."
 focus_mode = 0
-custom_fonts/font = ExtResource( 3 )
-enabled_focus_mode = 0
+theme_override_fonts/font = ExtResource("3")
 text = "orbit"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="ModeSurface" type="Button" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -259.051
-margin_top = -59.9704
-margin_right = -194.051
-margin_bottom = -39.9704
-hint_tooltip = "Surface mode
+offset_left = -259.051
+offset_top = -59.9704
+offset_right = -194.051
+offset_bottom = -39.9704
+tooltip_text = "Surface mode
 Speed is relative to rotating planet surface."
 focus_mode = 0
-custom_fonts/font = ExtResource( 3 )
-enabled_focus_mode = 0
+theme_override_fonts/font = ExtResource("3")
 text = "surface"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="ModeTarget" type="Button" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -259.051
-margin_top = -33.9704
-margin_right = -194.051
-margin_bottom = -13.9704
-hint_tooltip = "Target mode
+offset_left = -259.051
+offset_top = -33.9704
+offset_right = -194.051
+offset_bottom = -13.9704
+tooltip_text = "Target mode
 Speed is relative to selected target."
 focus_mode = 0
-custom_fonts/font = ExtResource( 3 )
-enabled_focus_mode = 0
+theme_override_fonts/font = ExtResource("3")
 text = "target"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Sas" type="CheckBox" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -265.766
-margin_top = -208.362
-margin_right = -200.766
-margin_bottom = -184.362
-hint_tooltip = "Stability Augmentation System (S.A.S.)
+offset_left = -265.766
+offset_top = -208.362
+offset_right = -200.766
+offset_bottom = -184.362
+tooltip_text = "Stability Augmentation System (S.A.S.)
 When vehicle rotation is not under control actively zeroes angular velocity. "
 focus_mode = 0
-enabled_focus_mode = 0
 text = "SAS"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="ShowOrbits" type="CheckBox" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -265.766
-margin_top = -190.249
-margin_right = -158.766
-margin_bottom = -166.249
-hint_tooltip = "Visualize orbits"
+offset_left = -265.766
+offset_top = -190.249
+offset_right = -158.766
+offset_bottom = -166.249
+tooltip_text = "Visualize orbits"
 focus_mode = 0
-enabled_focus_mode = 0
 text = "Show orbits"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
 [connection signal="pressed" from="ModeMap" to="." method="_on_Map_pressed"]

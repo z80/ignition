@@ -4,10 +4,10 @@ class_name PlayerCamera
 
 var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
 
-export(float) var near setget _set_near, _get_near
-export(float) var far  setget _set_far,  _get_far
-export(Vector3) var translation setget _set_translation, _get_translation
-export(Transform) var global_transform setget _set_global_transform, _get_global_transform
+@export var near: float: get = _get_near, set = _set_near
+@export var far: float: get = _get_far, set = _set_far
+@export var position: Vector3: get = _get_translation, set = _set_translation
+@export var global_transform: Transform3D: get = _get_global_transform, set = _set_global_transform
 
 const Mode = {
 	FPS         = 0, 
@@ -15,8 +15,8 @@ const Mode = {
 	TPS_FREE    = 2
 }
 
-export(bool) var map_mode = false setget _set_map_mode, _get_map_mode
-export(int) var mode   = Mode.TPS_AZIMUTH setget set_mode
+@export var map_mode: bool = false: get = _get_map_mode, set = _set_map_mode
+@export var mode: int   = Mode.TPS_AZIMUTH: set = set_mode
 
 var _ctrl_enabled: bool = false
 var _mouse_displacement: Vector2 = Vector2.ZERO
@@ -24,15 +24,15 @@ var _zoom_displacement: int = 0
 
 
 
-export(float) var sensitivity = 0.01 setget _set_sensitivity
-export(float) var sensitivity_dist = 0.2
-export(float) var map_distance_multiplier = 100.0
+@export var sensitivity: float = 0.01: set = _set_sensitivity
+@export var sensitivity_dist: float = 0.2
+@export var map_distance_multiplier: float = 100.0
 
-export(float) var dist_min = 1.0   setget _set_dist_min
-export(float) var dist_max = 100.0 setget _set_dist_max
-export(float) var limit_yaw   = 0.5
-export(float) var limit_pitch = 1.57
-export(float) var return_rate = 0.1
+@export var dist_min: float = 1.0: set = _set_dist_min
+@export var dist_max: float = 100.0: set = _set_dist_max
+@export var limit_yaw: float   = 0.5
+@export var limit_pitch: float = 1.57
+@export var return_rate: float = 0.1
 
 # All states share the same state set as one 
 # as each set is a subset of this one.
@@ -42,13 +42,13 @@ var _state = {
 	dist  = 5.0, 
 	last_dist = -1.0, 
 	last_map_dist = -1.0, 
-	quat = Quat.IDENTITY
+	quat = Quaternion.IDENTITY
 }
 
 
-var _target: Spatial = null
+var _target: Node3D = null
 
-var _camera: Camera = null
+var _camera: Camera3D = null
 
 
 func _get_camera():
@@ -58,56 +58,56 @@ func _get_camera():
 
 
 func _set_near( v: float ):
-	var c: Camera = _get_camera()
+	var c: Camera3D = _get_camera()
 	c.near = v
 
 
 func _get_near():
-	var c: Camera = _get_camera()
+	var c: Camera3D = _get_camera()
 	var ret: float = c.near
 	return ret
 
 
 func _set_far( v: float ):
-	var c: Camera = _get_camera()
+	var c: Camera3D = _get_camera()
 	c.far = v
 
 
 func _get_far():
-	var c: Camera = _get_camera()
+	var c: Camera3D = _get_camera()
 	var ret: float = c.far
 	return ret
 
 
 func _set_translation( v: Vector3 ):
-	var c: Camera = _get_camera()
-	c.translation = v
+	var c: Camera3D = _get_camera()
+	c.position = v
 
 
 func _get_translation():
-	var c: Camera = _get_camera()
-	var ret: Vector3 = c.translation
+	var c: Camera3D = _get_camera()
+	var ret: Vector3 = c.position
 	return ret
 
 
-func _set_global_transform( t: Transform ):
-	var c: Camera = _get_camera()
+func _set_global_transform( t: Transform3D ):
+	var c: Camera3D = _get_camera()
 	c.global_transform = t
 
 
 func _get_global_transform():
-	var c: Camera = _get_camera()
-	var t: Transform = c.global_transform
+	var c: Camera3D = _get_camera()
+	var t: Transform3D = c.global_transform
 	return t
 
 
-func get_camera():
-	var camera: Camera = _get_camera()
+func get_camera_3d():
+	var camera: Camera3D = _get_camera()
 	return camera
 
 
 func unproject_position( world_at: Vector3 ):
-	var c: Camera = _get_camera()
+	var c: Camera3D = _get_camera()
 	var at_2d: Vector2 = c.unproject_position( world_at )
 	return at_2d
 
@@ -116,7 +116,7 @@ func _set_map_mode( en: bool ):
 	if en == false:
 		if not map_mode:
 			return
-		self.transform = Transform.IDENTITY
+		self.transform = Transform3D.IDENTITY
 		_state.last_map_dist = _state.dist
 		if _state.last_dist > 0.0:
 			_state.dist = _state.last_dist
@@ -160,7 +160,7 @@ func set_mode_tps():
 
 func apply_target():
 	var p: RefFrameNode = RootScene.ref_frame_root.player_control
-	self.change_parent( p )
+	self.change_parent( p, false )
 	if is_instance_valid( p ):
 		if mode == Mode.FPS:
 			_target = p.pivot_fps()
@@ -306,8 +306,8 @@ func _process_fps(_delta):
 			rr = 0.0
 		_state.pitch +=  fr - rr
 	
-	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
-	var t: Transform = Transform.IDENTITY
+	var q: Quaternion = Quaternion( Vector3.UP, _state.yaw ) * Quaternion( Vector3.RIGHT, _state.pitch )
+	var t: Transform3D = Transform3D.IDENTITY
 	self.set_q( q )
 	self.set_r( _target.transform.origin )
 	
@@ -372,27 +372,27 @@ func _process_tps_azimuth( _delta ):
 	var co: float = wanted_up.y
 	var si: float = Vector2( wanted_up.x, wanted_up.z ).length()
 	var elevation: float = atan2( si, co )
-	var q_el: Quat = Quat( Vector3.RIGHT, elevation )
+	var q_el: Quaternion = Quaternion( Vector3.RIGHT, elevation )
 	
 	co = wanted_up.z
 	si = wanted_up.x
 	var azimuth: float = atan2( si, co )
-	var q_az: Quat = Quat( Vector3.UP, azimuth )
+	var q_az: Quaternion = Quaternion( Vector3.UP, azimuth )
 	
-	var q_total: Quat = q_az * q_el
+	var q_total: Quaternion = q_az * q_el
 	
-	var q_player_relative_to_celestial_body: Quat = se3_rel.q
-	var inv_q_player_relative_to_celestial_body: Quat = q_player_relative_to_celestial_body.inverse()
-	var q_camera_base: Quat = inv_q_player_relative_to_celestial_body * q_total
+	var q_player_relative_to_celestial_body: Quaternion = se3_rel.q
+	var inv_q_player_relative_to_celestial_body: Quaternion = q_player_relative_to_celestial_body.inverse()
+	var q_camera_base: Quaternion = inv_q_player_relative_to_celestial_body * q_total
 	
 	
-	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
+	var q: Quaternion = Quaternion( Vector3.UP, _state.yaw ) * Quaternion( Vector3.RIGHT, _state.pitch )
 	q = q_camera_base * q
 	self.set_q( q )
 	
 	
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
-	v_dist = q.xform( v_dist )
+	v_dist = q * (v_dist)
 	
 	var target_origin: Vector3
 	if is_instance_valid(_target):
@@ -448,13 +448,13 @@ func _process_map_mode( _delta: float ):
 	
 	# Also need to know global Player ref frame orientation to undo it.
 	var se3: Se3Ref = player_ctrl.relative_to( null )
-	var base_q: Quat = se3.q
+	var base_q: Quaternion = se3.q
 	base_q = base_q.inverse()
 	
-	var q: Quat = Quat( Vector3.UP, _state.yaw ) * Quat( Vector3.RIGHT, _state.pitch )
+	var q: Quaternion = Quaternion( Vector3.UP, _state.yaw ) * Quaternion( Vector3.RIGHT, _state.pitch )
 	q = base_q * q
 	var v_dist: Vector3 = Vector3( 0.0, 0.0, _state.dist )
-	v_dist = q.xform( v_dist )
+	v_dist = q * (v_dist)
 	
 	# Assigning camera ref. frame a pose.
 	self.set_q( q )
@@ -472,7 +472,7 @@ func _process_map_mode( _delta: float ):
 
 
 func apply_atmosphere( celestial_body: RefFrameNode ):
-	var atm: MeshInstance = get_node( "Camera/Atmosphere" ) as MeshInstance
+	var atm: MeshInstance3D = get_node( "Camera3D/Atmosphere" ) as MeshInstance3D
 	if atm == null:
 		return
 	var visible: bool = (celestial_body != null)
@@ -494,7 +494,7 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 	
 	var f: float = self.far
 	var far: float = f * 0.5
-	var t: Transform = atm.transform
+	var t: Transform3D = atm.transform
 	t.basis = Basis.IDENTITY
 	t.basis = t.basis.scaled( Vector3( far, far, far ) )
 	atm.transform = t
@@ -514,17 +514,17 @@ func apply_atmosphere( celestial_body: RefFrameNode ):
 #	outer_height += 1.0 * 1000.0
 #	planet_radius = 1.0
 	
-	var m = atm.get_surface_material( 0 )
-	m.set_shader_param( "planet_center",               planet_center )
-	m.set_shader_param( "planet_radius",               planet_radius )
-	m.set_shader_param( "light_dir",                   light_dir )
-	m.set_shader_param( "inner_height",                inner_height )
-	m.set_shader_param( "outer_height",                outer_height )
-	m.set_shader_param( "inner_transparency_distance", inner_dist )
-	m.set_shader_param( "outer_transparency_distance", outer_dist )
-	m.set_shader_param( "displacement",                displacement )
-	m.set_shader_param( "color_day",                   color_day )
-	m.set_shader_param( "color_night",                 color_night )
+	var m = atm.get_surface_override_material( 0 )
+	m.set_shader_parameter( "planet_center",               planet_center )
+	m.set_shader_parameter( "planet_radius",               planet_radius )
+	m.set_shader_parameter( "light_dir",                   light_dir )
+	m.set_shader_parameter( "inner_height",                inner_height )
+	m.set_shader_parameter( "outer_height",                outer_height )
+	m.set_shader_parameter( "inner_transparency_distance", inner_dist )
+	m.set_shader_parameter( "outer_transparency_distance", outer_dist )
+	m.set_shader_parameter( "displacement",                displacement )
+	m.set_shader_parameter( "color_day",                   color_day )
+	m.set_shader_parameter( "color_night",                 color_night )
 
 
 
@@ -538,16 +538,16 @@ func _place_light( sun: RefFrameNode ):
 	var si: float = rot.length()
 	var co: float = current_dir.dot( wanted_dir )
 	var angle: float = atan2( si, co )
-	var q: Quat
+	var q: Quaternion
 	if si < 0.001:
-		q = Quat.IDENTITY
+		q = Quaternion.IDENTITY
 	else:
 		var n: Vector3 = rot / si
 		var a_2: float = angle * 0.5
 		var si_2: float = sin( a_2 )
 		var co_2: float = cos( a_2 )
 		n *= si_2
-		q = Quat( n.x, n.y, n.z, co_2 )
+		q = Quaternion( n.x, n.y, n.z, co_2 )
 	
 	# Place light to the right place
 	var b: Basis = Basis( q )
@@ -572,22 +572,22 @@ func apply_sun( player_ref_frame: RefFrameNode, sun: RefFrameNode ):
 	var ray_size: float  = sun.ray_size
 	var ray_bias: float  = sun.ray_bias
 	
-	var sky: MeshInstance = RootScene.get_visual_layer_space().background_sky
+	var sky: MeshInstance3D = RootScene.get_visual_layer_space().background_sky
 	
-	var m: SpatialMaterial = sky.get_surface_material( 0 ) as SpatialMaterial
+	var m: StandardMaterial3D = sky.material_override as StandardMaterial3D
 	var ms: ShaderMaterial = m.next_pass as ShaderMaterial
-	ms.set_shader_param( "light_dir", light_dir )
-	ms.set_shader_param( "light_size", sz )
-	ms.set_shader_param( "glow_size", glow_size )
-	ms.set_shader_param( "ray_scale", ray_scale )
-	ms.set_shader_param( "ray_size", ray_size )
-	ms.set_shader_param( "ray_bias", ray_bias )
+	ms.set_shader_parameter( "light_dir", light_dir )
+	ms.set_shader_parameter( "light_size", sz )
+	ms.set_shader_parameter( "glow_size", glow_size )
+	ms.set_shader_parameter( "ray_scale", ray_scale )
+	ms.set_shader_parameter( "ray_size", ray_size )
+	ms.set_shader_parameter( "ray_bias", ray_bias )
 
 
 
 func _process_sky():
 	var se3: Se3Ref = self.relative_to( null )
-	var q: Quat = se3.q
+	var q: Quaternion = se3.q
 	
 	var layer: Node = RootScene.get_visual_layer_space()
 	layer.camera_global_rotation = q
@@ -624,20 +624,18 @@ func distance( other: RefFrameNode ):
 	return d
 
 
-func serialize():
-	var data: Dictionary = {}
+func _serialize( data: Dictionary ):
 	data.mode = int(mode)
 	data.ctrl_enabled = _ctrl_enabled
 	data.mouse_displacement_x = _mouse_displacement.x
 	data.mouse_displacement_y = _mouse_displacement.y
 	data.zoom_displacement   =  _zoom_displacement
-	return data
 
 
 
 
 
-func deserialize( data: Dictionary ):
+func _deserialize( data: Dictionary ):
 	mode = data.mode
 	_ctrl_enabled = data.ctrl_enabled
 	_mouse_displacement.x = data.mouse_displacement_x

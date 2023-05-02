@@ -30,15 +30,17 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.gl.GodotRenderer;
 import org.godotengine.godot.io.directory.DirectoryAccessHandler;
 import org.godotengine.godot.io.file.FileAccessHandler;
+import org.godotengine.godot.tts.GodotTTS;
 import org.godotengine.godot.utils.GodotNetUtils;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
 import android.hardware.SensorEvent;
+import android.view.Surface;
 
-import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 /**
@@ -52,7 +54,15 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native void initialize(Activity activity, Godot p_instance, AssetManager p_asset_manager, GodotIO godotIO, GodotNetUtils netUtils, DirectoryAccessHandler directoryAccessHandler, FileAccessHandler fileAccessHandler, boolean use_apk_expansion);
+	public static native boolean initialize(Activity activity,
+			Godot p_instance,
+			AssetManager p_asset_manager,
+			GodotIO godotIO,
+			GodotNetUtils netUtils,
+			DirectoryAccessHandler directoryAccessHandler,
+			FileAccessHandler fileAccessHandler,
+			boolean use_apk_expansion,
+			GodotTTS tts);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
@@ -64,24 +74,25 @@ public class GodotLib {
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
 	 * @param p_cmdline Command line arguments used to configure Godot native layer components.
 	 */
-	public static native void setup(String[] p_cmdline);
+	public static native boolean setup(String[] p_cmdline);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.
-	 * @param width
-	 * @param height
+	 * @param p_surface
+	 * @param p_width
+	 * @param p_height
 	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
 	 */
-	public static native void resize(int width, int height);
+	public static native void resize(Surface p_surface, int p_width, int p_height);
 
 	/**
-	 * Invoked on the GL thread when the underlying Android surface is created or recreated.
-	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceCreated(GL10, EGLConfig)
+	 * Invoked on the render thread when the underlying Android surface is created or recreated.
+	 * @param p_surface
 	 */
-	public static native void newcontext();
+	public static native void newcontext(Surface p_surface);
 
 	/**
-	 * Forward {@link Activity#onBackPressed()} event from the main thread to the GL thread.
+	 * Forward {@link Activity#onBackPressed()} event.
 	 */
 	public static native void back();
 
@@ -92,63 +103,65 @@ public class GodotLib {
 	public static native boolean step();
 
 	/**
-	 * Forward touch events from the main thread to the GL thread.
+	 * TTS callback.
 	 */
-	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions);
-	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask);
-	public static native void touch(int inputDevice, int event, int pointer, int pointerCount, float[] positions, int buttonsMask, float verticalFactor, float horizontalFactor);
+	public static native void ttsCallback(int event, int id, int pos);
 
 	/**
-	 * Forward hover events from the main thread to the GL thread.
+	 * Forward touch events.
 	 */
-	public static native void hover(int type, float x, float y);
+	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap);
 
 	/**
-	 * Forward double_tap events from the main thread to the GL thread.
+	 * Dispatch mouse events
 	 */
-	public static native void doubleTap(int buttonMask, int x, int y);
+	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative);
+
+	public static native void magnify(float x, float y, float factor);
+
+	public static native void pan(float x, float y, float deltaX, float deltaY);
 
 	/**
-	 * Forward accelerometer sensor events from the main thread to the GL thread.
+	 * Forward accelerometer sensor events.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void accelerometer(float x, float y, float z);
 
 	/**
-	 * Forward gravity sensor events from the main thread to the GL thread.
+	 * Forward gravity sensor events.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void gravity(float x, float y, float z);
 
 	/**
-	 * Forward magnetometer sensor events from the main thread to the GL thread.
+	 * Forward magnetometer sensor events.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void magnetometer(float x, float y, float z);
 
 	/**
-	 * Forward gyroscope sensor events from the main thread to the GL thread.
+	 * Forward gyroscope sensor events.
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void gyroscope(float x, float y, float z);
 
 	/**
-	 * Forward regular key events from the main thread to the GL thread.
+	 * Forward regular key events.
 	 */
-	public static native void key(int p_keycode, int p_scancode, int p_unicode_char, boolean p_pressed);
+	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed);
 
 	/**
-	 * Forward game device's key events from the main thread to the GL thread.
+	 * Forward game device's key events.
 	 */
 	public static native void joybutton(int p_device, int p_but, boolean p_pressed);
 
 	/**
-	 * Forward joystick devices axis motion events from the main thread to the GL thread.
+	 * Forward joystick devices axis motion events.
 	 */
 	public static native void joyaxis(int p_device, int p_axis, float p_value);
 
 	/**
-	 * Forward joystick devices hat motion events from the main thread to the GL thread.
+	 * Forward joystick devices hat motion events.
 	 */
 	public static native void joyhat(int p_device, int p_hat_x, int p_hat_y);
 
@@ -175,6 +188,13 @@ public class GodotLib {
 	 * @return String value of the property
 	 */
 	public static native String getGlobal(String p_key);
+
+	/**
+	 * Used to access Godot's editor settings.
+	 * @param settingKey Setting key
+	 * @return String value of the setting
+	 */
+	public static native String getEditorSetting(String settingKey);
 
 	/**
 	 * Invoke method |p_method| on the Godot object specified by |p_id|

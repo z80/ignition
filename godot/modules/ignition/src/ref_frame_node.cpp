@@ -1,6 +1,6 @@
 
 #include "ref_frame_node.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 #include "scene/scene_string_names.h"
 
 namespace Ign
@@ -8,111 +8,61 @@ namespace Ign
 
 void RefFrameNode::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("set_r", "vector3"),  &RefFrameNode::set_r, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_q", "quat"),  &RefFrameNode::set_q, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_v", "vector3"),  &RefFrameNode::set_v, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("set_w", "vector3"),  &RefFrameNode::set_w, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("set_r", "vector3"),  &RefFrameNode::set_r );
+	ClassDB::bind_method( D_METHOD("set_q", "quat"),     &RefFrameNode::set_q );
+	ClassDB::bind_method( D_METHOD("set_v", "vector3"),  &RefFrameNode::set_v );
+	ClassDB::bind_method( D_METHOD("set_w", "vector3"),  &RefFrameNode::set_w );
 
-	ClassDB::bind_method( D_METHOD("set_t", "transform"),  &RefFrameNode::set_t, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("t"),      &RefFrameNode::t, Variant::TRANSFORM );
+	ClassDB::bind_method( D_METHOD("set_t", "transform"),  &RefFrameNode::set_t );
+	ClassDB::bind_method( D_METHOD("t"),      &RefFrameNode::t );
 
-	ClassDB::bind_method( D_METHOD("r"),      &RefFrameNode::r, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("q"),      &RefFrameNode::q, Variant::QUAT );
-	ClassDB::bind_method( D_METHOD("v"),      &RefFrameNode::v, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("w"),      &RefFrameNode::w, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("r"),      &RefFrameNode::r );
+	ClassDB::bind_method( D_METHOD("q"),      &RefFrameNode::q );
+	ClassDB::bind_method( D_METHOD("v"),      &RefFrameNode::v );
+	ClassDB::bind_method( D_METHOD("w"),      &RefFrameNode::w );
 
-	ClassDB::bind_method( D_METHOD("set_se3"), &RefFrameNode::set_se3 );
-	ClassDB::bind_method( D_METHOD("get_se3"), &RefFrameNode::get_se3, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("set_se3", "se3"), &RefFrameNode::set_se3 );
+	ClassDB::bind_method( D_METHOD("get_se3"),        &RefFrameNode::get_se3 );
 
-	ClassDB::bind_method( D_METHOD("relative_to", "origin"), &RefFrameNode::relative_to, Variant::OBJECT );
-	ClassDB::bind_method( D_METHOD("relative_to_se3", "origin", "origin_se3"), &RefFrameNode::relative_to_se3, Variant::OBJECT );
-	ClassDB::bind_method( D_METHOD("se3_relative_to", "object_se3", "origin"), &RefFrameNode::se3_relative_to, Variant::OBJECT );
+	ClassDB::bind_method( D_METHOD("relative_to", "origin"), &RefFrameNode::relative_to );
+	ClassDB::bind_method( D_METHOD("relative_to_se3", "origin", "origin_se3"), &RefFrameNode::relative_to_se3 );
+	ClassDB::bind_method( D_METHOD("se3_relative_to", "object_se3", "origin"), &RefFrameNode::se3_relative_to );
 
-	ClassDB::bind_method( D_METHOD("change_parent", "node"), &RefFrameNode::change_parent, Variant::NIL );
+	ClassDB::bind_method( D_METHOD("change_parent", "node", "recursive_call"), &RefFrameNode::change_parent );
+	GDVIRTUAL_BIND(_change_parent, "node", "recursive_call");
+
+	GDVIRTUAL_BIND(_jumped);
+	GDVIRTUAL_BIND(_parent_jumped);
+	GDVIRTUAL_BIND(_child_jumped, "child");
+	GDVIRTUAL_BIND(_child_entered, "child");
+	GDVIRTUAL_BIND(_child_left, "child");
 
 	ClassDB::bind_method( D_METHOD("jump_to", "dest", "dest_se3"), &RefFrameNode::jump_to );
 
 	ClassDB::bind_method( D_METHOD("set_debug", "en"), &RefFrameNode::set_debug );
-	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("get_debug"), &RefFrameNode::get_debug );
 
-	//ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
-	//ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize );
-	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize );
+	GDVIRTUAL_BIND(_ign_pre_process, "delta");
+	GDVIRTUAL_BIND(_ign_process, "delta");
+	GDVIRTUAL_BIND(_ign_post_process, "delta");
+	GDVIRTUAL_BIND(_ign_physics_pre_process, "delta");
+	GDVIRTUAL_BIND(_ign_physics_process, "delta");
+	GDVIRTUAL_BIND(_ign_physics_post_process, "delta");
+
+	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
+	GDVIRTUAL_BIND(_serialize, "data");
+	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
+	GDVIRTUAL_BIND(_deserialize, "data");
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ),        "set_t", "t" );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "linear_velocity" ),  "set_v", "v" );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "angular_velocity" ), "set_w", "w" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL,      "debug" ), "set_debug", "get_debug" );
+	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM3D, "transform" ),        "set_t", "t" );
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,     "linear_velocity" ),  "set_v", "v" );
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,     "angular_velocity" ), "set_w", "w" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL,        "debug" ), "set_debug", "get_debug" );
 	//Otherwise continuously requests "SE3" in editor.
 	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
 }
 
-
-
-void RefFrameNode::_jumped()
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		//const Variant *ptr[1] = {};
-		get_script_instance()->call_multilevel( "_jumped", nullptr, 0 );
-	}
-	if ( debug_ )
-		print_line( "jumped" );
-}
-
-void RefFrameNode::_parent_jumped()
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		//const Variant *ptr[1] = {};
-		get_script_instance()->call_multilevel( "_parent_jumped", nullptr, 0 );
-	}
-	if ( debug_ )
-		print_line( "parent jumped" );
-}
-
-void RefFrameNode::_child_jumped( RefFrameNode * child_ref_frame )
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		const Variant arg( child_ref_frame );
-		const Variant *ptr[1] = { &arg };
-		get_script_instance()->call_multilevel( "_child_jumped", ptr, 1 );
-	}
-	if ( debug_ )
-		print_line( "child jumped" );
-}
-
-void RefFrameNode::_child_entered( RefFrameNode * child_ref_frame )
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		const Variant arg( child_ref_frame );
-		const Variant *ptr[1] = { &arg };
-		get_script_instance()->call_multilevel( "_child_entered", ptr, 1 );
-	}
-	if ( debug_ )
-		print_line( "child entered" );
-}
-
-void RefFrameNode::_child_left( RefFrameNode * child_ref_frame )
-{
-	ScriptInstance * si = get_script_instance();
-	if ( si != nullptr )
-	{
-		const Variant arg( child_ref_frame );
-		const Variant *ptr[1] = { &arg };
-		get_script_instance()->call_multilevel( "_child_left", ptr, 1 );
-	}
-	if ( debug_ )
-		print_line( "child left" );
-}
 
 
 RefFrameNode::RefFrameNode()
@@ -130,7 +80,7 @@ void RefFrameNode::set_r( const Vector3 & r )
 	se3_.set_r( r );
 }
 
-void RefFrameNode::set_q( const Quat & q )
+void RefFrameNode::set_q( const Quaternion & q )
 {
 	se3_.set_q( q );
 }
@@ -145,14 +95,14 @@ void RefFrameNode::set_w( const Vector3 & w )
 	se3_.set_w( w );
 }
 
-void RefFrameNode::set_t( const Transform & t )
+void RefFrameNode::set_t( const Transform3D & t )
 {
 	se3_.set_transform( t );
 }
 
-Transform RefFrameNode::t() const
+Transform3D RefFrameNode::t() const
 {
-	const Transform res = se3_.transform();
+	const Transform3D res = se3_.transform();
 	return res;
 }
 
@@ -162,9 +112,9 @@ Vector3 RefFrameNode::r() const
 	return res;
 }
 
-Quat    RefFrameNode::q() const
+Quaternion RefFrameNode::q() const
 {
-	const Quat res = se3_.q();
+	const Quaternion res = se3_.q();
 	return res;
 }
 
@@ -194,7 +144,7 @@ void RefFrameNode::set_se3( const Ref<Se3Ref> & se3 )
 Ref<Se3Ref> RefFrameNode::get_se3() const
 {
 	Ref<Se3Ref> se3;
-	se3.instance();
+	se3.instantiate();
 	se3.ptr()->se3 = se3_;
 	return se3;
 }
@@ -203,7 +153,7 @@ Ref<Se3Ref> RefFrameNode::get_se3() const
 Ref<Se3Ref> RefFrameNode::relative_to( Node * origin )
 {
 	Ref<Se3Ref> se3;
-	se3.instance();
+	se3.instantiate();
 
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
 	//if (!rf)
@@ -216,7 +166,7 @@ Ref<Se3Ref> RefFrameNode::relative_to( Node * origin )
 Ref<Se3Ref> RefFrameNode::relative_to_se3( Node * origin, const Ref<Se3Ref> & origin_se3 )
 {
 	Ref<Se3Ref> se3;
-	se3.instance();
+	se3.instantiate();
 
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
 	//if (!rf)
@@ -229,7 +179,7 @@ Ref<Se3Ref> RefFrameNode::relative_to_se3( Node * origin, const Ref<Se3Ref> & or
 Ref<Se3Ref> RefFrameNode::se3_relative_to( const Ref<Se3Ref> & object_se3, Node * origin )
 {
 	Ref<Se3Ref> se3;
-	se3.instance();
+	se3.instantiate();
 
 	RefFrameNode * rf = Node::cast_to<RefFrameNode>( origin );
 	//if (!rf)
@@ -240,7 +190,7 @@ Ref<Se3Ref> RefFrameNode::se3_relative_to( const Ref<Se3Ref> & object_se3, Node 
 }
 
 
-void RefFrameNode::change_parent( Node * parent )
+void RefFrameNode::change_parent( Node * parent, bool recursive_call )
 {
 	RefFrameNode * parent_rf;
 	if ( parent == nullptr )
@@ -267,6 +217,11 @@ void RefFrameNode::change_parent( Node * parent )
 		const String unique_name = _unique_name( this->get_name(), parent );
 		this->set_name( unique_name );
 		parent->add_child( this );
+	}
+
+	if ( GDVIRTUAL_IS_OVERRIDDEN( _change_parent ) )
+	{
+		GDVIRTUAL_CALL( _change_parent, parent, recursive_call );
 	}
 }
 
@@ -356,7 +311,8 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 
 	// Call script notifications.
 	// For the node itself.
-	_jumped();
+	if (GDVIRTUAL_IS_OVERRIDDEN(_jumped) )
+		GDVIRTUAL_CALL(_jumped );
 	// And for all the children.
 	for ( int i=0; i<qty; i++ )
 	{
@@ -364,25 +320,35 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 		RefFrameNode * ch = Object::cast_to<RefFrameNode>( n );
 		if ( ch == nullptr )
 			continue;
-		ch->_parent_jumped();
+		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(ch, _parent_jumped) )
+			GDVIRTUAL_CALL_PTR(ch, _parent_jumped);
 	}
 
 	// Call child jumped in parent.
 	if ( p != dest_rf )
 	{
 		if ( dest_rf != nullptr )
-			dest_rf->_child_entered( this );
+		{
+			if (GDVIRTUAL_IS_OVERRIDDEN_PTR(dest_rf, _child_entered) )
+				GDVIRTUAL_CALL_PTR(dest_rf, _child_entered, this);
+		}
 		if ( p != nullptr )
 		{
 			RefFrameNode * parent_rf = Object::cast_to<RefFrameNode>( p );
 			if ( parent_rf != nullptr )
-				parent_rf->_child_left( this );
+			{
+				if (GDVIRTUAL_IS_OVERRIDDEN_PTR(parent_rf, _child_left) )
+					GDVIRTUAL_CALL_PTR(parent_rf, _child_left, this);
+			}
 		}
 	}
 	else
 	{
 		if ( dest_rf != nullptr )
-			dest_rf->_child_jumped( this );
+		{
+			if (GDVIRTUAL_IS_OVERRIDDEN_PTR(dest_rf, _child_jumped) )
+				GDVIRTUAL_CALL_PTR(dest_rf, _child_jumped, this);
+		}
 	}
 }
 
@@ -560,71 +526,56 @@ String RefFrameNode::_unique_name( const String & name_base, Node * parent )
 }
 
 
-void RefFrameNode::_ign_pre_process( real_t delta )
+void RefFrameNode::ign_pre_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_pre_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_pre_process", ptr, 1 );
+		GDVIRTUAL_CALL(_ign_pre_process, delta);
 	}
 }
 
-void RefFrameNode::_ign_process( real_t delta )
+void RefFrameNode::ign_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_process", ptr, 1 );
+		GDVIRTUAL_CALL(_ign_process, delta);
 	}
 }
 
-void RefFrameNode::_ign_post_process( real_t delta )
+void RefFrameNode::ign_post_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_post_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_post_process", ptr, 1 );
+		GDVIRTUAL_CALL(_ign_post_process, delta);
 	}
 }
 
 
-void RefFrameNode::_ign_physics_pre_process( real_t delta )
+void RefFrameNode::ign_physics_pre_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_physics_pre_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_physics_pre_process", ptr, 1 );
+		GDVIRTUAL_CALL(_ign_physics_pre_process, delta);
 	}
+
 }
 
-void RefFrameNode::_ign_physics_process( real_t delta )
+void RefFrameNode::ign_physics_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_physics_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_physics_process", ptr, 1 );
+		GDVIRTUAL_CALL(_ign_physics_process, delta);
 	}
+
 }
 
-void RefFrameNode::_ign_physics_post_process( real_t delta )
+void RefFrameNode::ign_physics_post_process( real_t delta )
 {
-	ScriptInstance * inst = get_script_instance();
-	if (inst != nullptr)
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_ign_physics_post_process) )
 	{
-		Variant time = delta;
-		const Variant * ptr[1] = { &time };
-		get_script_instance()->call_multilevel( "_ign_physics_post_process", ptr, 1 );
+		GDVIRTUAL_CALL(_ign_physics_post_process, delta);
 	}
+
 }
 
 
@@ -633,6 +584,12 @@ Dictionary RefFrameNode::serialize()
 	Dictionary data;
 	const Dictionary se3_data = se3_.serialize();
 	data["se3"] = se3_data;
+
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_serialize) )
+	{
+		GDVIRTUAL_CALL(_serialize, data);
+	}
+
 	return data;
 }
 
@@ -647,6 +604,13 @@ bool RefFrameNode::deserialize( const Dictionary & data )
 		const bool ok = se3_.deserialize( se3_data );
 		if ( !ok )
 			return false;
+	}
+
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_deserialize) )
+	{
+		bool ret;
+		GDVIRTUAL_CALL(_deserialize, data, ret );
+		return ret;
 	}
 
 	return true;

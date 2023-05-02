@@ -30,18 +30,13 @@
 
 #include "gdscript_language_server.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 #include "core/os/os.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 
 GDScriptLanguageServer::GDScriptLanguageServer() {
-	thread_running = false;
-	started = false;
-	use_thread = false;
-	host = "127.0.0.1";
-	port = 6008;
-
 	_EDITOR_DEF("network/language_server/remote_host", host);
 	_EDITOR_DEF("network/language_server/remote_port", port);
 	_EDITOR_DEF("network/language_server/enable_smart_resolve", true);
@@ -51,24 +46,27 @@ GDScriptLanguageServer::GDScriptLanguageServer() {
 
 void GDScriptLanguageServer::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_ENTER_TREE: {
 			start();
-			break;
-		case NOTIFICATION_EXIT_TREE:
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
 			stop();
-			break;
+		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (started && !use_thread) {
 				protocol.poll();
 			}
 		} break;
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			String host = String(_EDITOR_GET("network/language_server/remote_host"));
-			int port = (int)_EDITOR_GET("network/language_server/remote_port");
-			bool use_thread = (bool)_EDITOR_GET("network/language_server/use_thread");
-			if (host != this->host || port != this->port || use_thread != this->use_thread) {
-				this->stop();
-				this->start();
+			String remote_host = String(_EDITOR_GET("network/language_server/remote_host"));
+			int remote_port = (int)_EDITOR_GET("network/language_server/remote_port");
+			bool remote_use_thread = (bool)_EDITOR_GET("network/language_server/use_thread");
+			if (remote_host != host || remote_port != port || remote_use_thread != use_thread) {
+				stop();
+				start();
 			}
 		} break;
 	}
@@ -87,7 +85,7 @@ void GDScriptLanguageServer::start() {
 	host = String(_EDITOR_GET("network/language_server/remote_host"));
 	port = (int)_EDITOR_GET("network/language_server/remote_port");
 	use_thread = (bool)_EDITOR_GET("network/language_server/use_thread");
-	if (protocol.start(port, IP_Address(host)) == OK) {
+	if (protocol.start(port, IPAddress(host)) == OK) {
 		EditorNode::get_log()->add_message("--- GDScript language server started ---", EditorLog::MSG_TYPE_EDITOR);
 		if (use_thread) {
 			thread_running = true;
@@ -110,7 +108,7 @@ void GDScriptLanguageServer::stop() {
 }
 
 void register_lsp_types() {
-	ClassDB::register_class<GDScriptLanguageProtocol>();
-	ClassDB::register_class<GDScriptTextDocument>();
-	ClassDB::register_class<GDScriptWorkspace>();
+	GDREGISTER_CLASS(GDScriptLanguageProtocol);
+	GDREGISTER_CLASS(GDScriptTextDocument);
+	GDREGISTER_CLASS(GDScriptWorkspace);
 }

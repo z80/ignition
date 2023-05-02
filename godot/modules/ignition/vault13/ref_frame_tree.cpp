@@ -25,7 +25,7 @@ void RefFrameTree::clear()
 }
 
 RefFrameTree::RefFrameTree()
-	: Reference()
+	: RefCounted()
 {
 }
 
@@ -34,7 +34,7 @@ RefFrameTree::~RefFrameTree()
 	clear();
 }
 
-void RefFrameTree::push_back( Ref<Reference> ref_frame )
+void RefFrameTree::push_back( Ref<RefCounted> ref_frame )
 {
 	if ( ref_frame.is_null() )
 		return;
@@ -50,7 +50,7 @@ void RefFrameTree::push_back( Ref<Reference> ref_frame )
 	rf->root_   = -1;
 }
 
-void RefFrameTree::remove( Ref<Reference> ref_frame )
+void RefFrameTree::remove( Ref<RefCounted> ref_frame )
 {
 	if ( ref_frame.is_null() )
 		return;
@@ -61,7 +61,7 @@ void RefFrameTree::remove( Ref<Reference> ref_frame )
 	const int ind = rf->index_;
 	if ( ind < 0 )
 		return;
-	Ref<Reference> origin = rf->origin();
+	Ref<RefCounted> origin = rf->origin();
 	const int origin_ind = rf->origin_;
 
 	const int qty = frames_.size();

@@ -1,6 +1,6 @@
 #include "register_types.h"
 
-#include "core/class_db.h"
+#include "core/object/class_db.h"
 
 //#include "occupancy_grid.h"
 #include "octree_mesh_gd.h"
@@ -50,55 +50,62 @@
 
 #include "iir2.h"
 
-void register_ignition_types()
+//void register_ignition_types()
+void initialize_ignition_module( ModuleInitializationLevel p_level )
 {
-	//ClassDB::register_class<OccupancyGrid>();
-	ClassDB::register_class<Ign::OctreeMeshGd>();
-	ClassDB::register_class<Ign::BroadTreeGd>();
+        if ( p_level != MODULE_INITIALIZATION_LEVEL_SCENE )
+        {
+                return;
+        }
 
-	ClassDB::register_class<Ign::RefFrameNode>();
-	ClassDB::register_class<Ign::RefFrameRoot>();
-	ClassDB::register_class<Ign::RefFrameMotionNode>();
-	ClassDB::register_class<Ign::RefFrameRotationNode>();
-	ClassDB::register_class<Ign::RefFrameNonInertialNode>();
-	ClassDB::register_class<Ign::RefFrameBodyNode>();
-	ClassDB::register_class<Ign::RefFrameAssemblyNode>();
-	//ClassDB::register_class<Ign::RefFrameAutoNode>();
-	ClassDB::register_class<Ign::Se3Ref>();
-	ClassDB::register_class<Ign::DistanceScalerBaseRef>();
-	ClassDB::register_class<Ign::DistanceScalerRef>();
-	ClassDB::register_class<Ign::ScaleDistanceRatioGd>();
+        //ClassDB::register_class<OccupancyGrid>();
+        ClassDB::register_class<Ign::OctreeMeshGd>();
+        ClassDB::register_class<Ign::BroadTreeGd>();
 
-	ClassDB::register_class<Ign::HeightSourceRef>();
-	ClassDB::register_class<Ign::HeightSourceTestRef>();
-	ClassDB::register_class<Ign::HeightSourceGdRef>();
+        ClassDB::register_class<Ign::RefFrameNode>();
+        ClassDB::register_class<Ign::RefFrameRoot>();
+        ClassDB::register_class<Ign::RefFrameMotionNode>();
+        ClassDB::register_class<Ign::RefFrameRotationNode>();
+        ClassDB::register_class<Ign::RefFrameNonInertialNode>();
+        ClassDB::register_class<Ign::RefFrameBodyNode>();
+        ClassDB::register_class<Ign::RefFrameAssemblyNode>();
+        //ClassDB::register_class<Ign::RefFrameAutoNode>();
+        ClassDB::register_class<Ign::Se3Ref>();
+        ClassDB::register_class<Ign::DistanceScalerBaseRef>();
+        ClassDB::register_class<Ign::DistanceScalerRef>();
+        ClassDB::register_class<Ign::ScaleDistanceRatioGd>();
 
-	ClassDB::register_class<Ign::SubdivideSourceRef>();
-	ClassDB::register_class<Ign::SubdivideSourceDistRef>();
-	ClassDB::register_class<Ign::CubeSphereNode>();
+        ClassDB::register_class<Ign::HeightSourceRef>();
+        ClassDB::register_class<Ign::HeightSourceTestRef>();
+        ClassDB::register_class<Ign::HeightSourceGdRef>();
 
-	ClassDB::register_class<Ign::CelestialMotionRef>();
-	ClassDB::register_class<Ign::CelestialRotationRef>();
+        ClassDB::register_class<Ign::SubdivideSourceRef>();
+        ClassDB::register_class<Ign::SubdivideSourceDistRef>();
+        ClassDB::register_class<Ign::CubeSphereNode>();
 
-	ClassDB::register_class<Ign::MarchingVolumeObjectGd>();
-	ClassDB::register_class<Ign::VolumeSourceGd>();
-	ClassDB::register_class<Ign::VolumeSourceScriptGd>();
-	ClassDB::register_class<Ign::VolumeSourceTreeGd>();
-	
-	ClassDB::register_class<Ign::MarchingCubesGd>();
-	ClassDB::register_class<Ign::MarchingCubesDualGd>();
-	ClassDB::register_class<Ign::MarchingCubesDualNodeGd>();
-	ClassDB::register_class<Ign::BoundingNodeGd>();
+        ClassDB::register_class<Ign::CelestialMotionRef>();
+        ClassDB::register_class<Ign::CelestialRotationRef>();
 
-	ClassDB::register_class<Ign::MarchingCubesRebuildStrategyGd>();
-	ClassDB::register_class<Ign::VolumeNodeSizeStrategyGd>();
+        ClassDB::register_class<Ign::MarchingVolumeObjectGd>();
+        ClassDB::register_class<Ign::VolumeSourceGd>();
+        ClassDB::register_class<Ign::VolumeSourceScriptGd>();
+        ClassDB::register_class<Ign::VolumeSourceTreeGd>();
+        
+        ClassDB::register_class<Ign::MarchingCubesGd>();
+        ClassDB::register_class<Ign::MarchingCubesDualGd>();
+        ClassDB::register_class<Ign::MarchingCubesDualNodeGd>();
+        ClassDB::register_class<Ign::BoundingNodeGd>();
 
-	ClassDB::register_class<Ign::IgnRandomGd>();
+        ClassDB::register_class<Ign::MarchingCubesRebuildStrategyGd>();
+        ClassDB::register_class<Ign::VolumeNodeSizeStrategyGd>();
+
+        ClassDB::register_class<Ign::IgnRandomGd>();
 
 
-	ClassDB::register_class<Iir2::Iir2sRef>();
+        ClassDB::register_class<Iir2::Iir2sRef>();
 }
 
-void unregister_ignition_types()
+//void unregister_ignition_types()
+void uninitialize_ignition_module( ModuleInitializationLevel p_level )
 {
 }

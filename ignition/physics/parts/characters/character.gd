@@ -2,32 +2,32 @@
 extends Part
 class_name Character
 
-export(float) var speed     = 3.0
-export(float) var gain      = 50.5
-export(float) var max_force = 5.0
+@export var speed: float     = 3.0
+@export var gain: float      = 50.5
+@export var max_force: float = 5.0
 
 
-export(float) var ang_vel        = 1.0
-export(float) var max_ang_vel    = 2.0
-export(float) var gain_angular   = 10.0
-export(float) var gain_d_angular = 10.0
-export(float) var max_torque     = 5.0
+@export var ang_vel: float        = 1.0
+@export var max_ang_vel: float    = 2.0
+@export var gain_angular: float   = 400.0
+@export var gain_d_angular: float = 100.0
+@export var max_torque: float     = 50.0
 
-export(bool) var translation_abolute = false
-export(bool) var rotation_abolute    = false
+@export var translation_abolute: bool = false
+@export var rotation_abolute: bool    = false
 
 # Amount of force projected onto this direction is zeroed.
-export(bool) var translation_do_ignore_direction = true
-export(Vector3) var translation_ignore_direction = Vector3.UP
+@export var translation_do_ignore_direction: bool = true
+@export var translation_ignore_direction: Vector3 = Vector3.UP
 
 
 # If it is flying in space.
-export(bool) var free_floating = false
+@export var free_floating: bool = false
 # If it should resist tipping over.
-export(bool) var preserve_vertical = true
+@export var preserve_vertical: bool = true
 
-var target_q: Quat    = Quat.IDENTITY
-var local_up: Vector3 = Vector3.UP
+var target_q: Quaternion = Quaternion.IDENTITY
+var local_up: Vector3    = Vector3.UP
 
 var print_period: float  = 0.1
 var print_elapsed: float = 0.0
@@ -41,7 +41,8 @@ enum BoardingMode {
 	INSIDE=1
 }
 
-export(BoardingMode) var boarding_mode = BoardingMode.OUTSIDE setget set_boarding_mode, get_boarding_mode
+var _boarding_mode = BoardingMode.OUTSIDE
+@export var boarding_mode: BoardingMode: get = get_boarding_mode, set = set_boarding_mode
 
 
 func set_boarding_mode( new_mode ):
@@ -55,25 +56,25 @@ func set_boarding_mode_inside():
 	remove_physical()
 	_visual.visible = false
 	body_state = BodyState.KINEMATIC
-	boarding_mode = BoardingMode.INSIDE
+	_boarding_mode = BoardingMode.INSIDE
 
 
 func set_boarding_mode_outside():
 	_visual.visible = true
 	# First set modes.
 	body_state    = BodyState.DYNAMIC
-	boarding_mode = BoardingMode.OUTSIDE
+	_boarding_mode = BoardingMode.OUTSIDE
 	# After that update/create physical body as the result depends on 
 	# the states provided.
 	update_physics_from_state()
 
 
 func get_boarding_mode():
-	return boarding_mode
+	return _boarding_mode
 
 
 func init():
-	.init()
+	super.init()
 	
 	var PartControlGroups = load( "res://physics/parts/part_control_groups.gd" )
 	control_group = PartControlGroups.ControlGroup._1
@@ -81,7 +82,7 @@ func init():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	._ready()
+	super._ready()
 	_apply_default_orientation()
 
 
@@ -97,14 +98,14 @@ func _apply_default_orientation():
 	var co: float = wanted_up.y
 	var si: float = Vector2( wanted_up.x, wanted_up.z ).length()
 	var elevation: float = atan2( si, co )
-	var q_el: Quat = Quat( Vector3.RIGHT, elevation )
+	var q_el: Quaternion = Quaternion( Vector3.RIGHT, elevation )
 	
 	co = wanted_up.z
 	si = wanted_up.x
 	var azimuth: float = atan2( si, co )
-	var q_az: Quat = Quat( Vector3.UP, azimuth )
+	var q_az: Quaternion = Quaternion( Vector3.UP, azimuth )
 	
-	var q_total: Quat = q_az * q_el
+	var q_total: Quaternion = q_az * q_el
 	
 	var se3: Se3Ref = get_se3()
 	se3.q = q_total
@@ -119,7 +120,7 @@ func process_user_input_group( input: Dictionary ):
 
 
 func process_inner( delta ):
-	.process_inner( delta )
+	super.process_inner( delta )
 	# Update visual animation state.
 	if (_physical != null) and (_visual != null):
 		# This is for visualizing walk.
@@ -168,7 +169,7 @@ func create_physical():
 
 
 # This one should be called by CharacterPhysicsBody
-func integrate_forces( _body: RigidBody, state ):
+func integrate_forces( _body: RigidBody3D, state ):
 	# If it is free floating, don't apply any forces. 
 	# Just let it drift on its own.
 	if not free_floating:
@@ -178,19 +179,19 @@ func integrate_forces( _body: RigidBody, state ):
 	_preserve_vertical( state, preserve_vertical )
 
 
-func apply_force( body: RigidBody, f: Vector3 ):
-	var t: Transform = self.transform
-	var q: Quat = t.basis
-	var fw: Vector3 = q.xform( f )
-	body.add_central_force( fw )
+func apply_force(f: Vector3, body: RigidBody3D):
+	var t: Transform3D = self.transform
+	var q: Quaternion = t.basis
+	var fw: Vector3 = q * (f)
+	body.apply_central_force( fw )
 
 
-func get_speed_normalized( body: RigidBody ):
-	var t: Transform = body.transform
-	var q: Quat = t.basis
+func get_speed_normalized( body: RigidBody3D ):
+	var t: Transform3D = body.transform
+	var q: Quaternion = t.basis
 	q = q.inverse()
 	var v: Vector3 = body.linear_velocity
-	v = q.xform( v )
+	v = q * (v)
 	var current_speed: float = v.length()
 	var s: float = current_speed / speed
 	var current_velocity: Vector3 = v / speed
@@ -228,10 +229,10 @@ func _position_control( state ):
 		v = v.normalized()
 		v *= speed
 	
-	var t: Transform = self.transform
+	var t: Transform3D = self.transform
 	
 	if not translation_abolute:
-		v = t.basis.xform( v )
+		v = t.basis * (v)
 	
 	var model_v: Vector3 = self.linear_velocity
 	var dv: Vector3 = v - model_v
@@ -240,7 +241,7 @@ func _position_control( state ):
 	if translation_do_ignore_direction:
 		var dir: Vector3 = translation_ignore_direction.normalized()
 		if not translation_abolute:
-			dir = t.basis.xform( dir )
+			dir = t.basis * (dir)
 		var ign_force = dir * dir.dot( f )
 		f -= ign_force
 	
@@ -248,7 +249,7 @@ func _position_control( state ):
 	if f_abs > max_force:
 		f = f * (max_force / f_abs)
 	
-	state.add_central_force( f )
+	state.apply_central_force( f )
 
 
 func _ang_vel_control( state, preserving_vertical: bool = true ):
@@ -287,8 +288,8 @@ func _ang_vel_control( state, preserving_vertical: bool = true ):
 	
 	var wanted_w = w
 	if not rotation_abolute:
-		var t: Transform = self.transform
-		wanted_w = t.basis.xform( wanted_w )
+		var t: Transform3D = self.transform
+		wanted_w = t.basis * (wanted_w)
 	wanted_w *= max_ang_vel
 	var current_w: Vector3 = state.angular_velocity
 	var dw = wanted_w - current_w
@@ -298,7 +299,7 @@ func _ang_vel_control( state, preserving_vertical: bool = true ):
 	if L > max_torque:
 		torque = torque * (max_torque / L)
 	
-	state.add_torque( torque )
+	state.apply_torque( torque )
 
 
 
@@ -307,9 +308,9 @@ func _preserve_vertical( state, preserving_vertical: bool = true ):
 		return
 	
 	var dt: float = state.step
-	var t: Transform = self.transform
+	var t: Transform3D = self.transform
 	var up: Vector3 = Vector3.UP
-	up = t.basis.xform( up )
+	up = t.basis * (up)
 	# Want to convert "up" to "local_up".
 	var da: Vector3 = up.cross( local_up )
 	var wanted_w: Vector3 = da.normalized() * ang_vel
@@ -318,13 +319,13 @@ func _preserve_vertical( state, preserving_vertical: bool = true ):
 	wanted_w = wanted_w - up * ( up.dot( wanted_w ) )
 	
 	var dw = wanted_w - current_w
-	var torque: Vector3 = dt * (gain_angular * dw - current_w * gain_d_angular)
+	var torque: Vector3 = dt * (gain_angular * dw) # - current_w * gain_d_angular)
 	var L = torque.length()
 
 	if L > max_torque:
 		torque = torque * (max_torque / L)
 	
-	state.add_torque( torque )
+	state.apply_torque( torque )
 
 
 func rotation_control( state ):
@@ -356,7 +357,7 @@ func rotation_control( state ):
 		w = w.normalized()
 		w *= ang_vel * dt * 0.5
 		
-		var dq = Quat( w.x, w.y, w.z, 1.0 )
+		var dq = Quaternion( w.x, w.y, w.z, 1.0 )
 		if rotation_abolute:
 			target_q = dq * target_q
 		else:
@@ -364,8 +365,8 @@ func rotation_control( state ):
 		target_q = target_q.normalized()
 	
 	# Adjustment q.
-	var t: Transform = self.transform
-	var q: Quat = t.basis
+	var t: Transform3D = self.transform
+	var q: Quaternion = t.basis
 	var dq = target_q * q.inverse()
 	if dq.w < 0.0:
 		dq = -dq
@@ -383,21 +384,17 @@ func rotation_control( state ):
 	if L > max_torque:
 		torque = torque * (max_torque / L)
 	
-	state.add_torque( torque )
+	state.apply_torque( torque )
 
 
 
-func serialize():
-	var data: Dictionary = .serialize()
+func _serialize( data: Dictionary ):
 	data["boarding_mode"] = boarding_mode
 	return data
 
 
 
-func deserialize( data: Dictionary ):
-	var _ok: bool = .deserialize( data )
-	if not _ok:
-		return false
+func _deserialize( data: Dictionary ):
 	
 	if data.has( "boarding_mode" ):
 		boarding_mode = data["boarding_mode"]

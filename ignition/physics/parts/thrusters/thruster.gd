@@ -4,31 +4,31 @@ class_name Thruster
 
 var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
 
-export(bool) var debug_mode = false
+@export var debug_mode: bool = false
 
 enum FuelType {LIQUID_FUEL=0, SOLID_FUEL=1}
-export(FuelType) var fuel_type = FuelType.LIQUID_FUEL
+@export var fuel_type: FuelType = FuelType.LIQUID_FUEL
 
-export(float) var throttle = 0.0
-export(bool) var can_shut_down = true
-export(int) var restarts_qty = -1
+@export var throttle: float = 0.0
+@export var can_shut_down: bool = true
+@export var restarts_qty: int = -1
 var restarts_left: int = -1
 
-export(float) var optimal_thrust_air_pressure = 0.8e5
-export(float) var bad_thrust_air_pressure     = 0.4e5
-export(float) var thrust_min_optimal = 1.0
-export(float) var thrust_max_optimal = 2.0
-export(float) var thrust_min_bad = 1.0
-export(float) var thrust_max_bad = 2.0
+@export var optimal_thrust_air_pressure: float = 0.8e5
+@export var bad_thrust_air_pressure: float     = 0.4e5
+@export var thrust_min_optimal: float = 1.0
+@export var thrust_max_optimal: float = 2.0
+@export var thrust_min_bad: float = 1.0
+@export var thrust_max_bad: float = 2.0
 # Units of volume per second.
-export(float) var fuel_consumption_min = 0.2
-export(float) var fuel_consumption_max = 0.5
+@export var fuel_consumption_min: float = 0.2
+@export var fuel_consumption_max: float = 0.5
 
 # Sounds.
-export(String) var sound_start = ""
-export(String) var sound_loop  = ""
-export(String) var sound_stop  = ""
-export(String) var sound_failed_start = ""
+@export var sound_start: String = ""
+@export var sound_loop: String  = ""
+@export var sound_stop: String  = ""
+@export var sound_failed_start: String = ""
 
 
 var _exhaust_nodes: Array = []
@@ -42,11 +42,11 @@ var _solid_fuel_tank: FuelTank      = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	._ready()
+	super._ready()
 
 
 func init():
-	.init()
+	super.init()
 	restarts_left = restarts_qty
 	_ignited      = false
 	_traverse_exhaust_nodes()
@@ -57,7 +57,7 @@ func init():
 
 
 func process_inner( _delta: float ):
-	.process_inner( _delta )
+	super.process_inner( _delta )
 	_process_fuel( _delta )
 	# Need to do it all the time because when 
 	# RF switch/jump happens physical object is destroyed and 
@@ -74,7 +74,7 @@ func _traverse_exhaust_nodes():
 
 
 func _traverse_exhaust_nodes_recursive( p: Node ):
-	var s: Spatial = p as Spatial
+	var s: Node3D = p as Node3D
 	if s != null:
 		var exhaust_node: ExhaustNode = s as ExhaustNode
 		if exhaust_node != null:
@@ -91,11 +91,11 @@ func _traverse_exhaust_nodes_recursive( p: Node ):
 
 func gui_classes( mode: Array ):
 	var classes = []
-	var common_classes = .gui_classes( mode )
+	var common_classes = super.gui_classes( mode )
 	for cl in common_classes:
 		classes.push_back( cl )
 	
-	var empty: bool = mode.empty()
+	var empty: bool = mode.is_empty()
 	if empty:
 		var Status = load( "res://physics/parts/thrusters/gui_elements/gui_thruster_status.tscn" )
 		classes.push_back( Status )
@@ -329,12 +329,12 @@ func _setup_thrust():
 			for en in _exhaust_nodes:
 				en.set_exhaust( _ignited, 0.0, 0.0 )
 		
-		if not _exhaust_nodes.empty():
+		if not _exhaust_nodes.is_empty():
 			var ex_node: ExhaustNode = _exhaust_nodes[0]
 			var n: Vector3 = ex_node.thrust_direction()
 			var se3: Se3Ref = self.get_se3()
-			var q: Quat = se3.q
-			n = q.xform( n )
+			var q: Quaternion = se3.q
+			n = q * (n)
 			var thrust: Vector3 = n * p
 			_physical.thrust = thrust
 			DDD.important()

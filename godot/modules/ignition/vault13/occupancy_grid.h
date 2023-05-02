@@ -2,11 +2,11 @@
 #ifndef __OCCUPANCY_GRID_H_
 #define __OCCUPANCY_GRID_H_
 
-#include "core/reference.h"
-#include "core/vector.h"
+#include "core/ref_counted.h"
+#include "core/templates/vector.h"
 #include "core/math/face3.h"
 #include "scene/main/node.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "grid_node.h"
 
 
@@ -15,9 +15,9 @@
 	Nonempty leaf node means space is filled. Else means it's empty.
 **/
 
-class OccupancyGrid: public Reference
+class OccupancyGrid: public RefCounted
 {
-	GDCLASS(OccupancyGrid, Reference);
+	GDCLASS(OccupancyGrid, RefCounted);
 	OBJ_CATEGORY("Ignition");
 
 protected:
@@ -39,7 +39,7 @@ public:
 	void set_node_size( real_t sz = 0.1 );
 	real_t node_size() const;
 	void clear();
-    void append( const Transform & t, const Ref<Mesh> mesh );
+    void append( const Transform3D & t, const Ref<Mesh> mesh );
 	void subdivide();
 
 	// Check if certain point is occupied.
@@ -65,7 +65,7 @@ public:
 	void set_node_position( GridNode & n, const Vector3 from, const Vector3 to );
 
 	// For visualization.
-	PoolVector<Vector3> lines();
+	Vector<Vector3> lines();
     
     bool parent( const GridNode & node, GridNode * & parent );
 

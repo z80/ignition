@@ -7,7 +7,7 @@
 background_mode = 4
 ambient_light_color = Color( 0.423529, 0.423529, 0.423529, 1 )
 
-[node name="Spatial" type="Spatial"]
+[node name="Node3D" type="Node3D"]
 
 [node name="Sun" parent="." instance=ExtResource( 1 )]
 r = 3.0
@@ -18,8 +18,8 @@ parent = NodePath("..")
 v = 10.0
 T = 60.0
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 30, 0 )
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0, 30, 0 )
 script = ExtResource( 2 )
 max_speed = Vector3( 10, 10, 10 )
 

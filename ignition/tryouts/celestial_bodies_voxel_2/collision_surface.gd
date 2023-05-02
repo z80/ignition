@@ -1,8 +1,8 @@
-tool
+@tool
 extends Node
 
-export(PackedScene) var CollisionSurfaceOne = null
-export(Resource) var layer_config   = null
+@export var CollisionSurfaceOne: PackedScene = null
+@export var layer_config: Resource   = null
 
 var collision_cells: Dictionary = {}
 
@@ -56,13 +56,13 @@ func _create_volume_surface( surface_source: Resource ):
 
 
 func _create_cells():
-	var full: bool = not collision_cells.empty()
+	var full: bool = not collision_cells.is_empty()
 	if full:
 		return
 	
 	var ref_frame_physics: RefFramePhysics = get_parent();
 	for i in range(27):
-		var cell: Node = CollisionSurfaceOne.instance()
+		var cell: Node = CollisionSurfaceOne.instantiate()
 		ref_frame_physics.add_child( cell )
 		collision_cells[i] = cell
 
@@ -127,7 +127,7 @@ func clone_surface( other_surface ):
 
 func _rebuild_start( surface_source: Resource, source_se3: Se3Ref, view_point_se3: Se3Ref, synchronous: bool = false ):
 	var nodes_to_rebuild: Array = _pick_nodes_to_rebuild( view_point_se3 )
-	var empty: bool = nodes_to_rebuild.empty()
+	var empty: bool = nodes_to_rebuild.is_empty()
 	if empty:
 		return
 	_running = true

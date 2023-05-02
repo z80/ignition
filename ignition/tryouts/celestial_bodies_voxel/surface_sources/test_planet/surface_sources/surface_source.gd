@@ -1,5 +1,5 @@
+@tool
 
-tool
 extends SurfaceSourceBase
 
 var _source: VolumeSourceScriptGd = null

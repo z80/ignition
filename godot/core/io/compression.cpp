@@ -30,8 +30,8 @@
 
 #include "compression.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/zip_io.h"
-#include "core/project_settings.h"
 
 #include "thirdparty/misc/fastlz.h"
 
@@ -181,11 +181,11 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 }
 
 /**
-	This will handle both Gzip and Deflat streams. It will automatically allocate the output buffer into the provided p_dst_vect Vector.
-	This is required for compressed data who's final uncompressed size is unknown, as is the case for HTTP response bodies.
+	This will handle both Gzip and Deflate streams. It will automatically allocate the output buffer into the provided p_dst_vect Vector.
+	This is required for compressed data whose final uncompressed size is unknown, as is the case for HTTP response bodies.
 	This is much slower however than using Compression::decompress because it may result in multiple full copies of the output buffer.
 */
-int Compression::decompress_dynamic(PoolVector<uint8_t> *p_dst, int p_max_dst_size, const uint8_t *p_src, int p_src_size, Mode p_mode) {
+int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_size, const uint8_t *p_src, int p_src_size, Mode p_mode) {
 	int ret;
 	uint8_t *dst = nullptr;
 	int out_mark = 0;
@@ -212,15 +212,15 @@ int Compression::decompress_dynamic(PoolVector<uint8_t> *p_dst, int p_max_dst_si
 	strm.avail_in = p_src_size;
 
 	// Ensure the destination buffer is empty
-	p_dst->resize(0);
+	p_dst_vect->clear();
 
 	// decompress until deflate stream ends or end of file
 	do {
 		// Add another chunk size to the output buffer
 		// This forces a copy of the whole buffer
-		p_dst->resize(p_dst->size() + gzip_chunk);
+		p_dst_vect->resize(p_dst_vect->size() + gzip_chunk);
 		// Get pointer to the actual output buffer
-		dst = p_dst->write().ptr();
+		dst = p_dst_vect->ptrw();
 
 		// Set the stream to the new output stream
 		// Since it was copied, we need to reset the stream to the new buffer
@@ -235,7 +235,7 @@ int Compression::decompress_dynamic(PoolVector<uint8_t> *p_dst, int p_max_dst_si
 			switch (ret) {
 				case Z_NEED_DICT:
 					ret = Z_DATA_ERROR;
-					FALLTHROUGH;
+					[[fallthrough]];
 				case Z_DATA_ERROR:
 				case Z_MEM_ERROR:
 				case Z_STREAM_ERROR:
@@ -244,29 +244,29 @@ int Compression::decompress_dynamic(PoolVector<uint8_t> *p_dst, int p_max_dst_si
 						WARN_PRINT(strm.msg);
 					}
 					(void)inflateEnd(&strm);
-					p_dst->resize(0);
+					p_dst_vect->clear();
 					return ret;
 			}
 		} while (strm.avail_out > 0 && strm.avail_in > 0);
 
 		out_mark += gzip_chunk;
 
-		// Encorce max output size
+		// Enforce max output size
 		if (p_max_dst_size > -1 && strm.total_out > (uint64_t)p_max_dst_size) {
 			(void)inflateEnd(&strm);
-			p_dst->resize(0);
+			p_dst_vect->clear();
 			return Z_BUF_ERROR;
 		}
 	} while (ret != Z_STREAM_END);
 
 	// If all done successfully, resize the output if it's larger than the actual output
-	if (ret == Z_STREAM_END && (unsigned long)p_dst->size() > strm.total_out) {
-		p_dst->resize(strm.total_out);
+	if ((unsigned long)p_dst_vect->size() > strm.total_out) {
+		p_dst_vect->resize(strm.total_out);
 	}
 
 	// clean up and return
 	(void)inflateEnd(&strm);
-	return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+	return Z_OK;
 }
 
 int Compression::zlib_level = Z_DEFAULT_COMPRESSION;

@@ -35,8 +35,6 @@
 
 #include "thirdparty/tinyexr/tinyexr.h"
 
-#include <cstdlib>
-
 static bool is_supported_format(Image::Format p_format) {
 	// This is checked before anything else.
 	// Mostly uncompressed formats are considered.
@@ -143,13 +141,14 @@ static int get_channel_count(Image::Format p_format) {
 	}
 }
 
-Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) {
+Vector<uint8_t> save_exr_buffer(const Ref<Image> &p_img, bool p_grayscale) {
 	Image::Format format = p_img->get_format();
 
 	if (!is_supported_format(format)) {
 		// Format not supported
 		print_error("Image format not supported for saving as EXR. Consider saving as PNG.");
-		return ERR_UNAVAILABLE;
+
+		return Vector<uint8_t>();
 	}
 
 	EXRHeader header;
@@ -162,7 +161,7 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 
 	// Godot does not support more than 4 channels,
 	// so we can preallocate header infos on the stack and use only the subset we need
-	PoolByteArray channels[max_channels];
+	PackedByteArray channels[max_channels];
 	unsigned char *channels_ptrs[max_channels];
 	EXRChannelInfo channel_infos[max_channels];
 	int pixel_types[max_channels];
@@ -177,37 +176,37 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 	};
 
 	int channel_count = get_channel_count(format);
-	ERR_FAIL_COND_V(channel_count < 0, ERR_UNAVAILABLE);
-	ERR_FAIL_COND_V(p_grayscale && channel_count != 1, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(channel_count < 0, Vector<uint8_t>());
+	ERR_FAIL_COND_V(p_grayscale && channel_count != 1, Vector<uint8_t>());
 
 	int target_pixel_type = get_target_pixel_type(format);
-	ERR_FAIL_COND_V(target_pixel_type < 0, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(target_pixel_type < 0, Vector<uint8_t>());
 	int target_pixel_type_size = get_pixel_type_size(target_pixel_type);
-	ERR_FAIL_COND_V(target_pixel_type_size < 0, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(target_pixel_type_size < 0, Vector<uint8_t>());
 	SrcPixelType src_pixel_type = get_source_pixel_type(format);
-	ERR_FAIL_COND_V(src_pixel_type == SRC_UNSUPPORTED, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(src_pixel_type == SRC_UNSUPPORTED, Vector<uint8_t>());
 	const int pixel_count = p_img->get_width() * p_img->get_height();
 
 	const int *channel_mapping = channel_mappings[channel_count - 1];
 
 	{
-		PoolByteArray src_data = p_img->get_data();
-		PoolByteArray::Read src_r = src_data.read();
+		PackedByteArray src_data = p_img->get_data();
+		const uint8_t *src_r = src_data.ptr();
 
 		for (int channel_index = 0; channel_index < channel_count; ++channel_index) {
 			// De-interleave channels
 
-			PoolByteArray &dst = channels[channel_index];
+			PackedByteArray &dst = channels[channel_index];
 			dst.resize(pixel_count * target_pixel_type_size);
 
-			PoolByteArray::Write dst_w = dst.write();
+			uint8_t *dst_w = dst.ptrw();
 
 			if (src_pixel_type == SRC_FLOAT && target_pixel_type == TINYEXR_PIXELTYPE_FLOAT) {
 				// Note: we don't save mipmaps
 				CRASH_COND(src_data.size() < pixel_count * channel_count * target_pixel_type_size);
 
-				const float *src_rp = (float *)src_r.ptr();
-				float *dst_wp = (float *)dst_w.ptr();
+				const float *src_rp = (float *)src_r;
+				float *dst_wp = (float *)dst_w;
 
 				for (int i = 0; i < pixel_count; ++i) {
 					dst_wp[i] = src_rp[channel_index + i * channel_count];
@@ -216,8 +215,8 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 			} else if (src_pixel_type == SRC_HALF && target_pixel_type == TINYEXR_PIXELTYPE_HALF) {
 				CRASH_COND(src_data.size() < pixel_count * channel_count * target_pixel_type_size);
 
-				const uint16_t *src_rp = (uint16_t *)src_r.ptr();
-				uint16_t *dst_wp = (uint16_t *)dst_w.ptr();
+				const uint16_t *src_rp = (uint16_t *)src_r;
+				uint16_t *dst_wp = (uint16_t *)dst_w;
 
 				for (int i = 0; i < pixel_count; ++i) {
 					dst_wp[i] = src_rp[channel_index + i * channel_count];
@@ -226,8 +225,8 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 			} else if (src_pixel_type == SRC_BYTE && target_pixel_type == TINYEXR_PIXELTYPE_HALF) {
 				CRASH_COND(src_data.size() < pixel_count * channel_count);
 
-				const uint8_t *src_rp = (uint8_t *)src_r.ptr();
-				uint16_t *dst_wp = (uint16_t *)dst_w.ptr();
+				const uint8_t *src_rp = (uint8_t *)src_r;
+				uint16_t *dst_wp = (uint16_t *)dst_w;
 
 				for (int i = 0; i < pixel_count; ++i) {
 					dst_wp[i] = Math::make_half_float(src_rp[channel_index + i * channel_count] / 255.f);
@@ -239,7 +238,7 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 
 			int remapped_index = channel_mapping[channel_index];
 
-			channels_ptrs[remapped_index] = dst_w.ptr();
+			channels_ptrs[remapped_index] = dst_w;
 
 			// No conversion
 			pixel_types[remapped_index] = target_pixel_type;
@@ -272,15 +271,25 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 	const char *err = nullptr;
 
 	size_t bytes = SaveEXRImageToMemory(&image, &header, &mem, &err);
+	if (err && *err != OK) {
+		return Vector<uint8_t>();
+	}
+	Vector<uint8_t> buffer;
+	buffer.resize(bytes);
+	memcpy(buffer.ptrw(), mem, bytes);
+	free(mem);
+	return buffer;
+}
 
-	if (bytes == 0) {
-		print_error(String("Saving EXR failed. Error: {0}").format(varray(err)));
+Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) {
+	const Vector<uint8_t> buffer = save_exr_buffer(p_img, p_grayscale);
+	if (buffer.size() == 0) {
+		print_error(String("Saving EXR failed."));
 		return ERR_FILE_CANT_WRITE;
 	} else {
-		FileAccessRef ref = FileAccess::open(p_path, FileAccess::WRITE);
-		ERR_FAIL_COND_V(!ref, ERR_FILE_CANT_WRITE);
-		ref->store_buffer(mem, bytes);
-		free(mem);
+		Ref<FileAccess> ref = FileAccess::open(p_path, FileAccess::WRITE);
+		ERR_FAIL_COND_V(ref.is_null(), ERR_FILE_CANT_WRITE);
+		ref->store_buffer(buffer.ptr(), buffer.size());
 	}
 
 	return OK;

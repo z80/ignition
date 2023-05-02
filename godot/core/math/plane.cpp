@@ -31,6 +31,7 @@
 #include "plane.h"
 
 #include "core/math/math_funcs.h"
+#include "core/variant/variant.h"
 
 void Plane::set_normal(const Vector3 &p_normal) {
 	normal = p_normal;
@@ -50,10 +51,6 @@ Plane Plane::normalized() const {
 	Plane p = *this;
 	p.normalize();
 	return p;
-}
-
-Vector3 Plane::get_any_point() const {
-	return get_normal() * d;
 }
 
 Vector3 Plane::get_any_perpendicular_normal() const {
@@ -132,7 +129,7 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 	real_t dist = (normal.dot(p_begin) - d) / den;
 	//printf("dist is %i\n",dist);
 
-	if (dist < (real_t)-CMP_EPSILON || dist > (1 + (real_t)CMP_EPSILON)) {
+	if (dist < (real_t)-CMP_EPSILON || dist > (1.0f + (real_t)CMP_EPSILON)) {
 		return false;
 	}
 
@@ -142,12 +139,47 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 	return true;
 }
 
+Variant Plane::intersect_3_bind(const Plane &p_plane1, const Plane &p_plane2) const {
+	Vector3 inters;
+	if (intersect_3(p_plane1, p_plane2, &inters)) {
+		return inters;
+	} else {
+		return Variant();
+	}
+}
+
+Variant Plane::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const {
+	Vector3 inters;
+	if (intersects_ray(p_from, p_dir, &inters)) {
+		return inters;
+	} else {
+		return Variant();
+	}
+}
+
+Variant Plane::intersects_segment_bind(const Vector3 &p_begin, const Vector3 &p_end) const {
+	Vector3 inters;
+	if (intersects_segment(p_begin, p_end, &inters)) {
+		return inters;
+	} else {
+		return Variant();
+	}
+}
+
 /* misc */
+
+bool Plane::is_equal_approx_any_side(const Plane &p_plane) const {
+	return (normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d)) || (normal.is_equal_approx(-p_plane.normal) && Math::is_equal_approx(d, -p_plane.d));
+}
 
 bool Plane::is_equal_approx(const Plane &p_plane) const {
 	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
 }
 
+bool Plane::is_finite() const {
+	return normal.is_finite() && Math::is_finite(d);
+}
+
 Plane::operator String() const {
-	return normal.operator String() + ", " + rtos(d);
+	return "[N: " + normal.operator String() + ", D: " + String::num_real(d, false) + "]";
 }

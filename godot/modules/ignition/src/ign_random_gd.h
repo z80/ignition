@@ -3,15 +3,15 @@
 #define __IGN_RANDOM_GD_H_
 
 #include "ign_random.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
 
 namespace Ign
 {
 
-class IgnRandomGd: public Reference
+class IgnRandomGd: public RefCounted
 {
-	GDCLASS(IgnRandomGd, Reference);
+	GDCLASS(IgnRandomGd, RefCounted);
 protected:
 	static void _bind_methods();
 
@@ -38,7 +38,7 @@ public:
 
 	Vector3 random_vector( real_t length=1.0 );
 
-	Quat random_rotation( const Vector3 & axis, real_t angle_variation, real_t axis_variation=0.0 );
+	Quaternion random_rotation( const Vector3 & axis, real_t angle_variation, real_t axis_variation=0.0 );
 
 public:
 	IgnRandom rand;

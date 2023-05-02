@@ -42,10 +42,10 @@ public:
 
 	// Gets the instance/inheritance states of this node, in order of precedence,
 	// that is, from the topmost (the most able to override values) to the lowermost
-	// (Note that in nested instancing the one with the greatest precedence is the furthest
+	// (Note that in nested instantiation, the one with the greatest precedence is the furthest
 	// in the tree, since every owner found while traversing towards the root gets a chance
 	// to override property values.)
-	static Vector<SceneState::PackState> get_node_states_stack(const Node *p_node, const Node *p_owner = nullptr, bool *r_instanced_by_owner = nullptr);
+	static Vector<SceneState::PackState> get_node_states_stack(const Node *p_node, const Node *p_owner = nullptr, bool *r_instantiated_by_owner = nullptr);
 };
 
 #endif // PROPERTY_UTILS_H

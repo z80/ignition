@@ -31,21 +31,18 @@
 #ifndef INSPECTOR_DOCK_H
 #define INSPECTOR_DOCK_H
 
-#include "editor/animation_track_editor.h"
-#include "editor/connections_dialog.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_path.h"
-#include "editor/editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/control.h"
-#include "scene/gui/label.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/tool_button.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/tree.h"
 
-class EditorNode;
+class EditorFileDialog;
 
 class InspectorDock : public VBoxContainer {
 	GDCLASS(InspectorDock, VBoxContainer);
@@ -54,6 +51,7 @@ class InspectorDock : public VBoxContainer {
 		RESOURCE_LOAD,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
+		RESOURCE_SHOW_IN_FILESYSTEM,
 		RESOURCE_MAKE_BUILT_IN,
 		RESOURCE_COPY,
 		RESOURCE_EDIT_CLIPBOARD,
@@ -64,6 +62,7 @@ class InspectorDock : public VBoxContainer {
 
 		COLLAPSE_ALL,
 		EXPAND_ALL,
+		EXPAND_REVERTABLE,
 
 		// Matches `EditorPropertyNameProcessor::Style`.
 		PROPERTY_NAME_STYLE_RAW,
@@ -73,59 +72,73 @@ class InspectorDock : public VBoxContainer {
 		OBJECT_METHOD_BASE = 500
 	};
 
-	EditorNode *editor;
-	EditorData *editor_data;
+	EditorData *editor_data = nullptr;
 
-	EditorInspector *inspector;
+	EditorInspector *inspector = nullptr;
 
-	Object *current;
+	Object *current = nullptr;
 
-	ToolButton *backward_button;
-	ToolButton *forward_button;
+	Button *backward_button = nullptr;
+	Button *forward_button = nullptr;
 
-	EditorFileDialog *load_resource_dialog;
-	CreateDialog *new_resource_dialog;
-	ToolButton *resource_new_button;
-	ToolButton *resource_load_button;
-	MenuButton *resource_save_button;
-	MenuButton *resource_extra_button;
-	MenuButton *history_menu;
-	LineEdit *search;
+	EditorFileDialog *load_resource_dialog = nullptr;
+	CreateDialog *new_resource_dialog = nullptr;
+	Button *resource_new_button = nullptr;
+	Button *resource_load_button = nullptr;
+	MenuButton *resource_save_button = nullptr;
+	MenuButton *resource_extra_button = nullptr;
+	MenuButton *history_menu = nullptr;
+	LineEdit *search = nullptr;
 
-	Button *open_docs_button;
-	MenuButton *object_menu;
-	EditorPath *editor_path;
+	Button *open_docs_button = nullptr;
+	MenuButton *object_menu = nullptr;
+	EditorPath *editor_path = nullptr;
 
-	Button *warning;
-	AcceptDialog *warning_dialog;
+	bool info_is_warning = false; // Display in yellow and use warning icon if true.
+	Button *info = nullptr;
+	AcceptDialog *info_dialog = nullptr;
+
+	int current_option = -1;
+	ConfirmationDialog *unique_resources_confirmation = nullptr;
+	Label *unique_resources_label = nullptr;
+	Tree *unique_resources_list_tree = nullptr;
 
 	EditorPropertyNameProcessor::Style property_name_style;
+	List<Pair<StringName, Variant>> stored_properties;
 
 	void _prepare_menu();
 	void _menu_option(int p_option);
+	void _menu_confirm_current();
+	void _menu_option_confirm(int p_option, bool p_confirmed);
 
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
 	void _open_resource_selector() { _load_resource(); }; // just used to call from arg-less signal
 	void _resource_file_selected(String p_file);
-	void _save_resource(bool save_as) const;
-	void _unref_resource() const;
-	void _copy_resource() const;
-	void _paste_resource() const;
+	void _save_resource(bool save_as);
+	void _unref_resource();
+	void _copy_resource();
+	void _paste_resource();
 	void _prepare_resource_extra_popup();
+	Ref<Resource> _get_current_resource() const;
 
-	void _warning_pressed();
-	void _resource_created() const;
-	void _resource_selected(const RES &p_res, const String &p_property = "") const;
+	void _info_pressed();
+	void _resource_created();
+	void _resource_selected(const Ref<Resource> &p_res, const String &p_property);
 	void _edit_forward();
 	void _edit_back();
 	void _menu_collapseall();
 	void _menu_expandall();
-	void _select_history(int p_idx) const;
+	void _menu_expand_revertable();
+	void _select_history(int p_idx);
 	void _prepare_history();
 
-	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
-	void _transform_keyed(Object *sp, const String &p_sub, const Transform &p_key);
+private:
+	static InspectorDock *singleton;
+
+public:
+	static InspectorDock *get_singleton() { return singleton; }
+	static EditorInspector *get_inspector_singleton() { return singleton->inspector; }
 
 protected:
 	static void _bind_methods();
@@ -133,18 +146,20 @@ protected:
 
 public:
 	void go_back();
-	void update_keying();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_resource(const String &p_type);
 	void clear();
-	void set_warning(const String &p_message);
+	void set_info(const String &p_button_text, const String &p_message, bool p_is_warning);
 	void update(Object *p_object);
 	Container *get_addon_area();
 	EditorInspector *get_inspector() { return inspector; }
 
 	EditorPropertyNameProcessor::Style get_property_name_style() const;
 
-	InspectorDock(EditorNode *p_editor, EditorData &p_editor_data);
+	void store_script_properties(Object *p_object);
+	void apply_script_properties(Object *p_object);
+
+	InspectorDock(EditorData &p_editor_data);
 	~InspectorDock();
 };
 

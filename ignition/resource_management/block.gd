@@ -10,14 +10,14 @@ class_name CreatableBlockDesc
 # Actual part resource name and script name are supposed to 
 # match the folder name in which they reside.
 
-export(PackedScene) var block_scene = null
+@export var block_scene: PackedScene = null
 
-export(String) var category      = "dynamic_parts"
-export(String) var required_tech = "root"
+@export var category: String      = "dynamic_parts"
+@export var required_tech: String = "root"
 
-export(Resource) var icon              = null
-export(String)   var brief_description = ""
-export(String)   var wiki_file         = "res://wiki/root.wiki"
+@export var icon: Resource              = null
+@export var brief_description: String = ""
+@export var wiki_file: String         = "res://wiki/root.wiki"
 
 
 func _init():
@@ -27,7 +27,7 @@ func _init():
 
 
 # Might want to repload something asynchronously.
-func preload_resources( _loader: ResourceInteractiveLoader ):
+func preload_resources( _loader: ResourceLoader ):
 	pass
 
 
@@ -41,11 +41,11 @@ func create( parent: RefFrameNode, se3: Se3Ref ):
 
 # This one should be used unchanged by create() method.
 func create_internal( scene: PackedScene, parent: RefFrameNode, se3: Se3Ref ):
-	var inst: Node = scene.instance()
+	var inst: Node = scene.instantiate()
 	if parent == null:
 		parent = RootScene.get_root_for_bodies()
 	inst.init()
-	inst.change_parent( parent )
+	inst.change_parent( parent, false )
 	inst.set_se3( se3 )
 	return inst
 

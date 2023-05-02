@@ -31,47 +31,70 @@
 #ifndef MATERIAL_EDITOR_PLUGIN_H
 #define MATERIAL_EDITOR_PLUGIN_H
 
-#include "editor/property_editor.h"
+#include "editor/editor_inspector.h"
+#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/color_rect.h"
+#include "scene/resources/material.h"
 #include "scene/resources/primitive_meshes.h"
 
-#include "editor/editor_node.h"
-#include "editor/editor_plugin.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/light.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/resources/material.h"
-
-class ViewportContainer;
+class SubViewport;
+class SubViewportContainer;
+class TextureButton;
 
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
-	ViewportContainer *vc;
-	Viewport *viewport;
-	MeshInstance *sphere_instance;
-	MeshInstance *box_instance;
-	DirectionalLight *light1;
-	DirectionalLight *light2;
-	Camera *camera;
+	Vector2 rot;
+
+	HBoxContainer *layout_2d = nullptr;
+	ColorRect *rect_instance = nullptr;
+
+	SubViewportContainer *vc = nullptr;
+	SubViewport *viewport = nullptr;
+	Node3D *rotation = nullptr;
+	MeshInstance3D *sphere_instance = nullptr;
+	MeshInstance3D *box_instance = nullptr;
+	DirectionalLight3D *light1 = nullptr;
+	DirectionalLight3D *light2 = nullptr;
+	Camera3D *camera = nullptr;
+	Ref<CameraAttributesPractical> camera_attributes;
 
 	Ref<SphereMesh> sphere_mesh;
-	Ref<CubeMesh> box_mesh;
+	Ref<BoxMesh> box_mesh;
 
-	TextureButton *sphere_switch;
-	TextureButton *box_switch;
+	HBoxContainer *layout_3d = nullptr;
 
-	TextureButton *light_1_switch;
-	TextureButton *light_2_switch;
+	TextureButton *sphere_switch = nullptr;
+	TextureButton *box_switch = nullptr;
+
+	TextureButton *light_1_switch = nullptr;
+	TextureButton *light_2_switch = nullptr;
 
 	Ref<Material> material;
 
+	struct ThemeCache {
+		Ref<Texture2D> light_1_on;
+		Ref<Texture2D> light_1_off;
+		Ref<Texture2D> light_2_on;
+		Ref<Texture2D> light_2_off;
+		Ref<Texture2D> sphere_on;
+		Ref<Texture2D> sphere_off;
+		Ref<Texture2D> box_on;
+		Ref<Texture2D> box_off;
+		Ref<Texture2D> checkerboard;
+	} theme_cache;
+
 	void _button_pressed(Node *p_button);
-	bool first_enter;
 
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
-
-	static void _bind_methods();
+	void gui_input(const Ref<InputEvent> &p_event) override;
+	void _update_rotation();
 
 public:
 	void edit(Ref<Material> p_material, const Ref<Environment> &p_env);
@@ -83,8 +106,10 @@ class EditorInspectorPluginMaterial : public EditorInspectorPlugin {
 	Ref<Environment> env;
 
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
+
+	void _undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value);
 
 	EditorInspectorPluginMaterial();
 };
@@ -93,36 +118,81 @@ class MaterialEditorPlugin : public EditorPlugin {
 	GDCLASS(MaterialEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const { return "Material"; }
+	virtual String get_name() const override { return "Material"; }
 
-	MaterialEditorPlugin(EditorNode *p_node);
+	MaterialEditorPlugin();
 };
 
-class SpatialMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(SpatialMaterialConversionPlugin, EditorResourceConversionPlugin);
+class StandardMaterial3DConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(StandardMaterial3DConversionPlugin, EditorResourceConversionPlugin);
 
 public:
-	virtual String converts_to() const;
-	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
 };
 
-class ParticlesMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(ParticlesMaterialConversionPlugin, EditorResourceConversionPlugin);
+class ORMMaterial3DConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(ORMMaterial3DConversionPlugin, EditorResourceConversionPlugin);
 
 public:
-	virtual String converts_to() const;
-	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+};
+
+class ParticleProcessMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(ParticleProcessMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
 };
 
 class CanvasItemMaterialConversionPlugin : public EditorResourceConversionPlugin {
 	GDCLASS(CanvasItemMaterialConversionPlugin, EditorResourceConversionPlugin);
 
 public:
-	virtual String converts_to() const;
-	virtual bool handles(const Ref<Resource> &p_resource) const;
-	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const;
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+};
+
+class ProceduralSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(ProceduralSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+};
+
+class PanoramaSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(PanoramaSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+};
+
+class PhysicalSkyMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(PhysicalSkyMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+};
+
+class FogMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(FogMaterialConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
 };
 
 #endif // MATERIAL_EDITOR_PLUGIN_H

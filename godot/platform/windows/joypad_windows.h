@@ -39,9 +39,9 @@
 
 #ifndef SAFE_RELEASE // when Windows Media Device M? is not present
 #define SAFE_RELEASE(x) \
-	if (x != NULL) {    \
+	if (x != nullptr) { \
 		x->Release();   \
-		x = NULL;       \
+		x = nullptr;    \
 	}
 #endif
 
@@ -52,7 +52,7 @@
 class JoypadWindows {
 public:
 	JoypadWindows();
-	JoypadWindows(InputDefault *_input, HWND *hwnd);
+	JoypadWindows(HWND *hwnd);
 	~JoypadWindows();
 
 	void probe_joypads();
@@ -85,37 +85,32 @@ private:
 			last_pad = -1;
 			attached = false;
 			confirmed = false;
+			di_joy = nullptr;
+			guid = {};
 
-			for (int i = 0; i < MAX_JOY_BUTTONS; i++)
+			for (int i = 0; i < MAX_JOY_BUTTONS; i++) {
 				last_buttons[i] = false;
+			}
 		}
 	};
 
 	struct xinput_gamepad {
-		int id;
-		bool attached;
-		bool vibrating;
-		DWORD last_packet;
+		int id = 0;
+		bool attached = false;
+		bool vibrating = false;
+		DWORD last_packet = 0;
 		XINPUT_STATE state;
-		uint64_t ff_timestamp;
-		uint64_t ff_end_timestamp;
-
-		xinput_gamepad() {
-			attached = false;
-			vibrating = false;
-			ff_timestamp = 0;
-			ff_end_timestamp = 0;
-			last_packet = 0;
-		}
+		uint64_t ff_timestamp = 0;
+		uint64_t ff_end_timestamp = 0;
 	};
 
 	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);
 	typedef DWORD(WINAPI *XInputSetState_t)(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
 
-	HWND *hWnd;
+	HWND *hWnd = nullptr;
 	HANDLE xinput_dll;
 	LPDIRECTINPUT8 dinput;
-	InputDefault *input;
+	Input *input = nullptr;
 
 	int id_to_change;
 	int slider_count;

@@ -1,7 +1,7 @@
 
 #include "ref_frame_motion_node.h"
-#include "scene/3d/spatial.h"
-#include "core/engine.h"
+#include "scene/3d/node_3d.h"
+#include "core/config/engine.h"
 
 #include "save_load.h"
 
@@ -12,44 +12,44 @@ namespace Ign
 void RefFrameMotionNode::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_allow_orbiting", "en"), &RefFrameMotionNode::set_allow_orbiting );
-	ClassDB::bind_method( D_METHOD("get_allow_orbiting"),       &RefFrameMotionNode::get_allow_orbiting, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("get_allow_orbiting"),       &RefFrameMotionNode::get_allow_orbiting );
 
 	ClassDB::bind_method( D_METHOD("stop"), &RefFrameMotionNode::stop );
 
-	ClassDB::bind_method( D_METHOD("is_orbiting"),   &RefFrameMotionNode::is_orbiting, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("movement_type"), &RefFrameMotionNode::movement_type, Variant::STRING );
-	ClassDB::bind_method( D_METHOD("specific_angular_momentum"), &RefFrameMotionNode::specific_angular_momentum, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("eccentricity"), &RefFrameMotionNode::eccentricity, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("period"), &RefFrameMotionNode::period, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("time_after_periapsis"), &RefFrameMotionNode::time_after_periapsis, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("closest_approach"),     &RefFrameMotionNode::closest_approach, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("perigee"), &RefFrameMotionNode::perigee, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("apogee"),  &RefFrameMotionNode::apogee, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("min_velocity"), &RefFrameMotionNode::min_velocity, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("max_velocity"), &RefFrameMotionNode::max_velocity, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("excess_velocity"),  &RefFrameMotionNode::excess_velocity, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("deflection_angle"), &RefFrameMotionNode::deflection_angle, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("acceleration"),     &RefFrameMotionNode::acceleration, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("ex"), &RefFrameMotionNode::ex, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("ey"), &RefFrameMotionNode::ey, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("is_orbiting"),   &RefFrameMotionNode::is_orbiting );
+	ClassDB::bind_method( D_METHOD("movement_type"), &RefFrameMotionNode::movement_type );
+	ClassDB::bind_method( D_METHOD("specific_angular_momentum"), &RefFrameMotionNode::specific_angular_momentum );
+	ClassDB::bind_method( D_METHOD("eccentricity"), &RefFrameMotionNode::eccentricity );
+	ClassDB::bind_method( D_METHOD("period"), &RefFrameMotionNode::period );
+	ClassDB::bind_method( D_METHOD("time_after_periapsis"), &RefFrameMotionNode::time_after_periapsis );
+	ClassDB::bind_method( D_METHOD("closest_approach"),     &RefFrameMotionNode::closest_approach );
+	ClassDB::bind_method( D_METHOD("perigee"), &RefFrameMotionNode::perigee );
+	ClassDB::bind_method( D_METHOD("apogee"),  &RefFrameMotionNode::apogee );
+	ClassDB::bind_method( D_METHOD("min_velocity"), &RefFrameMotionNode::min_velocity );
+	ClassDB::bind_method( D_METHOD("max_velocity"), &RefFrameMotionNode::max_velocity );
+	ClassDB::bind_method( D_METHOD("excess_velocity"),  &RefFrameMotionNode::excess_velocity );
+	ClassDB::bind_method( D_METHOD("deflection_angle"), &RefFrameMotionNode::deflection_angle );
+	ClassDB::bind_method( D_METHOD("acceleration"),     &RefFrameMotionNode::acceleration );
+	ClassDB::bind_method( D_METHOD("ex"), &RefFrameMotionNode::ex );
+	ClassDB::bind_method( D_METHOD("ey"), &RefFrameMotionNode::ey );
 
-	ClassDB::bind_method( D_METHOD("set_own_gm", "gm"), &RefFrameMotionNode::set_own_gm, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("get_own_gm"),       &RefFrameMotionNode::get_own_gm, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("set_own_gm", "gm"), &RefFrameMotionNode::set_own_gm );
+	ClassDB::bind_method( D_METHOD("get_own_gm"),       &RefFrameMotionNode::get_own_gm );
 
-	ClassDB::bind_method( D_METHOD("get_gm"),        &RefFrameMotionNode::get_gm, Variant::REAL );
+	ClassDB::bind_method( D_METHOD("get_gm"),        &RefFrameMotionNode::get_gm );
 
-	ClassDB::bind_method( D_METHOD("launch"), &RefFrameMotionNode::launch, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("compute_gm_by_speed",  "radius_km", "suface_orbit_velocity_kms"),    &RefFrameMotionNode::compute_gm_by_speed,  Variant::REAL );
-	ClassDB::bind_method( D_METHOD("compute_gm_by_period", "radius_km", "period_kms"),                   &RefFrameMotionNode::compute_gm_by_period, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("launch_elliptic", "unit_r", "unit_v", "period_hrs", "eccentricity"), &RefFrameMotionNode::launch_elliptic,      Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("launch"), &RefFrameMotionNode::launch );
+	ClassDB::bind_method( D_METHOD("compute_gm_by_speed",  "radius_km", "suface_orbit_velocity_kms"),    &RefFrameMotionNode::compute_gm_by_speed );
+	ClassDB::bind_method( D_METHOD("compute_gm_by_period", "radius_km", "period_kms"),                   &RefFrameMotionNode::compute_gm_by_period );
+	ClassDB::bind_method( D_METHOD("launch_elliptic", "unit_r", "unit_v", "period_hrs", "eccentricity"), &RefFrameMotionNode::launch_elliptic );
 
-	ClassDB::bind_method( D_METHOD("orbit_points",  "camera_node", "qty", "scale_distance_ratio", "base_scale"), &RefFrameMotionNode::orbit_points, Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD("orbit_points",  "camera_node", "qty", "scale_distance_ratio", "base_scale"), &RefFrameMotionNode::orbit_points );
 
 	ClassDB::bind_method( D_METHOD("set_force_numerical", "en"), &RefFrameMotionNode::set_force_numerical );
-	ClassDB::bind_method( D_METHOD("get_force_numerical"),       &RefFrameMotionNode::get_force_numerical, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("get_force_numerical"),       &RefFrameMotionNode::get_force_numerical );
 
 	ADD_GROUP( "Ignition", "" );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL,   "own_gm" ),          "set_own_gm",          "get_own_gm" );
+	ADD_PROPERTY( PropertyInfo( Variant::FLOAT,  "own_gm" ),          "set_own_gm",          "get_own_gm" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "allow_orbiting" ),  "set_allow_orbiting",  "get_allow_orbiting" );
 	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ),             "set_se3",             "get_se3" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,   "force_numerical" ), "set_force_numerical", "get_force_numerical" );
@@ -343,26 +343,30 @@ bool RefFrameMotionNode::deserialize( const Dictionary & data )
 	cm.se3_local.deserialize( data["se3_local"] );
 	cm.se3_global.deserialize( data["se3_global"] );
 
+	const bool yes = is_orbiting();
+	if ( yes )
+		launch();
+
 	return true;
 }
 
-PoolVector3Array RefFrameMotionNode::orbit_points( Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t base_scale )
+Array RefFrameMotionNode::orbit_points( Node * camera_node, int qty, const Ref<ScaleDistanceRatioGd> & scale_distance_ratio, real_t base_scale )
 {
 	RefFrameNode * orbiting_center_node  = Node::cast_to<RefFrameNode>( this->get_parent() );
 	RefFrameNode * player_viewpoint_node = Node::cast_to<RefFrameNode>( camera_node );
 	if (player_viewpoint_node == nullptr)
-		return PoolVector3Array();
+		return Array();
 
 	cm.orbit_points( orbiting_center_node, player_viewpoint_node, qty, pts );
 	const int pts_qty = pts.size();
-	Spatial * c = (camera_node != nullptr) ? Node::cast_to<Spatial>( camera_node ) : nullptr;
+	Node3D * c = (camera_node != nullptr) ? Node::cast_to<Node3D>( camera_node ) : nullptr;
 
 	// Retrieve scaler from the reference.
 	const ScaleDistanceRatioGd * s = scale_distance_ratio.ptr();
 	// If no scaler provided, return points as they are.
 	if ( s == nullptr )
 	{
-		PoolVector3Array ret;
+		Array ret;
 		ret.resize( pts_qty );
 		for ( int i=0; i<pts_qty; i++ )
 		{
@@ -381,7 +385,7 @@ PoolVector3Array RefFrameMotionNode::orbit_points( Node * camera_node, int qty, 
 		pts.ptrw()[i] = scaled_r;
 	}
 
-	PoolVector3Array ret;
+	Array ret;
 	ret.resize( pts_qty );
 	for ( int i=0; i<pts_qty; i++ )
 	{
@@ -413,21 +417,21 @@ bool RefFrameMotionNode::get_debug() const
 	return cm._debug;
 }
 
-void RefFrameMotionNode::_ign_physics_pre_process( real_t delta )
+void RefFrameMotionNode::ign_physics_pre_process( real_t delta )
 {
 	if ( cm.is_orbiting() )
 		this->se3_ = cm.process( delta );
-	RefFrameNode::_ign_physics_pre_process( delta );
+	RefFrameNode::ign_physics_pre_process( delta );
 }
 
-void RefFrameMotionNode::_ign_physics_process( real_t delta )
+void RefFrameMotionNode::ign_physics_process( real_t delta )
 {
-	RefFrameNode::_ign_physics_process( delta );
+	RefFrameNode::ign_physics_process( delta );
 }
 
-void RefFrameMotionNode::_ign_physics_post_process( real_t delta )
+void RefFrameMotionNode::ign_physics_post_process( real_t delta )
 {
-	RefFrameNode::_ign_physics_post_process( delta );
+	RefFrameNode::ign_physics_post_process( delta );
 }
 
 

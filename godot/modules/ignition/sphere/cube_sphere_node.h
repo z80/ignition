@@ -2,9 +2,9 @@
 #ifndef __CUBE_SHPERE_NODE_H_
 #define __CUBE_SPHERE_NODE_H_
 
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/mesh.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
 #include "cube_sphere.h"
 #include "ref_frame_node.h"
@@ -22,7 +22,7 @@ class RefFrameNode;
 class CubeSphereNode: public RefFrameNode
 {
     GDCLASS( CubeSphereNode, RefFrameNode );
-    OBJ_CATEGORY("Ignition");
+    //OBJ_CATEGORY("Ignition");
 
 protected:
     static void _bind_methods();
@@ -47,7 +47,7 @@ public:
     // Only collision triangles.
     // Triangles are in "origin"'s ref frame.
     // Triangles are all triangles closer than "dist" from all "ref_frames".
-    const PoolVector3Array & collision_triangles( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist );
+    const Array & collision_triangles( Node * ref_frame, const Ref<SubdivideSourceRef> & subdivide_source_ref, real_t dist );
 
     // Content generation faces.
     const Array & content_cells( Node * origin, real_t cell_size, real_t dist );
@@ -88,7 +88,7 @@ private:
  //   void scale_far( const SE3 center_relative_to_ref_frame, const SE3 & poi_relative_to_center );
  //   void scale_neutral( const SE3 & poi_relative_to_center );
 
-	MeshInstance * get_mesh_instance();
+	MeshInstance3D * get_mesh_instance();
 
 public:
 	void subdivide_2( Node * player_rf, Ref<SubdivideSourceRef> subdivide_source_ref );
@@ -115,7 +115,7 @@ public:
 
     // For querying collisions store all ref frames in this container.
     Vector<CubeVertex> collision_tris;
-    PoolVector3Array   collision_ret;
+    Array              collision_ret;
 
     // Returning content cells.
     Vector<Vector3d> content_pts;
@@ -124,12 +124,12 @@ public:
 
     // All triangles.
     Vector<CubeVertex> all_tris;
-    PoolVector3Array   vertices;
-    PoolVector3Array   normals;
-    PoolRealArray      tangents;
-    PoolColorArray     colors;
-    PoolVector2Array   uvs;
-    PoolVector2Array   uvs2;
+    Array   vertices;
+    Array   normals;
+    Array   tangents;
+    Array   colors;
+    Array   uvs;
+    Array   uvs2;
 
     // Distance scale.
     // It applies scale depending on the distance.

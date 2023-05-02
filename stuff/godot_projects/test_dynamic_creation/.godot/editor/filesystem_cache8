@@ -1,0 +1,14 @@
+2a60927148abd1d33b818b535e306557
+::res://::1680759350
+icon.svg::CompressedTexture2D::4617652147958829640::1680747877::1680747889::1::::<><>::
+main.gd::GDScript::-1::1680749200::0::1::::<>Node2D<>::
+main.tscn::PackedScene::8675724312622369571::1680749217::0::1::::<><>::res://main.gd<>uid://we8acdrd5swu
+::res://physics/::1680747831
+::res://physics/interact_icon/::1680748067
+container_window.gd::GDScript::-1::1680628767::0::1::::<>PanelContainer<>::
+container_window.tscn::PackedScene::1554415842272970312::1680748067::0::1::::<><>::res://physics/interact_icon/container_window.gd<>uid://b1xidxcm3fbl0<>uid://7tpdlcs64vvs
+::res://physics/interact_icon/assets/::1680747889
+close_20.png::CompressedTexture2D::2286182867724272968::1663951075::1680747889::1::::<><>::
+drag_corner.png::CompressedTexture2D::4259303611658667003::1663951075::1680747889::1::::<><>::
+icon.png::CompressedTexture2D::4816231825709926202::1663951075::1680747889::1::::<><>::
+icon_48.png::CompressedTexture2D::1543446294622013844::1663951075::1680747889::1::::<><>::

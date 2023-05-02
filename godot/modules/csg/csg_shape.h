@@ -34,13 +34,13 @@
 #define CSGJS_HEADER_ONLY
 
 #include "csg.h"
-#include "scene/3d/path.h"
-#include "scene/3d/visual_instance.h"
-#include "scene/resources/concave_polygon_shape.h"
+#include "scene/3d/path_3d.h"
+#include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/concave_polygon_shape_3d.h"
 #include "thirdparty/misc/mikktspace.h"
 
-class CSGShape : public GeometryInstance {
-	GDCLASS(CSGShape, GeometryInstance);
+class CSGShape3D : public GeometryInstance3D {
+	GDCLASS(CSGShape3D, GeometryInstance3D);
 
 public:
 	enum Operation {
@@ -51,48 +51,49 @@ public:
 	};
 
 private:
-	Operation operation;
-	CSGShape *parent_shape;
+	Operation operation = OPERATION_UNION;
+	CSGShape3D *parent_shape = nullptr;
 
-	CSGBrush *brush;
+	CSGBrush *brush = nullptr;
 
 	AABB node_aabb;
 
-	bool dirty;
+	bool dirty = false;
 	bool last_visible = false;
-	float snap;
+	float snap = 0.001;
 
-	bool use_collision;
-	uint32_t collision_layer;
-	uint32_t collision_mask;
-	Ref<ConcavePolygonShape> root_collision_shape;
+	bool use_collision = false;
+	uint32_t collision_layer = 1;
+	uint32_t collision_mask = 1;
+	real_t collision_priority = 1.0;
+	Ref<ConcavePolygonShape3D> root_collision_shape;
 	RID root_collision_instance;
 
-	bool calculate_tangents;
+	bool calculate_tangents = true;
 
 	Ref<ArrayMesh> root_mesh;
 
 	struct Vector3Hasher {
 		_ALWAYS_INLINE_ uint32_t hash(const Vector3 &p_vec3) const {
-			uint32_t h = hash_djb2_one_float(p_vec3.x);
-			h = hash_djb2_one_float(p_vec3.y, h);
-			h = hash_djb2_one_float(p_vec3.z, h);
+			uint32_t h = hash_murmur3_one_float(p_vec3.x);
+			h = hash_murmur3_one_float(p_vec3.y, h);
+			h = hash_murmur3_one_float(p_vec3.z, h);
 			return h;
 		}
 	};
 
 	struct ShapeUpdateSurface {
-		PoolVector<Vector3> vertices;
-		PoolVector<Vector3> normals;
-		PoolVector<Vector2> uvs;
-		PoolVector<float> tans;
+		Vector<Vector3> vertices;
+		Vector<Vector3> normals;
+		Vector<Vector2> uvs;
+		Vector<real_t> tans;
 		Ref<Material> material;
-		int last_added;
+		int last_added = 0;
 
-		PoolVector<Vector3>::Write verticesw;
-		PoolVector<Vector3>::Write normalsw;
-		PoolVector<Vector2>::Write uvsw;
-		PoolVector<float>::Write tansw;
+		Vector3 *verticesw = nullptr;
+		Vector3 *normalsw = nullptr;
+		Vector2 *uvsw = nullptr;
+		real_t *tansw = nullptr;
 	};
 
 	//mikktspace callbacks
@@ -114,23 +115,20 @@ protected:
 
 	static void _bind_methods();
 
-	friend class CSGCombiner;
+	friend class CSGCombiner3D;
 	CSGBrush *_get_brush();
 
-	virtual void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Array get_meshes() const;
 
-	void force_update_shape();
-
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
 
-	virtual PoolVector<Vector3> get_brush_faces();
+	virtual Vector<Vector3> get_brush_faces();
 
-	virtual AABB get_aabb() const;
-	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
 
 	void set_use_collision(bool p_enable);
 	bool is_using_collision() const;
@@ -141,11 +139,14 @@ public:
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_collision_layer_bit(int p_bit, bool p_value);
-	bool get_collision_layer_bit(int p_bit) const;
+	void set_collision_layer_value(int p_layer_number, bool p_value);
+	bool get_collision_layer_value(int p_layer_number) const;
 
-	void set_collision_mask_bit(int p_bit, bool p_value);
-	bool get_collision_mask_bit(int p_bit) const;
+	void set_collision_mask_value(int p_layer_number, bool p_value);
+	bool get_collision_mask_value(int p_layer_number) const;
+
+	void set_collision_priority(real_t p_priority);
+	real_t get_collision_priority() const;
 
 	void set_snap(float p_snap);
 	float get_snap() const;
@@ -154,41 +155,41 @@ public:
 	bool is_calculating_tangents() const;
 
 	bool is_root_shape() const;
-	CSGShape();
-	~CSGShape();
+	CSGShape3D();
+	~CSGShape3D();
 };
 
-VARIANT_ENUM_CAST(CSGShape::Operation)
+VARIANT_ENUM_CAST(CSGShape3D::Operation)
 
-class CSGCombiner : public CSGShape {
-	GDCLASS(CSGCombiner, CSGShape);
+class CSGCombiner3D : public CSGShape3D {
+	GDCLASS(CSGCombiner3D, CSGShape3D);
 
 private:
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 public:
-	CSGCombiner();
+	CSGCombiner3D();
 };
 
-class CSGPrimitive : public CSGShape {
-	GDCLASS(CSGPrimitive, CSGShape);
+class CSGPrimitive3D : public CSGShape3D {
+	GDCLASS(CSGPrimitive3D, CSGShape3D);
 
 protected:
-	bool invert_faces;
-	CSGBrush *_create_brush_from_arrays(const PoolVector<Vector3> &p_vertices, const PoolVector<Vector2> &p_uv, const PoolVector<bool> &p_smooth, const PoolVector<Ref<Material>> &p_materials);
+	bool flip_faces;
+	CSGBrush *_create_brush_from_arrays(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uv, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials);
 	static void _bind_methods();
 
 public:
-	void set_invert_faces(bool p_invert);
-	bool is_inverting_faces();
+	void set_flip_faces(bool p_invert);
+	bool get_flip_faces();
 
-	CSGPrimitive();
+	CSGPrimitive3D();
 };
 
-class CSGMesh : public CSGPrimitive {
-	GDCLASS(CSGMesh, CSGPrimitive);
+class CSGMesh3D : public CSGPrimitive3D {
+	GDCLASS(CSGMesh3D, CSGPrimitive3D);
 
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Mesh> mesh;
 	Ref<Material> material;
@@ -206,9 +207,9 @@ public:
 	Ref<Material> get_material() const;
 };
 
-class CSGSphere : public CSGPrimitive {
-	GDCLASS(CSGSphere, CSGPrimitive);
-	virtual CSGBrush *_build_brush();
+class CSGSphere3D : public CSGPrimitive3D {
+	GDCLASS(CSGSphere3D, CSGPrimitive3D);
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	bool smooth_faces;
@@ -235,40 +236,36 @@ public:
 	void set_smooth_faces(bool p_smooth_faces);
 	bool get_smooth_faces() const;
 
-	CSGSphere();
+	CSGSphere3D();
 };
 
-class CSGBox : public CSGPrimitive {
-	GDCLASS(CSGBox, CSGPrimitive);
-	virtual CSGBrush *_build_brush();
+class CSGBox3D : public CSGPrimitive3D {
+	GDCLASS(CSGBox3D, CSGPrimitive3D);
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
-	float width;
-	float height;
-	float depth;
+	Vector3 size = Vector3(1, 1, 1);
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	// Kept for compatibility from 3.x to 4.0.
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
 
 public:
-	void set_width(const float p_width);
-	float get_width() const;
-
-	void set_height(const float p_height);
-	float get_height() const;
-
-	void set_depth(const float p_depth);
-	float get_depth() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGBox();
+	CSGBox3D() {}
 };
 
-class CSGCylinder : public CSGPrimitive {
-	GDCLASS(CSGCylinder, CSGPrimitive);
-	virtual CSGBrush *_build_brush();
+class CSGCylinder3D : public CSGPrimitive3D {
+	GDCLASS(CSGCylinder3D, CSGPrimitive3D);
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	float radius;
@@ -299,12 +296,12 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGCylinder();
+	CSGCylinder3D();
 };
 
-class CSGTorus : public CSGPrimitive {
-	GDCLASS(CSGTorus, CSGPrimitive);
-	virtual CSGBrush *_build_brush();
+class CSGTorus3D : public CSGPrimitive3D {
+	GDCLASS(CSGTorus3D, CSGPrimitive3D);
+	virtual CSGBrush *_build_brush() override;
 
 	Ref<Material> material;
 	float inner_radius;
@@ -335,11 +332,11 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGTorus();
+	CSGTorus3D();
 };
 
-class CSGPolygon : public CSGPrimitive {
-	GDCLASS(CSGPolygon, CSGPrimitive);
+class CSGPolygon3D : public CSGPrimitive3D {
+	GDCLASS(CSGPolygon3D, CSGPrimitive3D);
 
 public:
 	enum Mode {
@@ -360,7 +357,7 @@ public:
 	};
 
 private:
-	virtual CSGBrush *_build_brush();
+	virtual CSGBrush *_build_brush() override;
 
 	Vector<Vector2> polygon;
 	Ref<Material> material;
@@ -379,7 +376,7 @@ private:
 	PathRotation path_rotation;
 	bool path_local;
 
-	Path *path;
+	Path3D *path = nullptr;
 
 	bool smooth_faces;
 	bool path_continuous_u;
@@ -394,7 +391,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 
 public:
@@ -446,11 +443,11 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	CSGPolygon();
+	CSGPolygon3D();
 };
 
-VARIANT_ENUM_CAST(CSGPolygon::Mode)
-VARIANT_ENUM_CAST(CSGPolygon::PathRotation)
-VARIANT_ENUM_CAST(CSGPolygon::PathIntervalType)
+VARIANT_ENUM_CAST(CSGPolygon3D::Mode)
+VARIANT_ENUM_CAST(CSGPolygon3D::PathRotation)
+VARIANT_ENUM_CAST(CSGPolygon3D::PathIntervalType)
 
 #endif // CSG_SHAPE_H

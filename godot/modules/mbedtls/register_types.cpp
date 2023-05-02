@@ -35,16 +35,28 @@
 #include "packet_peer_mbed_dtls.h"
 #include "stream_peer_mbedtls.h"
 
-void register_mbedtls_types() {
+#ifdef TESTS_ENABLED
+#include "tests/test_crypto_mbedtls.h"
+#endif
+
+void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	CryptoMbedTLS::initialize_crypto();
-	StreamPeerMbedTLS::initialize_ssl();
+	StreamPeerMbedTLS::initialize_tls();
 	PacketPeerMbedDTLS::initialize_dtls();
 	DTLSServerMbedTLS::initialize();
 }
 
-void unregister_mbedtls_types() {
+void uninitialize_mbedtls_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+
 	DTLSServerMbedTLS::finalize();
 	PacketPeerMbedDTLS::finalize_dtls();
-	StreamPeerMbedTLS::finalize_ssl();
+	StreamPeerMbedTLS::finalize_tls();
 	CryptoMbedTLS::finalize_crypto();
 }

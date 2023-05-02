@@ -30,8 +30,8 @@
 
 #include "memory.h"
 
-#include "core/error_macros.h"
-#include "core/safe_refcount.h"
+#include "core/error/error_macros.h"
+#include "core/templates/safe_refcount.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -192,7 +192,6 @@ uint64_t Memory::get_mem_max_usage() {
 }
 
 _GlobalNil::_GlobalNil() {
-	color = 1;
 	left = this;
 	right = this;
 	parent = this;

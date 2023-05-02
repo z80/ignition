@@ -6,7 +6,7 @@
 
 #include "data_types.h"
 #include "vector3d.h"
-#include "core/vector.h"
+#include "core/templates/vector.h"
 //#include "core/math/face3.h"
 #include "core/math/aabb.h"
 

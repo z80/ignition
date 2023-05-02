@@ -1,15 +1,15 @@
-tool
+@tool
 
-extends Spatial
+extends Node3D
 
 var LandscapeTile = preload( "res://learning/landscape_tile.tscn")
 
-export(NodePath) var target_path
-onready var target = get_node(target_path) 
+@export var target_path: NodePath
+@onready var target = get_node(target_path) 
 
-export var distance: int = 1
-export var size: float = 5.0
-export var resolution: int = 17
+@export var distance: int = 1
+@export var size: float = 5.0
+@export var resolution: int = 17
 
 var _initialized: bool = false
 var _point_tile_x: int = 0
@@ -18,7 +18,7 @@ var _point_tile_z: int = 0
 var height_func = LandscapeFunc.new()
 
 
-func set_target( t: Spatial):
+func set_target( t: Node3D):
 	target = t
 
 
@@ -43,7 +43,7 @@ func _process(delta):
 
 
 func _center():
-	var at = target.translation
+	var at = target.position
 	var ind_x = int( floor( at.x/size ) )
 	var ind_z = int( floor( at.z/size ) )
 	return [ind_x, ind_z]
@@ -131,7 +131,7 @@ func _label_tiles_to_recompute():
 		
 		# If no spare one found, create one.
 		if not assigned:
-			var tile = LandscapeTile.instance()
+			var tile = LandscapeTile.instantiate()
 			tile.index_x = x
 			tile.index_z = z
 			tile.rebuild = true
@@ -144,7 +144,7 @@ func _get_existing_tiles():
 	var tiles = []
 	for i in range(qty):
 		var ch = get_child(i)
-		var is_tile = ch is MeshInstance
+		var is_tile = ch is MeshInstance3D
 		if is_tile:
 			tiles.push_back( ch )
 	return tiles

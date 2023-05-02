@@ -1,7 +1,7 @@
 
 extends Panel
 
-export(String) var start_page = "root" setget _set_start_page
+@export var start_page: String = "root": set = _set_start_page
 
 
 var _mouse = {
@@ -27,7 +27,7 @@ func _set_start_page( path: String ):
 # List of classes to instantiate objects.
 func setup_gui( classes, target_object ):
 	for C in classes:
-		var inst = C.instance()
+		var inst = C.instantiate()
 		var c = get_node( "Container" )
 		c.add_child( inst )
 		var has_init: bool = inst.has_method( "init" )
@@ -82,9 +82,9 @@ func _input(event):
 
 	if(_mouse.in_handle):
 		if(event is InputEventMouseMotion and _mouse.down):
-			var new_size = rect_size + event.position - _mouse.down_pos
+			var new_size = size + event.position - _mouse.down_pos
 			var new_mouse_down_pos = event.position
-			rect_size = new_size
+			size = new_size
 			_mouse.down_pos = new_mouse_down_pos
 			_pre_maximize_rect = get_rect()
 

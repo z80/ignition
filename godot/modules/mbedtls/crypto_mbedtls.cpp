@@ -30,12 +30,12 @@
 
 #include "crypto_mbedtls.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
-#include "core/engine.h"
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/compression.h"
-#include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
@@ -54,27 +54,23 @@ CryptoKey *CryptoKeyMbedTLS::create() {
 Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Key is in use");
 
-	PoolByteArray out;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
+	PackedByteArray out;
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
 
-	uint64_t flen = f->get_len();
+	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
-	{
-		PoolByteArray::Write w = out.write();
-		f->get_buffer(w.ptr(), flen);
-		w[flen] = 0; //end f string
-	}
-	memdelete(f);
+	f->get_buffer(out.ptrw(), flen);
+	out.write[flen] = 0; // string terminator
 
 	int ret = 0;
 	if (p_public_only) {
-		ret = mbedtls_pk_parse_public_key(&pkey, out.read().ptr(), out.size());
+		ret = mbedtls_pk_parse_public_key(&pkey, out.ptr(), out.size());
 	} else {
-		ret = mbedtls_pk_parse_key(&pkey, out.read().ptr(), out.size(), nullptr, 0);
+		ret = mbedtls_pk_parse_key(&pkey, out.ptr(), out.size(), nullptr, 0);
 	}
 	// We MUST zeroize the memory for safety!
-	mbedtls_platform_zeroize(out.write().ptr(), out.size());
+	mbedtls_platform_zeroize(out.ptrw(), out.size());
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing key '" + itos(ret) + "'.");
 
 	public_only = p_public_only;
@@ -82,8 +78,8 @@ Error CryptoKeyMbedTLS::load(String p_path, bool p_public_only) {
 }
 
 Error CryptoKeyMbedTLS::save(String p_path, bool p_public_only) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	unsigned char w[16000];
 	memset(w, 0, sizeof(w));
@@ -95,14 +91,12 @@ Error CryptoKeyMbedTLS::save(String p_path, bool p_public_only) {
 		ret = mbedtls_pk_write_key_pem(&pkey, w, sizeof(w));
 	}
 	if (ret != 0) {
-		memdelete(f);
 		mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize anything we might have written.
 		ERR_FAIL_V_MSG(FAILED, "Error writing key '" + itos(ret) + "'.");
 	}
 
 	size_t len = strlen((char *)w);
 	f->store_buffer(w, len);
-	memdelete(f);
 	mbedtls_platform_zeroize(w, sizeof(w)); // Zeroize temporary buffer.
 	return OK;
 }
@@ -145,20 +139,16 @@ X509Certificate *X509CertificateMbedTLS::create() {
 Error X509CertificateMbedTLS::load(String p_path) {
 	ERR_FAIL_COND_V_MSG(locks, ERR_ALREADY_IN_USE, "Certificate is in use");
 
-	PoolByteArray out;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
+	PackedByteArray out;
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
 
-	uint64_t flen = f->get_len();
+	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
-	{
-		PoolByteArray::Write w = out.write();
-		f->get_buffer(w.ptr(), flen);
-		w[flen] = 0; //end f string
-	}
-	memdelete(f);
+	f->get_buffer(out.ptrw(), flen);
+	out.write[flen] = 0; // string terminator
 
-	int ret = mbedtls_x509_crt_parse(&cert, out.read().ptr(), out.size());
+	int ret = mbedtls_x509_crt_parse(&cert, out.ptr(), out.size());
 	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing some certificates: " + itos(ret));
 
 	return OK;
@@ -173,8 +163,8 @@ Error X509CertificateMbedTLS::load_from_memory(const uint8_t *p_buffer, int p_le
 }
 
 Error X509CertificateMbedTLS::save(String p_path) {
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save X509CertificateMbedTLS file '" + p_path + "'.");
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot save X509CertificateMbedTLS file '" + p_path + "'.");
 
 	mbedtls_x509_crt *crt = &cert;
 	while (crt) {
@@ -182,14 +172,12 @@ Error X509CertificateMbedTLS::save(String p_path) {
 		size_t wrote = 0;
 		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w, sizeof(w), &wrote);
 		if (ret != 0 || wrote == 0) {
-			memdelete(f);
 			ERR_FAIL_V_MSG(FAILED, "Error writing certificate '" + itos(ret) + "'.");
 		}
 
 		f->store_buffer(w, wrote - 1); // don't write the string terminator
 		crt = crt->next;
 	}
-	memdelete(f);
 	return OK;
 }
 
@@ -207,11 +195,11 @@ HMACContext *HMACContextMbedTLS::create() {
 	return memnew(HMACContextMbedTLS);
 }
 
-Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PoolByteArray p_key) {
+Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PackedByteArray p_key) {
 	ERR_FAIL_COND_V_MSG(ctx != nullptr, ERR_FILE_ALREADY_IN_USE, "HMACContext already started.");
 
 	// HMAC keys can be any size.
-	ERR_FAIL_COND_V_MSG(p_key.empty(), ERR_INVALID_PARAMETER, "Key must not be empty.");
+	ERR_FAIL_COND_V_MSG(p_key.is_empty(), ERR_INVALID_PARAMETER, "Key must not be empty.");
 
 	hash_type = p_hash_type;
 	mbedtls_md_type_t ht = CryptoMbedTLS::md_type_from_hashtype(p_hash_type, hash_len);
@@ -223,27 +211,27 @@ Error HMACContextMbedTLS::start(HashingContext::HashType p_hash_type, PoolByteAr
 	mbedtls_md_init((mbedtls_md_context_t *)ctx);
 
 	mbedtls_md_setup((mbedtls_md_context_t *)ctx, mbedtls_md_info_from_type((mbedtls_md_type_t)ht), 1);
-	int ret = mbedtls_md_hmac_starts((mbedtls_md_context_t *)ctx, (const uint8_t *)p_key.read().ptr(), (size_t)p_key.size());
+	int ret = mbedtls_md_hmac_starts((mbedtls_md_context_t *)ctx, (const uint8_t *)p_key.ptr(), (size_t)p_key.size());
 	return ret ? FAILED : OK;
 }
 
-Error HMACContextMbedTLS::update(PoolByteArray p_data) {
+Error HMACContextMbedTLS::update(PackedByteArray p_data) {
 	ERR_FAIL_COND_V_MSG(ctx == nullptr, ERR_INVALID_DATA, "Start must be called before update.");
 
-	ERR_FAIL_COND_V_MSG(p_data.empty(), ERR_INVALID_PARAMETER, "Src must not be empty.");
+	ERR_FAIL_COND_V_MSG(p_data.is_empty(), ERR_INVALID_PARAMETER, "Src must not be empty.");
 
-	int ret = mbedtls_md_hmac_update((mbedtls_md_context_t *)ctx, (const uint8_t *)p_data.read().ptr(), (size_t)p_data.size());
+	int ret = mbedtls_md_hmac_update((mbedtls_md_context_t *)ctx, (const uint8_t *)p_data.ptr(), (size_t)p_data.size());
 	return ret ? FAILED : OK;
 }
 
-PoolByteArray HMACContextMbedTLS::finish() {
-	ERR_FAIL_COND_V_MSG(ctx == nullptr, PoolByteArray(), "Start must be called before finish.");
-	ERR_FAIL_COND_V_MSG(hash_len == 0, PoolByteArray(), "Unsupported hash type.");
+PackedByteArray HMACContextMbedTLS::finish() {
+	ERR_FAIL_COND_V_MSG(ctx == nullptr, PackedByteArray(), "Start must be called before finish.");
+	ERR_FAIL_COND_V_MSG(hash_len == 0, PackedByteArray(), "Unsupported hash type.");
 
-	PoolByteArray out;
+	PackedByteArray out;
 	out.resize(hash_len);
 
-	unsigned char *out_ptr = (unsigned char *)out.write().ptr();
+	unsigned char *out_ptr = (unsigned char *)out.ptrw();
 	int ret = mbedtls_md_hmac_finish((mbedtls_md_context_t *)ctx, out_ptr);
 
 	mbedtls_md_free((mbedtls_md_context_t *)ctx);
@@ -251,7 +239,7 @@ PoolByteArray HMACContextMbedTLS::finish() {
 	ctx = nullptr;
 	hash_len = 0;
 
-	ERR_FAIL_COND_V_MSG(ret, PoolByteArray(), "Error received while finishing HMAC");
+	ERR_FAIL_COND_V_MSG(ret, PackedByteArray(), "Error received while finishing HMAC");
 	return out;
 }
 
@@ -316,29 +304,28 @@ void CryptoMbedTLS::load_default_certificates(String p_path) {
 	default_certs = memnew(X509CertificateMbedTLS);
 	ERR_FAIL_COND(default_certs == nullptr);
 
-	if (p_path != "") {
+	if (!p_path.is_empty()) {
 		// Use certs defined in project settings.
 		default_certs->load(p_path);
 	}
 #ifdef BUILTIN_CERTS_ENABLED
 	else {
 		// Use builtin certs only if user did not override it in project settings.
-		PoolByteArray out;
+		PackedByteArray out;
 		out.resize(_certs_uncompressed_size + 1);
-		PoolByteArray::Write w = out.write();
-		Compression::decompress(w.ptr(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
-		w[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
+		Compression::decompress(out.ptrw(), _certs_uncompressed_size, _certs_compressed, _certs_compressed_size, Compression::MODE_DEFLATE);
+		out.write[_certs_uncompressed_size] = 0; // Make sure it ends with string terminator
 #ifdef DEBUG_ENABLED
 		print_verbose("Loaded builtin certs");
 #endif
-		default_certs->load_from_memory(out.read().ptr(), out.size());
+		default_certs->load_from_memory(out.ptr(), out.size());
 	}
 #endif
 }
 
 Ref<CryptoKey> CryptoMbedTLS::generate_rsa(int p_bytes) {
 	Ref<CryptoKeyMbedTLS> out;
-	out.instance();
+	out.instantiate();
 	int ret = mbedtls_pk_setup(&(out->pkey), mbedtls_pk_info_from_type(MBEDTLS_PK_RSA));
 	ERR_FAIL_COND_V(ret != 0, nullptr);
 	ret = mbedtls_rsa_gen_key(mbedtls_pk_rsa(out->pkey), mbedtls_ctr_drbg_random, &ctr_drbg, p_bytes, 65537);
@@ -380,15 +367,15 @@ Ref<X509Certificate> CryptoMbedTLS::generate_self_signed_certificate(Ref<CryptoK
 	buf[4095] = '\0'; // Make sure strlen can't fail.
 
 	Ref<X509CertificateMbedTLS> out;
-	out.instance();
+	out.instantiate();
 	out->load_from_memory(buf, strlen((char *)buf) + 1); // Use strlen to find correct output size.
 	return out;
 }
 
-PoolByteArray CryptoMbedTLS::generate_random_bytes(int p_bytes) {
-	PoolByteArray out;
+PackedByteArray CryptoMbedTLS::generate_random_bytes(int p_bytes) {
+	PackedByteArray out;
 	out.resize(p_bytes);
-	mbedtls_ctr_drbg_random(&ctr_drbg, out.write().ptr(), p_bytes);
+	mbedtls_ctr_drbg_random(&ctr_drbg, out.ptrw(), p_bytes);
 	return out;
 }
 

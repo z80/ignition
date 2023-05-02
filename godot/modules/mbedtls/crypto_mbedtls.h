@@ -32,14 +32,14 @@
 #define CRYPTO_MBEDTLS_H
 
 #include "core/crypto/crypto.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
 
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/ssl.h>
 
 class CryptoMbedTLS;
-class SSLContextMbedTLS;
+class TLSContextMbedTLS;
 class CryptoKeyMbedTLS : public CryptoKey {
 private:
 	mbedtls_pk_context pkey;
@@ -69,7 +69,7 @@ public:
 	_FORCE_INLINE_ void unlock() { locks--; }
 
 	friend class CryptoMbedTLS;
-	friend class SSLContextMbedTLS;
+	friend class TLSContextMbedTLS;
 };
 
 class X509CertificateMbedTLS : public X509Certificate {
@@ -98,7 +98,7 @@ public:
 	_FORCE_INLINE_ void unlock() { locks--; }
 
 	friend class CryptoMbedTLS;
-	friend class SSLContextMbedTLS;
+	friend class TLSContextMbedTLS;
 };
 
 class HMACContextMbedTLS : public HMACContext {
@@ -114,9 +114,9 @@ public:
 
 	static bool is_md_type_allowed(mbedtls_md_type_t p_md_type);
 
-	virtual Error start(HashingContext::HashType p_hash_type, PoolByteArray p_key);
-	virtual Error update(PoolByteArray p_data);
-	virtual PoolByteArray finish();
+	virtual Error start(HashingContext::HashType p_hash_type, PackedByteArray p_key);
+	virtual Error update(PackedByteArray p_data);
+	virtual PackedByteArray finish();
 
 	HMACContextMbedTLS() {}
 	~HMACContextMbedTLS();
@@ -136,7 +136,7 @@ public:
 	static void load_default_certificates(String p_path);
 	static mbedtls_md_type_t md_type_from_hashtype(HashingContext::HashType p_hash_type, int &r_size);
 
-	virtual PoolByteArray generate_random_bytes(int p_bytes);
+	virtual PackedByteArray generate_random_bytes(int p_bytes);
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes);
 	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after);
 	virtual Vector<uint8_t> sign(HashingContext::HashType p_hash_type, Vector<uint8_t> p_hash, Ref<CryptoKey> p_key);

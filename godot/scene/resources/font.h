@@ -31,199 +31,492 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "core/map.h"
-#include "core/resource.h"
+#include "core/io/resource.h"
+#include "core/templates/lru.h"
+#include "core/templates/rb_map.h"
 #include "scene/resources/texture.h"
+#include "servers/text_server.h"
+
+class TextLine;
+class TextParagraph;
+
+/*************************************************************************/
+/*  Font                                                                 */
+/*************************************************************************/
 
 class Font : public Resource {
 	GDCLASS(Font, Resource);
 
-protected:
-	static void _bind_methods();
+	struct ShapedTextKey {
+		String text;
+		int font_size = 14;
+		float width = 0.f;
+		BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_NONE;
+		BitField<TextServer::LineBreakFlag> brk_flags = TextServer::BREAK_MANDATORY;
+		TextServer::Direction direction = TextServer::DIRECTION_AUTO;
+		TextServer::Orientation orientation = TextServer::ORIENTATION_HORIZONTAL;
 
-public:
-	enum ContourPointTag {
-		CONTOUR_CURVE_TAG_ON = 0x01,
-		CONTOUR_CURVE_TAG_OFF_CONIC = 0x00,
-		CONTOUR_CURVE_TAG_OFF_CUBIC = 0x02
+		bool operator==(const ShapedTextKey &p_b) const {
+			return (font_size == p_b.font_size) && (width == p_b.width) && (jst_flags == p_b.jst_flags) && (brk_flags == p_b.brk_flags) && (direction == p_b.direction) && (orientation == p_b.orientation) && (text == p_b.text);
+		}
+
+		ShapedTextKey() {}
+		ShapedTextKey(const String &p_text, int p_font_size, float p_width, BitField<TextServer::JustificationFlag> p_jst_flags, BitField<TextServer::LineBreakFlag> p_brk_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
+			text = p_text;
+			font_size = p_font_size;
+			width = p_width;
+			jst_flags = p_jst_flags;
+			brk_flags = p_brk_flags;
+			direction = p_direction;
+			orientation = p_orientation;
+		}
 	};
 
-	virtual float get_height() const = 0;
+	struct ShapedTextKeyHasher {
+		_FORCE_INLINE_ static uint32_t hash(const ShapedTextKey &p_a) {
+			uint32_t hash = p_a.text.hash();
+			hash = hash_murmur3_one_32(p_a.font_size, hash);
+			hash = hash_murmur3_one_float(p_a.width, hash);
+			hash = hash_murmur3_one_32(p_a.brk_flags | (p_a.jst_flags << 6) | (p_a.direction << 12) | (p_a.orientation << 15), hash);
+			return hash_fmix32(hash);
+		}
+	};
 
-	virtual float get_ascent() const = 0;
-	virtual float get_descent() const = 0;
+	// Shaped string cache.
+	mutable LRUCache<ShapedTextKey, Ref<TextLine>, ShapedTextKeyHasher> cache;
+	mutable LRUCache<ShapedTextKey, Ref<TextParagraph>, ShapedTextKeyHasher> cache_wrap;
 
-	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const = 0;
-	Size2 get_string_size(const String &p_string) const;
-	Size2 get_wordwrap_string_size(const String &p_string, float p_width) const;
+protected:
+	// Output.
+	mutable TypedArray<RID> rids;
+	mutable bool dirty_rids = true;
 
-	virtual bool is_distance_field_hint() const = 0;
+	// Fallbacks.
+	static constexpr int MAX_FALLBACK_DEPTH = 64;
+	TypedArray<Font> fallbacks;
 
-	void draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1, const Color &p_outline_modulate = Color(1, 1, 1)) const;
-	void draw_halign(RID p_canvas_item, const Point2 &p_pos, HAlign p_align, float p_width, const String &p_text, const Color &p_modulate = Color(1, 1, 1), const Color &p_outline_modulate = Color(1, 1, 1)) const;
+	static void _bind_methods();
 
-	virtual bool has_outline() const { return false; }
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const = 0;
+	virtual void _update_rids_fb(const Ref<Font> &p_f, int p_depth) const;
+	virtual void _update_rids() const;
+	virtual bool _is_cyclic(const Ref<Font> &p_f, int p_depth) const;
 
-	virtual RID get_char_texture(CharType p_char, CharType p_next, bool p_outline) const = 0;
-	virtual Size2 get_char_texture_size(CharType p_char, CharType p_next, bool p_outline) const = 0;
+	virtual void reset_state() override;
 
-	virtual Vector2 get_char_tx_offset(CharType p_char, CharType p_next, bool p_outline) const = 0;
-	virtual Size2 get_char_tx_size(CharType p_char, CharType p_next, bool p_outline) const = 0;
-	virtual Rect2 get_char_tx_uv_rect(CharType p_char, CharType p_next, bool p_outline) const = 0;
+public:
+	virtual void _invalidate_rids();
 
-	virtual Dictionary get_char_contours(CharType p_char, CharType p_next = 0) const { return Dictionary(); }
+	static constexpr int DEFAULT_FONT_SIZE = 16;
 
-	void update_changes();
+	// Fallbacks.
+	virtual void set_fallbacks(const TypedArray<Font> &p_fallbacks);
+	virtual TypedArray<Font> get_fallbacks() const;
+
+	// Output.
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const { return RID(); };
+	virtual RID _get_rid() const { return RID(); };
+	virtual TypedArray<RID> get_rids() const;
+
+	// Font metrics.
+	virtual real_t get_height(int p_font_size) const;
+	virtual real_t get_ascent(int p_font_size) const;
+	virtual real_t get_descent(int p_font_size) const;
+	virtual real_t get_underline_position(int p_font_size) const;
+	virtual real_t get_underline_thickness(int p_font_size) const;
+
+	virtual String get_font_name() const;
+	virtual String get_font_style_name() const;
+	virtual BitField<TextServer::FontStyle> get_font_style() const;
+	virtual int get_font_weight() const;
+	virtual int get_font_stretch() const;
+
+	virtual int get_spacing(TextServer::SpacingType p_spacing) const { return 0; };
+	virtual Dictionary get_opentype_features() const;
+
+	// Drawing string.
+	virtual void set_cache_capacity(int p_single_line, int p_multi_line);
+
+	virtual Size2 get_string_size(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual Size2 get_multiline_string_size(const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+
+	virtual void draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual void draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+
+	virtual void draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+	virtual void draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment = HORIZONTAL_ALIGNMENT_LEFT, float p_width = -1, int p_font_size = DEFAULT_FONT_SIZE, int p_max_lines = -1, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0), BitField<TextServer::LineBreakFlag> p_brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL) const;
+
+	// Drawing char.
+	virtual Size2 get_char_size(char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE) const;
+	virtual real_t draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
+	virtual real_t draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
+
+	// Helper functions.
+	virtual bool has_char(char32_t p_char) const;
+	virtual String get_supported_chars() const;
+
+	virtual bool is_language_supported(const String &p_language) const;
+	virtual bool is_script_supported(const String &p_script) const;
+
+	virtual Dictionary get_supported_feature_list() const;
+	virtual Dictionary get_supported_variation_list() const;
+	virtual int64_t get_face_count() const;
+
 	Font();
+	~Font();
 };
 
-// Helper class to that draws outlines immediately and draws characters in its destructor.
-class FontDrawer {
-	const Ref<Font> &font;
-	Color outline_color;
-	bool has_outline;
+/*************************************************************************/
+/*  FontFile                                                             */
+/*************************************************************************/
 
-	struct PendingDraw {
-		RID canvas_item;
-		Point2 pos;
-		CharType chr;
-		CharType next;
-		Color modulate;
-	};
+class FontFile : public Font {
+	GDCLASS(FontFile, Font);
+	RES_BASE_EXTENSION("fontdata");
 
-	Vector<PendingDraw> pending_draws;
+	// Font source data.
+	const uint8_t *data_ptr = nullptr;
+	size_t data_size = 0;
+	PackedByteArray data;
 
-public:
-	FontDrawer(const Ref<Font> &p_font, const Color &p_outline_color) :
-			font(p_font),
-			outline_color(p_outline_color) {
-		has_outline = p_font->has_outline();
-	}
+	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+	bool mipmaps = false;
+	bool msdf = false;
+	int msdf_pixel_range = 16;
+	int msdf_size = 48;
+	int fixed_size = 0;
+	bool force_autohinter = false;
+	bool allow_system_fallback = true;
+	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
+	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+	real_t oversampling = 0.f;
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) {
-		if (has_outline) {
-			PendingDraw draw = { p_canvas_item, p_pos, p_char, p_next, p_modulate };
-			pending_draws.push_back(draw);
-		}
-		return font->draw_char(p_canvas_item, p_pos, p_char, p_next, has_outline ? outline_color : p_modulate, has_outline);
-	}
+#ifndef DISABLE_DEPRECATED
+	real_t bmp_height = 0.0;
+	real_t bmp_ascent = 0.0;
+#endif
 
-	~FontDrawer() {
-		for (int i = 0; i < pending_draws.size(); ++i) {
-			const PendingDraw &draw = pending_draws[i];
-			font->draw_char(draw.canvas_item, draw.pos, draw.chr, draw.next, draw.modulate, false);
-		}
-	}
-};
+	// Cache.
+	mutable Vector<RID> cache;
 
-class BitmapFont : public Font {
-	GDCLASS(BitmapFont, Font);
-	RES_BASE_EXTENSION("font");
+	_FORCE_INLINE_ void _clear_cache();
+	_FORCE_INLINE_ void _ensure_rid(int p_cache_index) const;
 
-	Vector<Ref<Texture>> textures;
-
-public:
-	struct Character {
-		int texture_idx;
-		Rect2 rect;
-		float v_align;
-		float h_align;
-		float advance;
-
-		Character() {
-			texture_idx = 0;
-			v_align = 0;
-		}
-	};
-
-	struct KerningPairKey {
-		union {
-			struct {
-				uint32_t A, B;
-			};
-
-			uint64_t pair;
-		};
-
-		_FORCE_INLINE_ bool operator<(const KerningPairKey &p_r) const { return pair < p_r.pair; }
-	};
-
-private:
-	HashMap<int32_t, Character> char_map;
-	Map<KerningPairKey, int> kerning_map;
-
-	float height;
-	float ascent;
-	bool distance_field_hint;
-
-	void _set_chars(const PoolVector<int> &p_chars);
-	PoolVector<int> _get_chars() const;
-	void _set_kernings(const PoolVector<int> &p_kernings);
-	PoolVector<int> _get_kernings() const;
-	void _set_textures(const Vector<Variant> &p_textures);
-	Vector<Variant> _get_textures() const;
-
-	Ref<BitmapFont> fallback;
+	void _convert_packed_8bit(Ref<Image> &p_source, int p_page, int p_sz);
+	void _convert_packed_4bit(Ref<Image> &p_source, int p_page, int p_sz);
+	void _convert_rgba_4bit(Ref<Image> &p_source, int p_page, int p_sz);
+	void _convert_mono_8bit(Ref<Image> &p_source, int p_page, int p_ch, int p_sz, int p_ol);
+	void _convert_mono_4bit(Ref<Image> &p_source, int p_page, int p_ch, int p_sz, int p_ol);
 
 protected:
 	static void _bind_methods();
 
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	virtual void reset_state() override;
+
 public:
-	Error create_from_fnt(const String &p_file);
+	Error load_bitmap_font(const String &p_path);
+	Error load_dynamic_font(const String &p_path);
 
-	void set_height(float p_height);
-	float get_height() const;
+	// Font source data.
+	virtual void set_data_ptr(const uint8_t *p_data, size_t p_size);
+	virtual void set_data(const PackedByteArray &p_data);
+	virtual PackedByteArray get_data() const;
 
-	void set_ascent(float p_ascent);
-	float get_ascent() const;
-	float get_descent() const;
+	// Common properties.
+	virtual void set_font_name(const String &p_name);
+	virtual void set_font_style_name(const String &p_name);
+	virtual void set_font_style(BitField<TextServer::FontStyle> p_style);
+	virtual void set_font_weight(int p_weight);
+	virtual void set_font_stretch(int p_stretch);
 
-	void add_texture(const Ref<Texture> &p_texture);
-	void add_char(int32_t p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
+	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
+	virtual TextServer::FontAntialiasing get_antialiasing() const;
 
-	int get_character_count() const;
-	Vector<int32_t> get_char_keys() const;
-	Character get_character(int32_t p_char) const;
+	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
+	virtual bool get_generate_mipmaps() const;
 
-	int get_texture_count() const;
-	Ref<Texture> get_texture(int p_idx) const;
+	virtual void set_multichannel_signed_distance_field(bool p_msdf);
+	virtual bool is_multichannel_signed_distance_field() const;
 
-	void add_kerning_pair(int32_t p_A, int32_t p_B, int p_kerning);
-	int get_kerning_pair(int32_t p_A, int32_t p_B) const;
-	Vector<KerningPairKey> get_kerning_pair_keys() const;
+	virtual void set_msdf_pixel_range(int p_msdf_pixel_range);
+	virtual int get_msdf_pixel_range() const;
 
-	Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
+	virtual void set_msdf_size(int p_msdf_size);
+	virtual int get_msdf_size() const;
 
-	void set_fallback(const Ref<BitmapFont> &p_fallback);
-	Ref<BitmapFont> get_fallback() const;
+	virtual void set_fixed_size(int p_fixed_size);
+	virtual int get_fixed_size() const;
 
-	void clear();
+	virtual void set_allow_system_fallback(bool p_allow_system_fallback);
+	virtual bool is_allow_system_fallback() const;
 
-	void set_distance_field_hint(bool p_distance_field);
-	bool is_distance_field_hint() const;
+	virtual void set_force_autohinter(bool p_force_autohinter);
+	virtual bool is_force_autohinter() const;
 
-	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
+	virtual void set_hinting(TextServer::Hinting p_hinting);
+	virtual TextServer::Hinting get_hinting() const;
 
-	RID get_char_texture(CharType p_char, CharType p_next, bool p_outline) const;
-	Size2 get_char_texture_size(CharType p_char, CharType p_next, bool p_outline) const;
+	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
+	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
 
-	Vector2 get_char_tx_offset(CharType p_char, CharType p_next, bool p_outline) const;
-	Size2 get_char_tx_size(CharType p_char, CharType p_next, bool p_outline) const;
-	Rect2 get_char_tx_uv_rect(CharType p_char, CharType p_next, bool p_outline) const;
+	virtual void set_oversampling(real_t p_oversampling);
+	virtual real_t get_oversampling() const;
 
-	BitmapFont();
-	~BitmapFont();
+	// Cache.
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const override;
+	virtual RID _get_rid() const override;
+
+	virtual int get_cache_count() const;
+	virtual void clear_cache();
+	virtual void remove_cache(int p_cache_index);
+
+	virtual TypedArray<Vector2i> get_size_cache_list(int p_cache_index) const;
+	virtual void clear_size_cache(int p_cache_index);
+	virtual void remove_size_cache(int p_cache_index, const Vector2i &p_size);
+
+	virtual void set_variation_coordinates(int p_cache_index, const Dictionary &p_variation_coordinates);
+	virtual Dictionary get_variation_coordinates(int p_cache_index) const;
+
+	virtual void set_embolden(int p_cache_index, float p_strength);
+	virtual float get_embolden(int p_cache_index) const;
+
+	virtual void set_transform(int p_cache_index, Transform2D p_transform);
+	virtual Transform2D get_transform(int p_cache_index) const;
+
+	virtual void set_face_index(int p_cache_index, int64_t p_index);
+	virtual int64_t get_face_index(int p_cache_index) const;
+
+	virtual void set_cache_ascent(int p_cache_index, int p_size, real_t p_ascent);
+	virtual real_t get_cache_ascent(int p_cache_index, int p_size) const;
+
+	virtual void set_cache_descent(int p_cache_index, int p_size, real_t p_descent);
+	virtual real_t get_cache_descent(int p_cache_index, int p_size) const;
+
+	virtual void set_cache_underline_position(int p_cache_index, int p_size, real_t p_underline_position);
+	virtual real_t get_cache_underline_position(int p_cache_index, int p_size) const;
+
+	virtual void set_cache_underline_thickness(int p_cache_index, int p_size, real_t p_underline_thickness);
+	virtual real_t get_cache_underline_thickness(int p_cache_index, int p_size) const;
+
+	virtual void set_cache_scale(int p_cache_index, int p_size, real_t p_scale); // Rendering scale for bitmap fonts (e.g. emoji fonts).
+	virtual real_t get_cache_scale(int p_cache_index, int p_size) const;
+
+	virtual int get_texture_count(int p_cache_index, const Vector2i &p_size) const;
+	virtual void clear_textures(int p_cache_index, const Vector2i &p_size);
+	virtual void remove_texture(int p_cache_index, const Vector2i &p_size, int p_texture_index);
+
+	virtual void set_texture_image(int p_cache_index, const Vector2i &p_size, int p_texture_index, const Ref<Image> &p_image);
+	virtual Ref<Image> get_texture_image(int p_cache_index, const Vector2i &p_size, int p_texture_index) const;
+
+	virtual void set_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index, const PackedInt32Array &p_offset);
+	virtual PackedInt32Array get_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index) const;
+
+	virtual PackedInt32Array get_glyph_list(int p_cache_index, const Vector2i &p_size) const;
+	virtual void clear_glyphs(int p_cache_index, const Vector2i &p_size);
+	virtual void remove_glyph(int p_cache_index, const Vector2i &p_size, int32_t p_glyph);
+
+	virtual void set_glyph_advance(int p_cache_index, int p_size, int32_t p_glyph, const Vector2 &p_advance);
+	virtual Vector2 get_glyph_advance(int p_cache_index, int p_size, int32_t p_glyph) const;
+
+	virtual void set_glyph_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Vector2 &p_offset);
+	virtual Vector2 get_glyph_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
+
+	virtual void set_glyph_size(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Vector2 &p_gl_size);
+	virtual Vector2 get_glyph_size(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
+
+	virtual void set_glyph_uv_rect(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Rect2 &p_uv_rect);
+	virtual Rect2 get_glyph_uv_rect(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
+
+	virtual void set_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx);
+	virtual int get_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
+
+	virtual TypedArray<Vector2i> get_kerning_list(int p_cache_index, int p_size) const;
+	virtual void clear_kerning_map(int p_cache_index, int p_size);
+	virtual void remove_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair);
+
+	virtual void set_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair, const Vector2 &p_kerning);
+	virtual Vector2 get_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair) const;
+
+	virtual void render_range(int p_cache_index, const Vector2i &p_size, char32_t p_start, char32_t p_end);
+	virtual void render_glyph(int p_cache_index, const Vector2i &p_size, int32_t p_index);
+
+	// Language/script support override.
+	virtual void set_language_support_override(const String &p_language, bool p_supported);
+	virtual bool get_language_support_override(const String &p_language) const;
+	virtual void remove_language_support_override(const String &p_language);
+	virtual Vector<String> get_language_support_overrides() const;
+
+	virtual void set_script_support_override(const String &p_script, bool p_supported);
+	virtual bool get_script_support_override(const String &p_script) const;
+	virtual void remove_script_support_override(const String &p_script);
+	virtual Vector<String> get_script_support_overrides() const;
+
+	virtual void set_opentype_feature_overrides(const Dictionary &p_overrides);
+	virtual Dictionary get_opentype_feature_overrides() const;
+
+	// Base font properties.
+	virtual int32_t get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector = 0x0000) const;
+
+	FontFile();
+	~FontFile();
 };
 
-class ResourceFormatLoaderBMFont : public ResourceFormatLoader {
+/*************************************************************************/
+/*  FontVariation                                                        */
+/*************************************************************************/
+
+class FontVariation : public Font {
+	GDCLASS(FontVariation, Font);
+
+	struct Variation {
+		Dictionary opentype;
+		real_t embolden = 0.f;
+		int face_index = 0;
+		Transform2D transform;
+	};
+
+	mutable Ref<Font> theme_font;
+
+	Ref<Font> base_font;
+
+	Variation variation;
+	Dictionary opentype_features;
+	int extra_spacing[TextServer::SPACING_MAX];
+
+protected:
+	static void _bind_methods();
+
+	virtual void _update_rids() const override;
+
+	virtual void reset_state() override;
+
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
+	virtual void set_base_font(const Ref<Font> &p_font);
+	virtual Ref<Font> get_base_font() const;
+	virtual Ref<Font> _get_base_font_or_default() const;
+
+	virtual void set_variation_opentype(const Dictionary &p_coords);
+	virtual Dictionary get_variation_opentype() const;
+
+	virtual void set_variation_embolden(float p_strength);
+	virtual float get_variation_embolden() const;
+
+	virtual void set_variation_transform(Transform2D p_transform);
+	virtual Transform2D get_variation_transform() const;
+
+	virtual void set_variation_face_index(int p_face_index);
+	virtual int get_variation_face_index() const;
+
+	virtual void set_opentype_features(const Dictionary &p_features);
+	virtual Dictionary get_opentype_features() const override;
+
+	virtual void set_spacing(TextServer::SpacingType p_spacing, int p_value);
+	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
+
+	// Output.
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const override;
+	virtual RID _get_rid() const override;
+
+	FontVariation();
+	~FontVariation();
 };
 
-VARIANT_ENUM_CAST(Font::ContourPointTag);
+/*************************************************************************/
+/*  SystemFont                                                           */
+/*************************************************************************/
+
+class SystemFont : public Font {
+	GDCLASS(SystemFont, Font);
+
+	PackedStringArray names;
+	bool italic = false;
+	int weight = 400;
+	int stretch = 100;
+
+	mutable Ref<Font> theme_font;
+
+	Ref<FontFile> base_font;
+	Vector<int> face_indeces;
+	int ftr_weight = 0;
+	int ftr_stretch = 0;
+	int ftr_italic = 0;
+
+	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
+	bool mipmaps = false;
+	bool force_autohinter = false;
+	bool allow_system_fallback = true;
+	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
+	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+	real_t oversampling = 0.f;
+	bool msdf = false;
+	int msdf_pixel_range = 16;
+	int msdf_size = 48;
+
+protected:
+	static void _bind_methods();
+
+	virtual void _update_base_font();
+	virtual void _update_rids() const override;
+
+	virtual void reset_state() override;
+
+public:
+	virtual Ref<Font> _get_base_font_or_default() const;
+
+	virtual void set_antialiasing(TextServer::FontAntialiasing p_antialiasing);
+	virtual TextServer::FontAntialiasing get_antialiasing() const;
+
+	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
+	virtual bool get_generate_mipmaps() const;
+
+	virtual void set_allow_system_fallback(bool p_allow_system_fallback);
+	virtual bool is_allow_system_fallback() const;
+
+	virtual void set_force_autohinter(bool p_force_autohinter);
+	virtual bool is_force_autohinter() const;
+
+	virtual void set_hinting(TextServer::Hinting p_hinting);
+	virtual TextServer::Hinting get_hinting() const;
+
+	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
+	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
+
+	virtual void set_oversampling(real_t p_oversampling);
+	virtual real_t get_oversampling() const;
+
+	virtual void set_multichannel_signed_distance_field(bool p_msdf);
+	virtual bool is_multichannel_signed_distance_field() const;
+
+	virtual void set_msdf_pixel_range(int p_msdf_pixel_range);
+	virtual int get_msdf_pixel_range() const;
+
+	virtual void set_msdf_size(int p_msdf_size);
+	virtual int get_msdf_size() const;
+
+	virtual void set_font_names(const PackedStringArray &p_names);
+	virtual PackedStringArray get_font_names() const;
+
+	virtual void set_font_italic(bool p_italic);
+	virtual bool get_font_italic() const;
+
+	virtual void set_font_weight(int p_weight);
+	virtual int get_font_weight() const override;
+
+	virtual void set_font_stretch(int p_stretch);
+	virtual int get_font_stretch() const override;
+
+	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
+
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const override;
+	virtual RID _get_rid() const override;
+
+	int64_t get_face_count() const override;
+
+	SystemFont();
+	~SystemFont();
+};
 
 #endif // FONT_H

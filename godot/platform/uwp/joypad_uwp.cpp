@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "joypad_uwp.h"
+
 #include "core/os/os.h"
 
 using namespace Windows::Gaming::Input;
@@ -45,8 +46,9 @@ void JoypadUWP::process_controllers() {
 	for (int i = 0; i < MAX_CONTROLLERS; i++) {
 		ControllerDevice &joy = controllers[i];
 
-		if (!joy.connected)
+		if (!joy.connected) {
 			break;
+		}
 
 		switch (joy.type) {
 			case ControllerType::GAMEPAD_CONTROLLER: {
@@ -58,12 +60,12 @@ void JoypadUWP::process_controllers() {
 					button_mask *= 2;
 				}
 
-				input->joy_axis(joy.id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
-				input->joy_axis(joy.id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
-				input->joy_axis(joy.id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
-				input->joy_axis(joy.id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
-				input->joy_axis(joy.id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
-				input->joy_axis(joy.id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
+				input->joy_axis(joy.id, JoyAxis::LEFT_X, axis_correct(reading.LeftThumbstickX));
+				input->joy_axis(joy.id, JoyAxis::LEFT_Y, axis_correct(reading.LeftThumbstickY, true));
+				input->joy_axis(joy.id, JoyAxis::RIGHT_X, axis_correct(reading.RightThumbstickX));
+				input->joy_axis(joy.id, JoyAxis::RIGHT_Y, axis_correct(reading.RightThumbstickY, true));
+				input->joy_axis(joy.id, JoyAxis::TRIGGER_LEFT, axis_correct(reading.LeftTrigger, false, true));
+				input->joy_axis(joy.id, JoyAxis::TRIGGER_RIGHT, axis_correct(reading.RightTrigger, false, true));
 
 				uint64_t timestamp = input->get_joy_vibration_timestamp(joy.id);
 				if (timestamp > joy.ff_timestamp) {
@@ -76,8 +78,9 @@ void JoypadUWP::process_controllers() {
 					}
 				} else if (joy.vibrating && joy.ff_end_timestamp != 0) {
 					uint64_t current_time = OS::get_singleton()->get_ticks_usec();
-					if (current_time >= joy.ff_end_timestamp)
+					if (current_time >= joy.ff_end_timestamp) {
 						joypad_vibration_stop(i, current_time);
+					}
 				}
 
 				break;
@@ -87,8 +90,9 @@ void JoypadUWP::process_controllers() {
 }
 
 JoypadUWP::JoypadUWP() {
-	for (int i = 0; i < MAX_CONTROLLERS; i++)
+	for (int i = 0; i < MAX_CONTROLLERS; i++) {
 		controllers[i].id = i;
+	}
 }
 
 JoypadUWP::JoypadUWP(InputDefault *p_input) {

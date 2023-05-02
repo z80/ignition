@@ -3,7 +3,7 @@
 #define __MARCHING_CUBES_GD_H_
 
 #include "marching_cubes.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 #include "se3_ref.h"
 #include "volume_source_gd.h"
 #include "distance_scaler_ref.h"
@@ -14,9 +14,9 @@ class Node;
 namespace Ign
 {
 
-class MarchingCubesGd: public Reference
+class MarchingCubesGd: public RefCounted
 {
-	GDCLASS(MarchingCubesGd, Reference);
+	GDCLASS(MarchingCubesGd, RefCounted);
 protected:
 	static void _bind_methods();
 
@@ -28,7 +28,7 @@ public:
 	bool subdivide_source( const Ref<VolumeSourceGd> & volume, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
 	Array materials_used() const;
 	void apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler = Ref<DistanceScalerRef>() );
-	PoolVector3Array collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref = Ref<DistanceScalerRef>() );
+	Array collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref = Ref<DistanceScalerRef>() );
 
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;
@@ -36,8 +36,8 @@ public:
 public:
 	MarchingCubes cubes;
 
-	PoolVector3Array vertices, normals;
-	PoolRealArray    tangents;
+	Array vertices, normals;
+	Array tangents;
 };
 
 

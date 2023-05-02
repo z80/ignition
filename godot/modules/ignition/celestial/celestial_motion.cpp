@@ -5,7 +5,7 @@
 #include "math_defs.h"
 #include <cmath>
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
 
 using namespace Urho3D;

@@ -31,17 +31,17 @@
 #ifndef HTTP_CLIENT_H
 #define HTTP_CLIENT_H
 
+#include "core/crypto/crypto.h"
 #include "core/io/ip.h"
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
-class HTTPClient : public Reference {
-	GDCLASS(HTTPClient, Reference);
+class HTTPClient : public RefCounted {
+	GDCLASS(HTTPClient, RefCounted);
 
 public:
 	enum ResponseCode {
-
 		// 1xx informational
 		RESPONSE_CONTINUE = 100,
 		RESPONSE_SWITCHING_PROTOCOLS = 101,
@@ -116,7 +116,6 @@ public:
 	};
 
 	enum Method {
-
 		METHOD_GET,
 		METHOD_HEAD,
 		METHOD_POST,
@@ -131,7 +130,6 @@ public:
 	};
 
 	enum Status {
-
 		STATUS_DISCONNECTED,
 		STATUS_RESOLVING, // Resolving hostname (if passed a hostname)
 		STATUS_CANT_RESOLVE,
@@ -141,105 +139,67 @@ public:
 		STATUS_REQUESTING, // Request in progress
 		STATUS_BODY, // Request resulted in body, which must be read
 		STATUS_CONNECTION_ERROR,
-		STATUS_SSL_HANDSHAKE_ERROR,
+		STATUS_TLS_HANDSHAKE_ERROR,
 
 	};
 
-private:
+protected:
 	static const char *_methods[METHOD_MAX];
 	static const int HOST_MIN_LEN = 4;
 
 	enum Port {
-
 		PORT_HTTP = 80,
 		PORT_HTTPS = 443,
 
 	};
 
-#ifndef JAVASCRIPT_ENABLED
-	Status status;
-	IP::ResolverID resolving;
-	Array ip_candidates;
-	int conn_port; // Server to make requests to.
-	String conn_host;
-	int server_port; // Server to connect to (might be a proxy server).
-	String server_host;
-	int http_proxy_port; // Proxy server for http requests.
-	String http_proxy_host;
-	int https_proxy_port; // Proxy server for https requests.
-	String https_proxy_host;
-	bool ssl;
-	bool ssl_verify_host;
-	bool blocking;
-	bool handshaking;
-	bool head_request;
-
-	Vector<uint8_t> response_str;
-
-	bool chunked;
-	Vector<uint8_t> chunk;
-	int chunk_left;
-	bool chunk_trailer_part;
-	int64_t body_size;
-	int64_t body_left;
-	bool read_until_eof;
-
-	Ref<StreamPeerTCP> tcp_connection;
-	Ref<StreamPeer> connection;
-	Ref<HTTPClient> proxy_client;
-
-	int response_num;
-	Vector<String> response_headers;
-	int read_chunk_size;
-
-	Error _get_http_data(uint8_t *p_buffer, int p_bytes, int &r_received);
-
-#else
-#include "platform/javascript/http_client.h.inc"
-#endif
-
-	PoolStringArray _get_response_headers();
+	PackedStringArray _get_response_headers();
 	Dictionary _get_response_headers_as_dictionary();
+	Error _request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const Vector<uint8_t> &p_body);
+	Error _request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body = String());
+
+	static HTTPClient *(*_create)();
 
 	static void _bind_methods();
 
 public:
-	Error connect_to_host(const String &p_host, int p_port = -1, bool p_ssl = false, bool p_verify_host = true);
-
-	void set_connection(const Ref<StreamPeer> &p_connection);
-	Ref<StreamPeer> get_connection() const;
-
-	Error request_raw(Method p_method, const String &p_url, const Vector<String> &p_headers, const PoolVector<uint8_t> &p_body);
-	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const String &p_body = String());
-
-	void close();
-
-	Status get_status() const;
-
-	bool has_response() const;
-	bool is_response_chunked() const;
-	int get_response_code() const;
-	Error get_response_headers(List<String> *r_response);
-	int64_t get_response_body_length() const;
-
-	PoolByteArray read_response_body_chunk(); // Can't get body as partial text because of most encodings UTF8, gzip, etc.
-
-	void set_blocking_mode(bool p_enable); // Useful mostly if running in a thread
-	bool is_blocking_mode_enabled() const;
-
-	void set_read_chunk_size(int p_size);
-	int get_read_chunk_size() const;
-
-	Error poll();
+	static HTTPClient *create();
 
 	String query_string_from_dict(const Dictionary &p_dict);
+	Error verify_headers(const Vector<String> &p_headers);
 
-	// Use empty string or -1 to unset.
-	void set_http_proxy(const String &p_host, int p_port);
-	void set_https_proxy(const String &p_host, int p_port);
+	virtual Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) = 0;
+	virtual Error connect_to_host(const String &p_host, int p_port = -1, Ref<TLSOptions> p_tls_options = Ref<TLSOptions>()) = 0;
 
-	HTTPClient();
-	~HTTPClient();
+	virtual void set_connection(const Ref<StreamPeer> &p_connection) = 0;
+	virtual Ref<StreamPeer> get_connection() const = 0;
+
+	virtual void close() = 0;
+
+	virtual Status get_status() const = 0;
+
+	virtual bool has_response() const = 0;
+	virtual bool is_response_chunked() const = 0;
+	virtual int get_response_code() const = 0;
+	virtual Error get_response_headers(List<String> *r_response) = 0;
+	virtual int64_t get_response_body_length() const = 0;
+
+	virtual PackedByteArray read_response_body_chunk() = 0; // Can't get body as partial text because of most encodings UTF8, gzip, etc.
+
+	virtual void set_blocking_mode(bool p_enable) = 0; // Useful mostly if running in a thread
+	virtual bool is_blocking_mode_enabled() const = 0;
+
+	virtual void set_read_chunk_size(int p_size) = 0;
+	virtual int get_read_chunk_size() const = 0;
+
+	virtual Error poll() = 0;
+
+	// Use empty string or -1 to unset
+	virtual void set_http_proxy(const String &p_host, int p_port);
+	virtual void set_https_proxy(const String &p_host, int p_port);
+
+	HTTPClient() {}
+	virtual ~HTTPClient() {}
 };
 
 VARIANT_ENUM_CAST(HTTPClient::ResponseCode)

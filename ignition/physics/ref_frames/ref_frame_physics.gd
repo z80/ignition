@@ -2,7 +2,7 @@
 extends RefFrameNonInertialNode
 class_name RefFramePhysics
 
-export(PackedScene) var PhysicsEnv = null
+@export var PhysicsEnv: PackedScene = null
 var _physics_env = null
 var _collision_surface: Node = null
 
@@ -20,8 +20,8 @@ var debug_has_split: bool = false
 
 # Override get_class() method in order
 # to be able to identify objects of this class.
-func get_class():
-	return "RefFramePhysics"
+#func get_class():
+#	return "RefFramePhysics"
 
 
 func get_collision_surface():
@@ -99,7 +99,7 @@ func update():
 func _create_physics_environment():
 	if (_physics_env != null) and is_instance_valid(_physics_env):
 		return
-	var env = PhysicsEnv.instance()
+	var env = PhysicsEnv.instantiate()
 	var root: Node = RootScene.get_root_for_physics_envs()
 	root.add_child( env )
 	_physics_env = env
@@ -119,7 +119,7 @@ func _destroy_physics_environment():
 
 
 # This one is called by Bodies in order to enable physics. 
-func add_physics_body( body: RigidBody ):
+func add_physics_body( body: RigidBody3D ):
 	if _physics_env == null:
 		_create_physics_environment()
 	
@@ -150,7 +150,7 @@ func is_active():
 
 
 
-func jump( t: Transform, v: Vector3=Vector3.ZERO ):
+func jump( t: Transform3D, v: Vector3=Vector3.ZERO ):
 	# Debug output.
 	var movement_type: String = self.movement_type()
 	var dbg: bool = false
@@ -259,9 +259,10 @@ func jump_if_needed():
 	if dist < Constants.RF_JUMP_DISTANCE:
 		return
 	
-	var t: Transform = Transform.IDENTITY
+	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = r
 	jump( t, v )
+	pass
 
 
 
@@ -282,7 +283,7 @@ func exclude_too_far_bodies():
 		var r: Vector3 = body.r()
 		var d: float = r.length()
 		if d > max_dist:
-			body.change_parent( pt )
+			body.change_parent( pt, false )
 
 
 
@@ -301,7 +302,7 @@ func include_close_enough_bodies():
 		var d: float = r.length()
 		
 		if d < min_dist:
-			body.change_parent( self )
+			body.change_parent( self, false )
 
 
 
@@ -373,7 +374,7 @@ func split_if_needed() -> bool:
 	var p: Node = get_parent()
 	var root: RefFrameRoot = get_ref_frame_root()
 	var rf: RefFramePhysics = root.create_ref_frame_physics()
-	rf.change_parent( p )
+	rf.change_parent( p, false )
 #	var orig_se3: Se3Ref = self.get_se3()
 	
 	# Compute centers of the two clusters.
@@ -404,7 +405,7 @@ func split_if_needed() -> bool:
 	rf.call_deferred( "clone_collision_surface", self )
 	
 	for body in bodies_b:
-		body.call_deferred( "change_parent", rf )
+		body.call_deferred( "change_parent", rf, false )
 	
 	DDD.important()
 	DDD.print( "new rf created " + rf. name )
@@ -611,7 +612,7 @@ func parent_bodies():
 func distance( b: RefFramePhysics ):
 	var bodies_a: Array = root_most_child_bodies()
 	var bodies_b: Array = b.root_most_child_bodies()
-	if bodies_a.empty() or bodies_b.empty():
+	if bodies_a.is_empty() or bodies_b.is_empty():
 		return 2.0 * Constants.RF_SPLIT_DISTANCE
 	
 	#var bodies_all: Array = bodies_a + bodies_b
@@ -658,7 +659,7 @@ func _on_delete_rescue_camera():
 	# This node is being destroyed. If camera is parented to this node, 
 	# parent it to the parent of this node.
 	p = self.get_parent()
-	cam.change_parent( p )
+	cam.change_parent( p, false )
 
 
 
@@ -680,33 +681,31 @@ func _re_parent_children_on_delete():
 
 
 
-func serialize():
-	var data: Dictionary = .serialize()
-	return data
+func _serialize( data: Dictionary ):
+	pass
 
 
 
-func deserialize( data: Dictionary ):
-	var ret: bool  = .deserialize( data )
+func _deserialize( data: Dictionary ):
 	return true
 
 
 
-static func _debug_distances( bodies: Array ):
-	var bodies_node: Node = RootScene.get_root_for_bodies()
-	var tree: SceneTree = bodies_node.get_tree()
-	var vp: Viewport = tree.root
-	var root_node: Node = vp.get_node( "Root" ).get_node( "Sun" )
-	var ass: PhysicsBodyBase = root_node.find_node( "Construction", true, false )
-	DDD.important()
-	DDD.print( "                All relative to assembly:" )
-	for b in bodies:
-		var body = b as RefFrameNode
-		if body == null:
-			continue
-		var se3: Se3Ref = body.relative_to( ass )
-		DDD.print( body.name + ": " + str(se3.r) )
-	pass
+#static func _debug_distances( bodies: Array ):
+#	var bodies_node: Node = RootScene.get_root_for_bodies()
+#	var tree: SceneTree = bodies_node.get_tree()
+#	var vp: SubViewport = tree.root
+#	var root_node: Node = vp.get_node( "Root" ).get_node( "Sun" )
+#	var ass: PhysicsBodyBase = root_node.find_child( "Construction", true, false )
+#	DDD.important()
+#	DDD.print( "                All relative to assembly:" )
+#	for b in bodies:
+#		var body = b as RefFrameNode
+#		if body == null:
+#			continue
+#		var se3: Se3Ref = body.relative_to( ass )
+#		DDD.print( body.name + ": " + str(se3.r) )
+#	pass
 
 
 

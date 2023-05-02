@@ -31,82 +31,68 @@
 #ifndef EDITOR_SETTINGS_H
 #define EDITOR_SETTINGS_H
 
-#include "core/object.h"
-
 #include "core/io/config_file.h"
+#include "core/io/resource.h"
 #include "core/os/thread_safe.h"
-#include "core/resource.h"
-#include "core/translation.h"
-#include "scene/gui/shortcut.h"
+#include "core/templates/rb_set.h"
 
 class EditorPlugin;
+class InputEvent;
+class Shortcut;
 
 class EditorSettings : public Resource {
 	GDCLASS(EditorSettings, Resource);
 
-private:
 	_THREAD_SAFE_CLASS_
 
 public:
 	struct Plugin {
-		EditorPlugin *instance;
+		EditorPlugin *instance = nullptr;
 		String path;
 		String name;
 		String author;
 		String version;
 		String description;
-		bool installs;
+		bool installs = false;
 		String script;
 		Vector<String> install_files;
 	};
 
 private:
 	struct VariantContainer {
-		int order;
+		int order = 0;
 		Variant variant;
 		Variant initial;
-		bool has_default_value;
-		bool hide_from_editor;
-		bool save;
-		bool restart_if_changed;
-		VariantContainer() :
-				order(0),
-				has_default_value(false),
-				hide_from_editor(false),
-				save(false),
-				restart_if_changed(false) {
-		}
+		bool has_default_value = false;
+		bool hide_from_editor = false;
+		bool save = false;
+		bool restart_if_changed = false;
+
+		VariantContainer() {}
+
 		VariantContainer(const Variant &p_variant, int p_order) :
 				order(p_order),
-				variant(p_variant),
-				has_default_value(false),
-				hide_from_editor(false),
-				save(false),
-				restart_if_changed(false) {
+				variant(p_variant) {
 		}
 	};
 
 	static Ref<EditorSettings> singleton;
+
+	HashSet<String> changed_settings;
 
 	HashMap<String, PropertyInfo> hints;
 	HashMap<String, VariantContainer> props;
 	int last_order;
 
 	Ref<Resource> clipboard;
-	Map<String, Ref<ShortCut>> shortcuts;
-
-	String resource_path;
-	String settings_dir;
-	String data_dir;
-	String cache_dir;
-	String config_file_path;
-	String project_config_dir;
+	mutable HashMap<String, Ref<Shortcut>> shortcuts;
+	HashMap<String, List<Ref<InputEvent>>> builtin_action_overrides;
 
 	Vector<String> favorites;
 	Vector<String> recent_dirs;
 
-	bool save_changed_setting;
-	bool optimize_save; //do not save stuff that came from config but was not set from engine
+	bool save_changed_setting = true;
+	bool optimize_save = true; //do not save stuff that came from config but was not set from engine
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _set_only(const StringName &p_name, const Variant &p_value);
@@ -114,9 +100,11 @@ private:
 	void _initial_set(const StringName &p_name, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _add_property_info_bind(const Dictionary &p_info);
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
-	void _load_defaults(Ref<ConfigFile> p_extra_config = nullptr);
-	void _load_default_text_editor_theme();
+	void _load_defaults(Ref<ConfigFile> p_extra_config = Ref<ConfigFile>());
+	void _load_godot2_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
 	bool _is_default_text_editor_theme(String p_theme_name);
 
@@ -152,22 +140,13 @@ public:
 			_set_only(p_setting, p_value);
 		}
 	}
-	bool property_can_revert(const String &p_setting);
-	Variant property_get_revert(const String &p_setting);
 	void add_property_hint(const PropertyInfo &p_hint);
+	PackedStringArray get_changed_settings() const;
+	bool check_changed_settings_in_group(const String &p_setting_prefix) const;
+	void mark_setting_changed(const String &p_setting);
 
 	void set_resource_clipboard(const Ref<Resource> &p_resource) { clipboard = p_resource; }
 	Ref<Resource> get_resource_clipboard() const { return clipboard; }
-
-	String get_data_dir() const;
-	String get_templates_dir() const;
-	String get_settings_dir() const;
-	String get_project_settings_dir() const;
-	String get_text_editor_themes_dir() const;
-	String get_script_templates_dir() const;
-	String get_project_script_templates_dir() const;
-	String get_cache_dir() const;
-	String get_feature_profiles_dir() const;
 
 	void set_project_metadata(const String &p_section, const String &p_key, Variant p_data);
 	Variant get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const;
@@ -176,10 +155,9 @@ public:
 	Vector<String> get_favorites() const;
 	void set_recent_dirs(const Vector<String> &p_recent_dirs);
 	Vector<String> get_recent_dirs() const;
-	void load_favorites();
+	void load_favorites_and_recent_dirs();
 
 	bool is_dark_theme();
-	bool is_caret_blink_active() const;
 
 	void list_text_editor_themes();
 	void load_text_editor_theme();
@@ -192,10 +170,14 @@ public:
 	String get_editor_layouts_config() const;
 	float get_auto_display_scale() const;
 
-	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);
+	void _add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut);
+	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;
-	Ref<ShortCut> get_shortcut(const String &p_name) const;
+	Ref<Shortcut> get_shortcut(const String &p_name) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
+
+	void set_builtin_action_override(const String &p_name, const TypedArray<InputEvent> &p_events);
+	const Array get_builtin_action_overrides(const String &p_name) const;
 
 	void notify_changes();
 
@@ -213,7 +195,10 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 Variant _EDITOR_GET(const String &p_setting);
 
 #define ED_IS_SHORTCUT(p_name, p_ev) (EditorSettings::get_singleton()->is_shortcut(p_name, p_ev))
-Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode = 0);
-Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path);
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode = Key::NONE);
+Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes);
+void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode = Key::NONE);
+void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes);
+Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path);
 
 #endif // EDITOR_SETTINGS_H

@@ -1,15 +1,19 @@
 [remap]
 
-importer="ogg_vorbis"
-type="AudioStreamOGGVorbis"
-path="res://.import/pop.ogg-382b85cade73c6263d13f962b18ecc82.oggstr"
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://o1poywsep5te"
+path="res://.godot/imported/pop.ogg-382b85cade73c6263d13f962b18ecc82.oggvorbisstr"
 
 [deps]
 
 source_file="res://physics/parts/decouplers/2m/m1/assets/pop.ogg"
-dest_files=[ "res://.import/pop.ogg-382b85cade73c6263d13f962b18ecc82.oggstr" ]
+dest_files=["res://.godot/imported/pop.ogg-382b85cade73c6263d13f962b18ecc82.oggvorbisstr"]
 
 [params]
 
 loop=false
 loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

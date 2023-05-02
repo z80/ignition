@@ -6,7 +6,7 @@
 #include "se3.h"
 #include "broad_tree_node.h"
 
-#include "core/variant.h"
+#include "core/variant/variant.h"
 
 namespace Ign
 {
@@ -31,8 +31,8 @@ public:
     void subdivide( RefFrameNode * ref_frame_physics );
 
     // For visualization.
-    //PoolVector3Array lines_nodes( RefFrameNode * camera ) const;
-	void face_lines( Vector<Vector3> & ret, const Transform & t_to_camera ) const;
+    //Array lines_nodes( RefFrameNode * camera ) const;
+	void face_lines( Vector<Vector3> & ret, const Transform3D & t_to_camera ) const;
 
     // These three for tree construction.
     bool parent( const BroadTreeNode & node, BroadTreeNode * & parent );

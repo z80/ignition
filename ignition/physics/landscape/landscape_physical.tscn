@@ -2,6 +2,6 @@
 
 [ext_resource path="res://physics/landscape/landscape_physical.gd" type="Script" id=1]
 
-[node name="LandscapePhysical" type="Spatial"]
+[node name="LandscapePhysical" type="Node3D"]
 script = ExtResource( 1 )
 size = 50.0

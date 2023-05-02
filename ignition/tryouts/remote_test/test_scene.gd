@@ -1,4 +1,4 @@
-extends Spatial
+extends Node3D
 
 
 # Declare member variables here. Examples:
@@ -11,10 +11,10 @@ func _ready():
 	pass # Replace with function body.
 
 
-remotesync func set_visibles( cube, cyl ):
+@rpc("any_peer", "call_local") func set_visibles( cube, cyl ):
 	$Cube.visible     = cube
 	$Cylinder.visible = cyl
 
 
-remotesync func move_to( v: Vector3 ):
+@rpc("any_peer", "call_local") func move_to( v: Vector3 ):
 	self.position = v

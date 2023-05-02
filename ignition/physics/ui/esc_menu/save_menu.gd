@@ -40,7 +40,7 @@ func _get_file_list_node():
 
 
 func _default_file_name():
-	var d: Dictionary = OS.get_datetime()
+	var d: Dictionary = Time.get_datetime_dict_from_system()
 	var name: String = "{year}_{month}_{day}_{hour}_{minute}_{second}".format( d )
 	return name
 
@@ -56,8 +56,8 @@ func _on_Save_pressed():
 	var root: Node = RootScene.ref_frame_root
 	var data: Dictionary = S.serialize_all( root )
 	#var stri: String = JSON.print( data )
-	var file = File.new()
-	file.open( full_name, File.WRITE )
+	var file: FileAccess = FileAccess.open( full_name, FileAccess.WRITE )
+	assert( file != null, "Failed to open file for writing!" )
 	file.store_var( data, true )
 	file.close()
 	

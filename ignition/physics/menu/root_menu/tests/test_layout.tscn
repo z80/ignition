@@ -12,8 +12,8 @@ position = Vector2( 424, 184 )
 z_index = 1
 
 [node name="Panel" type="Panel" parent="."]
-margin_right = 592.0
-margin_bottom = 352.0
+offset_right = 592.0
+offset_bottom = 352.0
 mouse_filter = 2
 __meta__ = {
 "_edit_use_anchors_": false

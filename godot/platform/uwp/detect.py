@@ -1,6 +1,12 @@
 import methods
 import os
 import sys
+from platform_methods import detect_arch
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
 
 
 def is_active():
@@ -31,25 +37,24 @@ def get_opts():
 
 def get_flags():
     return [
+        ("arch", detect_arch()),
         ("tools", False),
         ("xaudio2", True),
         ("builtin_pcre2_with_jit", False),
     ]
 
 
-def configure(env):
-    env.msvc = True
-
-    if env["bits"] != "default":
-        print("Error: bits argument is disabled for MSVC")
+def configure(env: "Environment"):
+    # Validate arch.
+    supported_arches = ["x86_32", "x86_64", "arm32"]
+    if env["arch"] not in supported_arches:
         print(
-            """
-            Bits argument is not supported for MSVC compilation. Architecture depends on the Native/Cross Compile Tools Prompt/Developer Console
-            (or Visual Studio settings) that is being used to run SCons. As a consequence, bits argument is disabled. Run scons again without bits
-            argument (example: scons p=uwp) and SCons will attempt to detect what MSVC compiler will be executed and inform you.
-            """
+            'Unsupported CPU architecture "%s" for UWP. Supported architectures are: %s.'
+            % (env["arch"], ", ".join(supported_arches))
         )
         sys.exit()
+
+    env.msvc = True
 
     ## Build type
 
@@ -63,6 +68,7 @@ def configure(env):
     elif env["target"] == "release_debug":
         env.Append(CCFLAGS=["/MD"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
         if env["optimize"] != "none":
             env.Append(CCFLAGS=["/O2", "/Zi"])
 
@@ -70,6 +76,7 @@ def configure(env):
         env.Append(CCFLAGS=["/Zi"])
         env.Append(CCFLAGS=["/MDd"])
         env.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+        env.AppendUnique(CPPDEFINES=["WINDOWS_SUBSYSTEM_CONSOLE"])
         env.Append(LINKFLAGS=["/DEBUG"])
 
     ## Compiler configuration
@@ -81,7 +88,7 @@ def configure(env):
     env.AppendUnique(CCFLAGS=["/utf-8"])
 
     # ANGLE
-    angle_root = os.getenv("ANGLE_SRC_PATH")
+    angle_root = os.environ["ANGLE_SRC_PATH"]
     env.Prepend(CPPPATH=[angle_root + "/include"])
     jobs = str(env.GetOption("num_jobs"))
     angle_build_cmd = (
@@ -92,18 +99,17 @@ def configure(env):
         + " /p:Configuration=Release /p:Platform="
     )
 
-    if os.path.isfile(str(os.getenv("ANGLE_SRC_PATH")) + "/winrt/10/src/angle.sln"):
+    if os.path.isfile(f"{angle_root}/winrt/10/src/angle.sln"):
         env["build_angle"] = True
 
     ## Architecture
 
     arch = ""
     if str(os.getenv("Platform")).lower() == "arm":
-
-        print("Compiled program architecture will be an ARM executable. (forcing bits=32).")
+        print("Compiled program architecture will be an ARM executable (forcing arch=arm32).")
 
         arch = "arm"
-        env["bits"] = "32"
+        env["arch"] = "arm32"
         env.Append(LINKFLAGS=["/MACHINE:ARM"])
         env.Append(LIBPATH=[vc_base_path + "lib/store/arm"])
 
@@ -115,18 +121,20 @@ def configure(env):
         compiler_version_str = methods.detect_visual_c_compiler_version(env["ENV"])
 
         if compiler_version_str == "amd64" or compiler_version_str == "x86_amd64":
-            env["bits"] = "64"
-            print("Compiled program architecture will be a x64 executable (forcing bits=64).")
+            env["arch"] = "x86_64"
+            print("Compiled program architecture will be a x64 executable (forcing arch=x86_64).")
         elif compiler_version_str == "x86" or compiler_version_str == "amd64_x86":
-            env["bits"] = "32"
-            print("Compiled program architecture will be a x86 executable. (forcing bits=32).")
+            env["arch"] = "x86_32"
+            print("Compiled program architecture will be a x86 executable (forcing arch=x86_32).")
         else:
             print(
-                "Failed to detect MSVC compiler architecture version... Defaulting to 32-bit executable settings (forcing bits=32). Compilation attempt will continue, but SCons can not detect for what architecture this build is compiled for. You should check your settings/compilation setup."
+                "Failed to detect MSVC compiler architecture version... Defaulting to x86 32-bit executable settings"
+                " (forcing arch=x86_32). Compilation attempt will continue, but SCons can not detect for what architecture"
+                " this build is compiled for. You should check your settings/compilation setup."
             )
-            env["bits"] = "32"
+            env["arch"] = "x86_32"
 
-        if env["bits"] == "32":
+        if env["arch"] == "x86_32":
             arch = "x86"
 
             angle_build_cmd += "Win32"
@@ -162,7 +170,10 @@ def configure(env):
     env.Append(CPPFLAGS=["/AI", vc_base_path + "lib/x86/store/references"])
 
     env.Append(
-        CCFLAGS='/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /errorReport:prompt /WX- /Zc:forScope /Gd /EHsc /nologo'.split()
+        CCFLAGS=(
+            '/FS /MP /GS /wd"4453" /wd"28204" /wd"4291" /Zc:wchar_t /Gm- /fp:precise /errorReport:prompt /WX-'
+            " /Zc:forScope /Gd /EHsc /nologo".split()
+        )
     )
     env.Append(CPPDEFINES=["_UNICODE", "UNICODE", ("WINAPI_FAMILY", "WINAPI_FAMILY_APP")])
     env.Append(CXXFLAGS=["/ZW"])

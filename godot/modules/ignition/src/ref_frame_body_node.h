@@ -11,7 +11,7 @@ namespace Ign
 class RefFrameBodyNode: public RefFrameNode
 {
 	GDCLASS(RefFrameBodyNode, RefFrameNode);
-	OBJ_CATEGORY("Ignition");
+	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();

@@ -2,7 +2,7 @@
 extends Resource
 class_name ExecPoolSettings
 
-export(int) var max_threads_qty = 4
+@export var max_threads_qty: int = 4
 
 
 # Called when the node enters the scene tree for the first time.

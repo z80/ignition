@@ -1,38 +1,38 @@
 extends Control
 class_name AtmosphereCanvasItem
 
-export(Vector3) var v_up = Vector3.UP
-export(float) var altitude = 0.0
+@export var v_up: Vector3 = Vector3.UP
+@export var altitude: float = 0.0
 # Towards light.
-export(Vector3) var v_light = Vector3( 1.0, 0.0, 0.0 )
-export(Color)   var light_color    = Color( 1.0, 1.0, 1.0 )
-export(float)   var light_intensity = 10.0
+@export var v_light: Vector3 = Vector3( 1.0, 0.0, 0.0 )
+@export var light_color: Color    = Color( 1.0, 1.0, 1.0 )
+@export var light_intensity: float = 10.0
 # Ground color, sun color, sun intensity.
-export(Color)   var ground_color = Color( 0.0, 1.0, 0.0 )
+@export var ground_color: Color = Color( 0.0, 1.0, 0.0 )
 # Towards line of sight.
-export(Vector3) var v_sight = Vector3( 1.0, 0.0, 0.0 )
-export(float)   var atm_h    = 5.0
-export(float)   var planet_r = 30.0
-export(float)   var fov = 135.0/180.0*PI
+@export var v_sight: Vector3 = Vector3( 1.0, 0.0, 0.0 )
+@export var atm_h: float    = 5.0
+@export var planet_r: float = 30.0
+@export var fov: float = 135.0/180.0*PI
 
 # Atmosphere parameters.
-export(float) var g = 0.4
-export(float) var K = 0.1
+@export var g: float = 0.4
+@export var K: float = 0.1
 
 # Density and height for molecules and particles.
 # Should be from 0 to 1.
-export(float) var d_m = 1.0
-export(float) var h_m = 1.0
-export(float) var d_p = 1.0
-export(float) var h_p = 1.0
+@export var d_m: float = 1.0
+@export var h_m: float = 1.0
+@export var d_p: float = 1.0
+@export var h_p: float = 1.0
 
 # Attenuation per wavelength.
-export(Vector3) var wavelengths = Vector3( 640.0, 550.0, 480.0 )
-export(float) var normalizer = 1.0
+@export var wavelengths: Vector3 = Vector3( 640.0, 550.0, 480.0 )
+@export var normalizer: float = 1.0
 var exp_coeffs: Vector3
 
 # Approximation. Number of intervals to comute indirect light intensity.
-export(int) var intervals = 6
+@export var intervals: int = 6
 
 
 var ground_i: Vector3
@@ -78,7 +78,7 @@ func _draw():
 func _camera_basis( up: Vector3, v_sight: Vector3 ):
 	# Right, up, back.
 	var b: Basis = Basis.IDENTITY
-	var q: Quat = _convertion_quat( b.y, up )
+	var q: Quaternion = _convertion_quat( b.y, up )
 	var c: Basis = Basis( q )
 	b = c * b
 	
@@ -93,7 +93,7 @@ func _convertion_quat( from: Vector3, to: Vector3 ):
 	var a: Vector3 = from.cross( to )
 	var si = a.length()
 	if si < 0.001:
-		var q: Quat = Quat(a.x/2.0, a.y/2.0, a.z/2.0, 1.0)
+		var q: Quaternion = Quaternion(a.x/2.0, a.y/2.0, a.z/2.0, 1.0)
 		q = q.normalized()
 		return q
 	
@@ -102,7 +102,7 @@ func _convertion_quat( from: Vector3, to: Vector3 ):
 	var si_2 = sin( ang_2 )
 	var co_2 = cos( ang_2 )
 	a = a.normalized()
-	var q: Quat = Quat( a.x*si_2, a.y*si_2, a.z*si_2, co_2 )
+	var q: Quaternion = Quaternion( a.x*si_2, a.y*si_2, a.z*si_2, co_2 )
 	return q
 
 
@@ -110,7 +110,7 @@ func _pixel_dir( cam_b: Basis, uv: Vector2 ):
 	var x: float = (uv.x - cx) / fx
 	var y: float = (cy - uv.y) / fy
 	var a: Vector3 = Vector3( x, y, -1.0 )
-	a = cam_b.xform( a )
+	a = cam_b * (a)
 	a = a.normalized()
 	return a
 

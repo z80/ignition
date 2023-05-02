@@ -32,7 +32,7 @@
 #define PACKET_PEER_MBED_DTLS_H
 
 #include "core/io/packet_peer_dtls.h"
-#include "ssl_context_mbedtls.h"
+#include "tls_context_mbedtls.h"
 
 #include <mbedtls/timing.h>
 
@@ -44,7 +44,7 @@ private:
 
 	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
 
-	Status status;
+	Status status = STATUS_DISCONNECTED;
 	String hostname;
 
 	Ref<PacketPeerUDP> base;
@@ -56,7 +56,7 @@ private:
 	void _cleanup();
 
 protected:
-	Ref<SSLContextMbedTLS> ssl_ctx;
+	Ref<TLSContextMbedTLS> tls_ctx;
 	mbedtls_timing_delay_context timer;
 
 	Error _do_handshake();
@@ -64,8 +64,8 @@ protected:
 
 public:
 	virtual void poll();
-	virtual Error accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert = Ref<X509Certificate>(), Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>(), Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs = true, const String &p_for_hostname = String(), Ref<X509Certificate> p_ca_certs = Ref<X509Certificate>());
+	virtual Error accept_peer(Ref<PacketPeerUDP> p_base, Ref<TLSOptions> p_options, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
+	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, const String &p_hostname, Ref<TLSOptions> p_options = Ref<TLSOptions>());
 	virtual Status get_status() const;
 
 	virtual void disconnect_from_peer();

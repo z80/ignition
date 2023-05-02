@@ -14,9 +14,9 @@ func _init():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	_sun_position = get_node( "SunPosition" )
-	_camera = get_node( "Planet/Camera" )
+	_camera = get_node( "Planet/Camera3D" )
 	_camera.map_mode = true
-	var atm = _camera.get_node( "Camera/Atmosphere" )
+	var atm = _camera.get_node( "Camera3D/Atmosphere" )
 	atm.visible = false
 
 	#var planet = get_node( "Planet" )
@@ -28,7 +28,7 @@ func _ready():
 	
 	#RootScene.ref_frame_root.player_camera = _camera
 	
-	var t: Transform = Transform.IDENTITY
+	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = Vector3( 0.0, 0.0, 50.0 )
 	_camera.transform = t
 	
@@ -39,7 +39,7 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	var t: Transform = _camera.transform
+	var t: Transform3D = _camera.transform
 	_rf.set_t( t )
 	
 	var se3: Se3Ref = _sun_position.relative_to( _camera )

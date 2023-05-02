@@ -33,7 +33,7 @@
 
 #if defined(ANDROID_ENABLED)
 
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 namespace gdmono {
 namespace android {
@@ -45,7 +45,6 @@ void initialize();
 void cleanup();
 
 void register_internal_calls();
-
 } // namespace support
 } // namespace android
 } // namespace gdmono

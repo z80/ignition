@@ -9,21 +9,22 @@ namespace Ign
 void BroadTreeGd::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_max_depth", "new_level"), &BroadTreeGd::set_max_depth );
-	ClassDB::bind_method( D_METHOD("get_max_depth"),              &BroadTreeGd::get_max_depth, Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_max_depth"),              &BroadTreeGd::get_max_depth );
 	ClassDB::bind_method( D_METHOD("clear"),                      &BroadTreeGd::clear );
-	ClassDB::bind_method( D_METHOD("subdivide", "ref_frame_physics"), &BroadTreeGd::subdivide, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("get_octree_meshes_qty"),      &BroadTreeGd::get_octree_meshes_qty, Variant::INT );
-	ClassDB::bind_method( D_METHOD("get_octree_mesh", "ind"),     &BroadTreeGd::get_octree_mesh, Variant::OBJECT );
-	ClassDB::bind_method( D_METHOD("intersects_segment", "start", "end", "exclude_mesh"), &BroadTreeGd::intersects_segment, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("intersects_segment_face", "start", "end", "exclude_mesh"), &BroadTreeGd::intersects_segment_face, Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("subdivide", "ref_frame_physics"), &BroadTreeGd::subdivide );
+	ClassDB::bind_method( D_METHOD("get_octree_meshes_qty"),      &BroadTreeGd::get_octree_meshes_qty );
+	ClassDB::bind_method( D_METHOD("get_octree_mesh", "ind"),     &BroadTreeGd::get_octree_mesh );
+	ClassDB::bind_method( D_METHOD("intersects_segment", "start", "end", "exclude_mesh"), &BroadTreeGd::intersects_segment );
+	ClassDB::bind_method( D_METHOD("intersects_segment_face", "start", "end", "exclude_mesh"), &BroadTreeGd::intersects_segment_face );
 
-	ClassDB::bind_method( D_METHOD("face_lines", "t_to_cam"), &BroadTreeGd::face_lines, Variant::POOL_VECTOR3_ARRAY );
+	ClassDB::bind_method( D_METHOD("face_lines", "t_to_cam"), &BroadTreeGd::face_lines );
 
+	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_depth" ), "set_max_depth", "get_max_depth" );
 }
 
 BroadTreeGd::BroadTreeGd()
-	: Reference()
+	: RefCounted()
 {
 }
 
@@ -104,14 +105,14 @@ Array BroadTreeGd::intersects_segment_face( const Vector3 & start, const Vector3
 
 
 
-PoolVector3Array BroadTreeGd::face_lines( const Transform & t_to_cam ) const
+Array BroadTreeGd::face_lines( const Transform3D & t_to_cam ) const
 {
 	Vector<Vector3> lines;
 	_broad_tree.face_lines( lines, t_to_cam );
 
 	const int qty = lines.size();
 
-	PoolVector3Array ret;
+	Array ret;
 	ret.resize( qty );
 
 	for ( int i=0; i<qty; i++ )

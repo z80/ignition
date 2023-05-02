@@ -2,9 +2,9 @@
 
 [ext_resource path="res://tryouts/celestial_bodies_voxel_2/visual_cells/visual_cell.gd" type="Script" id=1]
 
-[node name="Visual" type="Spatial"]
+[node name="Visual" type="Node3D"]
 script = ExtResource( 1 )
 
-[node name="Solid" type="MeshInstance" parent="."]
+[node name="Solid" type="MeshInstance3D" parent="."]
 
-[node name="Liquid" type="MeshInstance" parent="."]
+[node name="Liquid" type="MeshInstance3D" parent="."]

@@ -34,11 +34,12 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/curve.h"
 
+class Timer;
+
 class Path2D : public Node2D {
 	GDCLASS(Path2D, Node2D);
 
 	Ref<Curve2D> curve;
-	Vector<Vector2> _cached_draw_pts;
 
 	void _curve_changed();
 
@@ -48,15 +49,15 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
 
 	void set_curve(const Ref<Curve2D> &p_curve);
 	Ref<Curve2D> get_curve() const;
 
-	Path2D();
+	Path2D() {}
 };
 
 class PathFollow2D : public Node2D {
@@ -64,51 +65,54 @@ class PathFollow2D : public Node2D {
 
 public:
 private:
-	Path2D *path;
-	real_t offset;
-	real_t h_offset;
-	real_t v_offset;
-	real_t lookahead;
-	bool cubic;
-	bool loop;
-	bool rotate;
+	Path2D *path = nullptr;
+	real_t progress = 0.0;
+	Timer *update_timer = nullptr;
+	real_t h_offset = 0.0;
+	real_t v_offset = 0.0;
+	real_t lookahead = 4.0;
+	bool cubic = true;
+	bool loop = true;
+	bool rotates = true;
 
 	void _update_transform();
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_offset(float p_offset);
-	float get_offset() const;
+	void path_changed();
 
-	void set_h_offset(float p_h_offset);
-	float get_h_offset() const;
+	void set_progress(real_t p_progress);
+	real_t get_progress() const;
 
-	void set_v_offset(float p_v_offset);
-	float get_v_offset() const;
+	void set_h_offset(real_t p_h_offset);
+	real_t get_h_offset() const;
 
-	void set_unit_offset(float p_unit_offset);
-	float get_unit_offset() const;
+	void set_v_offset(real_t p_v_offset);
+	real_t get_v_offset() const;
 
-	void set_lookahead(float p_lookahead);
-	float get_lookahead() const;
+	void set_progress_ratio(real_t p_ratio);
+	real_t get_progress_ratio() const;
+
+	void set_lookahead(real_t p_lookahead);
+	real_t get_lookahead() const;
 
 	void set_loop(bool p_loop);
 	bool has_loop() const;
 
-	void set_rotate(bool p_rotate);
+	void set_rotates(bool p_rotates);
 	bool is_rotating() const;
 
 	void set_cubic_interpolation(bool p_enable);
 	bool get_cubic_interpolation() const;
 
-	String get_configuration_warning() const;
+	PackedStringArray get_configuration_warnings() const override;
 
-	PathFollow2D();
+	PathFollow2D() {}
 };
 
 #endif // PATH_2D_H

@@ -19,12 +19,11 @@ static func find_categories( path: String ):
 
 
 static func _find_blocks_recursive( path: String, ret: Array ):
-	var dir: Directory = Directory.new()
-	var ok: bool = (dir.open( path ) == OK)
-	if not ok:
+	var dir: DirAccess = DirAccess.open( path )
+	if dir == null:
 		return
 	
-	dir.list_dir_begin()
+	dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name: String = dir.get_next()
 	
 	while (file_name != ""):
@@ -54,12 +53,11 @@ static func _find_blocks_recursive( path: String, ret: Array ):
 
 
 static func _find_techs_recursive( path: String, ret: Array ):
-	var dir: Directory = Directory.new()
-	var ok: bool = (dir.open( path ) == OK)
-	if not ok:
+	var dir: DirAccess = DirAccess.open( path )
+	if dir == null:
 		return
 	
-	dir.list_dir_begin()
+	dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name: String = dir.get_next()
 	
 	while (file_name != ""):
@@ -89,12 +87,11 @@ static func _find_techs_recursive( path: String, ret: Array ):
 
 
 static func _find_categories_recursive( path: String, ret: Array ):
-	var dir: Directory = Directory.new()
-	var ok: bool = (dir.open( path ) == OK)
-	if not ok:
+	var dir: DirAccess = DirAccess.open( path )
+	if dir == null:
 		return
 	
-	dir.list_dir_begin()
+	dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name: String = dir.get_next()
 	
 	while (file_name != ""):
@@ -143,7 +140,7 @@ static func get_package_files():
 	var ret: Array = []
 	var path: String = OS.get_executable_path()
 	var re: RegEx = RegEx.new()
-	var compile_result: int = re.compile( '\/([^\/]+)$' )
+	var compile_result: int = re.compile( '/([^/]+)$' )
 	if compile_result != OK:
 		return ret
 	
@@ -155,12 +152,11 @@ static func get_package_files():
 	fname = fname + ".pck"
 	
 	var root_path: String = 'res://'
-	var dir: Directory = Directory.new()
-	var ok: bool = (dir.open( root_path ) == OK)
-	if not ok:
+	var dir: DirAccess = DirAccess.open( root_path )
+	if dir == null:
 		return ret
 	
-	dir.list_dir_begin()
+	dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name: String = dir.get_next()
 	
 	while (file_name != ""):

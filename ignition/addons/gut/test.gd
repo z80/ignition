@@ -477,7 +477,7 @@ func _find_object_property(obj, property_name, property_usage=null):
 	var found = false
 	var properties = obj.get_property_list()
 
-	while !found and !properties.empty():
+	while !found and !properties.is_empty():
 		var property = properties.pop_back()
 		if property['name'] == property_name:
 			if property_usage == null or property['usage'] == property_usage:
@@ -516,7 +516,7 @@ func _can_make_signal_assertions(object, signal_name):
 # ------------------------------------------------------------------------------
 func _is_connected(signaler_obj, connect_to_obj, signal_name, method_name=""):
 	if(method_name != ""):
-		return signaler_obj.is_connected(signal_name, connect_to_obj, method_name)
+		return signaler_obj.is_connected(signal_name, Callable(connect_to_obj, method_name))
 	else:
 		var connections = signaler_obj.get_signal_connection_list(signal_name)
 		for conn in connections:
@@ -1090,7 +1090,7 @@ func ignore_method_when_doubling(thing, method_name):
 	var path = double_info.path
 
 	if(double_info.is_scene()):
-		var inst = thing.instance()
+		var inst = thing.instantiate()
 		if(inst.get_script()):
 			path = inst.get_script().get_path()
 
@@ -1208,12 +1208,12 @@ func add_child_autofree(node, legible_unique_name = false):
 	gut.get_autofree().add_free(node)
 	# Explicitly calling super here b/c add_child MIGHT change and I don't want
 	# a bug sneaking its way in here.
-	.add_child(node, legible_unique_name)
+	super.add_child(node, legible_unique_name)
 	return node
 
 func add_child_autoqfree(node, legible_unique_name=false):
 	gut.get_autofree().add_queue_free(node)
 	# Explicitly calling super here b/c add_child MIGHT change and I don't want
 	# a bug sneaking its way in here.
-	.add_child(node, legible_unique_name)
+	super.add_child(node, legible_unique_name)
 	return node

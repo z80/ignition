@@ -4,9 +4,9 @@ signal wiki_page( path )
 
 const SUFFIX: String = ".wiki"
 
-export(String) var root_folder = "res://wiki"
-export(String) var root_file   = "root"
-export(String) var start_file  = "root"
+@export var root_folder: String = "res://wiki"
+@export var root_file: String   = "root"
+@export var start_file: String  = "root"
 
 
 var _text_area: RichTextLabel = null
@@ -33,15 +33,14 @@ func open_global( full_path: String, title_path: String ):
 
 
 func open_internal( full_path: String, path: String, update_history: bool = true ):
-	var file: File = File.new()
-	var ret: int = file.open( full_path, File.READ )
-	if ret != OK:
+	var file: FileAccess = FileAccess.open( full_path, FileAccess.READ )
+	if file != null:
 		return
 	
 	var text: String = file.get_as_text()
 	
 	var l: RichTextLabel = _get_text_area()
-	l.bbcode_text = text
+	l.text = text
 	l.scroll_to_line( 0 )
 	emit_signal( "wiki_page", path )
 	
@@ -127,7 +126,7 @@ static func clean_path( path: String ):
 
 static func is_http_url( path: String ):
 	var re: RegEx = RegEx.new()
-	var _err_code: int = re.compile( '^https?:\/\/.+' )
+	var _err_code: int = re.compile( '^https?://.+' )
 	var result = re.search( path )
 	var ret: bool = (result != null)
 	

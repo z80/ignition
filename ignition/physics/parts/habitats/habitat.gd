@@ -3,14 +3,14 @@ extends Part
 class_name Habitat
 
 # How many characters fit inside.
-export(int) var capacity = 1
+@export var capacity: int = 1
 
 var entrance_nodes: Array = []
 var characters_inside: Array = []
 
 
 func init():
-	.init()
+	super.init()
 	# This is needed to get number of nodes through which a character
 	# is suppsed to get in or out.
 	_traverse_entrance_nodes()
@@ -19,7 +19,7 @@ func init():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	._ready()
+	super._ready()
 
 
 func can_enter( character: Part ):
@@ -48,7 +48,7 @@ func _traverse_entrance_nodes():
 
 
 func _traverse_entrance_nodes_recursive( p: Node ):
-	var s: Spatial = p as Spatial
+	var s: Node3D = p as Node3D
 	if s != null:
 		var node: EntranceNode = s as EntranceNode
 		var is_node: bool = (node != null)
@@ -72,7 +72,7 @@ func gui_classes( mode: Array ):
 	var C = load( "res://physics/parts/habitats/gui_elements/gui_habitat.tscn" )
 	classes.push_back( C )
 	# Adding generic classes.
-	var classes_base: Array = .gui_classes( mode )
+	var classes_base: Array = super.gui_classes( mode )
 	classes = classes + classes_base
 	return classes
 
@@ -113,10 +113,10 @@ func let_character_in( character ):
 
 func let_character_out( ind: int ):
 	var character: Node = characters_inside[ind]
-	characters_inside.remove( ind )
+	characters_inside.remove_at( ind )
 	
 	var en: EntranceNode = entrance_nodes[0]
-	var t: Transform = en.relative_to_owner
+	var t: Transform3D = en.relative_to_owner
 	var rel_se3: Se3Ref = Se3Ref.new()
 	rel_se3.transform = t
 	var own_se3: Se3Ref = self.get_se3()
@@ -134,7 +134,7 @@ func let_character_out( ind: int ):
 
 
 func process_inner( delta: float ):
-	.process_inner( delta )
+	super.process_inner( delta )
 	_process_boarded_characters()
 
 
@@ -149,9 +149,7 @@ func _process_boarded_characters():
 
 
 
-func serialize():
-	var data: Dictionary = .serialize()
-	
+func _serialize( data: Dictionary ):
 	var paths: Array = []
 	for ch in characters_inside:
 		var path: String = ch.get_path()
@@ -162,8 +160,8 @@ func serialize():
 
 
 
-func deserialize( data: Dictionary ):
-	var ok: bool = .deserialize( data )
+func _deserialize( data: Dictionary ):
+	var ok: bool = super.deserialize( data )
 	
 	if data.has( "characters_inside" ):
 		characters_inside.clear()

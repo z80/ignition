@@ -1,11 +1,11 @@
 
 extends Resource
 
-export(float) var liquid_fuel_density = 1.0
-export(float) var liquid_oxidizer_density = 2.0
-export(float) var solid_fuel_density  = 3.0
+@export var liquid_fuel_density: float = 1.0
+@export var liquid_oxidizer_density: float = 2.0
+@export var solid_fuel_density: float  = 3.0
 # The volume difference when equalization occurs.
-export(float) var delta_volume = 0.1
+@export var delta_volume: float = 0.1
 
 
 

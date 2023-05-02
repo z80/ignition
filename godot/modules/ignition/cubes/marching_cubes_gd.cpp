@@ -1,9 +1,9 @@
 
 #include "marching_cubes_gd.h"
 
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/mesh.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
 
 namespace Ign
@@ -12,19 +12,20 @@ namespace Ign
 void MarchingCubesGd::_bind_methods()
 {
 	ClassDB::bind_method( D_METHOD("set_source_transform", "se3"),                              &MarchingCubesGd::set_source_transform );
-	ClassDB::bind_method( D_METHOD("subdivide_source", "volume", "scaler"),                     &MarchingCubesGd::subdivide_source, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesGd::materials_used,   Variant::ARRAY );
+	ClassDB::bind_method( D_METHOD("subdivide_source", "volume", "scaler"),                     &MarchingCubesGd::subdivide_source );
+	ClassDB::bind_method( D_METHOD("materials_used"),                                           &MarchingCubesGd::materials_used );
 	ClassDB::bind_method( D_METHOD("apply_to_mesh", "material_ind", "mesh_instance", "scaler"), &MarchingCubesGd::apply_to_mesh );
 	ClassDB::bind_method( D_METHOD("collision_faces", "dist", "scaler"),                        &MarchingCubesGd::collision_faces );
 
 	ClassDB::bind_method( D_METHOD("set_max_nodes_qty", "qty"),             &MarchingCubesGd::set_max_nodes_qty );
-	ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesGd::get_max_nodes_qty, Variant::INT );
+	ClassDB::bind_method( D_METHOD("get_max_nodes_qty"),                    &MarchingCubesGd::get_max_nodes_qty );
 
+	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::INT,   "max_nodes_qty" ),         "set_max_nodes_qty", "get_max_nodes_qty" );
 }
 
 MarchingCubesGd::MarchingCubesGd()
-	: Reference()
+	: RefCounted()
 {
 }
 
@@ -74,7 +75,7 @@ Array MarchingCubesGd::materials_used() const
 
 void MarchingCubesGd::apply_to_mesh( int material_index, Node * mesh_instance, const Ref<DistanceScalerRef> & scaler )
 {
-	MeshInstance * mi = Object::cast_to<MeshInstance>(mesh_instance);
+	MeshInstance3D * mi = Object::cast_to<MeshInstance3D>(mesh_instance);
 	if (mi == nullptr)
 	{
 		print_line( String( "ERROR: expects mesh instance as an argument, got something else." ) );
@@ -134,11 +135,11 @@ void MarchingCubesGd::apply_to_mesh( int material_index, Node * mesh_instance, c
 		s = nullptr;
 	else
 		s = &(scaler_ref->scaler);
-	const Transform transform = cubes.source_transform( s );
+	const Transform3D transform = cubes.source_transform( s );
 	mi->set_transform( transform );
 }
 
-PoolVector3Array MarchingCubesGd::collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref )
+Array MarchingCubesGd::collision_faces( real_t dist, const Ref<DistanceScalerRef> & scaler_ref )
 {
 	const DistanceScaler * s;
 	if ( scaler_ref == nullptr )

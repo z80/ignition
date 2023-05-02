@@ -4,18 +4,18 @@
 [ext_resource path="res://physics/bodies/construction_new/panel_parts/item_category.tscn" type="PackedScene" id=2]
 
 [node name="PanelCategories" type="Panel"]
-margin_right = 72.0
-margin_bottom = 600.0
-rect_min_size = Vector2( 72, 128 )
+offset_right = 72.0
+offset_bottom = 600.0
+custom_minimum_size = Vector2( 72, 128 )
 script = ExtResource( 1 )
 button_scene = ExtResource( 2 )
 
 [node name="Scroll" type="ScrollContainer" parent="."]
-margin_right = 72.0
-margin_bottom = 600.0
+offset_right = 72.0
+offset_bottom = 600.0
 
 [node name="Container" type="VBoxContainer" parent="Scroll"]
-margin_right = 72.0
-margin_bottom = 256.0
-rect_min_size = Vector2( 0, 256 )
+offset_right = 72.0
+offset_bottom = 256.0
+custom_minimum_size = Vector2( 0, 256 )
 size_flags_horizontal = 3

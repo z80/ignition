@@ -30,6 +30,8 @@
 
 #include "aspect_ratio_container.h"
 
+#include "scene/gui/texture_rect.h"
+
 Size2 AspectRatioContainer::get_minimum_size() const {
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
@@ -37,7 +39,7 @@ Size2 AspectRatioContainer::get_minimum_size() const {
 		if (!c) {
 			continue;
 		}
-		if (c->is_set_as_toplevel()) {
+		if (c->is_set_as_top_level()) {
 			continue;
 		}
 		if (!c->is_visible()) {
@@ -51,37 +53,78 @@ Size2 AspectRatioContainer::get_minimum_size() const {
 }
 
 void AspectRatioContainer::set_ratio(float p_ratio) {
+	if (ratio == p_ratio) {
+		return;
+	}
 	ratio = p_ratio;
 	queue_sort();
 }
 
 void AspectRatioContainer::set_stretch_mode(StretchMode p_mode) {
+	if (stretch_mode == p_mode) {
+		return;
+	}
 	stretch_mode = p_mode;
 	queue_sort();
 }
 
-void AspectRatioContainer::set_alignment_horizontal(AlignMode p_alignment_horizontal) {
+void AspectRatioContainer::set_alignment_horizontal(AlignmentMode p_alignment_horizontal) {
+	if (alignment_horizontal == p_alignment_horizontal) {
+		return;
+	}
 	alignment_horizontal = p_alignment_horizontal;
 	queue_sort();
 }
 
-void AspectRatioContainer::set_alignment_vertical(AlignMode p_alignment_vertical) {
+void AspectRatioContainer::set_alignment_vertical(AlignmentMode p_alignment_vertical) {
+	if (alignment_vertical == p_alignment_vertical) {
+		return;
+	}
 	alignment_vertical = p_alignment_vertical;
 	queue_sort();
+}
+
+Vector<int> AspectRatioContainer::get_allowed_size_flags_horizontal() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
+}
+
+Vector<int> AspectRatioContainer::get_allowed_size_flags_vertical() const {
+	Vector<int> flags;
+	flags.append(SIZE_FILL);
+	flags.append(SIZE_SHRINK_BEGIN);
+	flags.append(SIZE_SHRINK_CENTER);
+	flags.append(SIZE_SHRINK_END);
+	return flags;
 }
 
 void AspectRatioContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
+			bool rtl = is_layout_rtl();
 			Size2 size = get_size();
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
 				if (!c) {
 					continue;
 				}
-				if (c->is_set_as_toplevel()) {
+				if (c->is_set_as_top_level()) {
 					continue;
 				}
+
+				// Temporary fix for editor crash.
+				TextureRect *trect = Object::cast_to<TextureRect>(c);
+				if (trect) {
+					if (trect->get_expand_mode() == TextureRect::EXPAND_FIT_WIDTH_PROPORTIONAL || trect->get_expand_mode() == TextureRect::EXPAND_FIT_HEIGHT_PROPORTIONAL) {
+						WARN_PRINT_ONCE("Proportional TextureRect is currently not supported inside AspectRatioContainer");
+						continue;
+					}
+				}
+
 				Size2 child_minsize = c->get_combined_minimum_size();
 				Size2 child_size = Size2(ratio, 1.0);
 				float scale_factor = 1.0;
@@ -106,31 +149,35 @@ void AspectRatioContainer::_notification(int p_what) {
 
 				float align_x = 0.5;
 				switch (alignment_horizontal) {
-					case ALIGN_BEGIN: {
+					case ALIGNMENT_BEGIN: {
 						align_x = 0.0;
 					} break;
-					case ALIGN_CENTER: {
+					case ALIGNMENT_CENTER: {
 						align_x = 0.5;
 					} break;
-					case ALIGN_END: {
+					case ALIGNMENT_END: {
 						align_x = 1.0;
 					} break;
 				}
 				float align_y = 0.5;
 				switch (alignment_vertical) {
-					case ALIGN_BEGIN: {
+					case ALIGNMENT_BEGIN: {
 						align_y = 0.0;
 					} break;
-					case ALIGN_CENTER: {
+					case ALIGNMENT_CENTER: {
 						align_y = 0.5;
 					} break;
-					case ALIGN_END: {
+					case ALIGNMENT_END: {
 						align_y = 1.0;
 					} break;
 				}
 				Vector2 offset = (size - child_size) * Vector2(align_x, align_y);
 
-				fit_child_in_rect(c, Rect2(offset, child_size));
+				if (rtl) {
+					fit_child_in_rect(c, Rect2(Vector2(size.x - offset.x - child_size.x, offset.y), child_size));
+				} else {
+					fit_child_in_rect(c, Rect2(offset, child_size));
+				}
 			}
 		} break;
 	}
@@ -149,8 +196,8 @@ void AspectRatioContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alignment_vertical", "alignment_vertical"), &AspectRatioContainer::set_alignment_vertical);
 	ClassDB::bind_method(D_METHOD("get_alignment_vertical"), &AspectRatioContainer::get_alignment_vertical);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ratio", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001,or_greater"), "set_ratio", "get_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Width controls height,Height controls width,Fit,Cover"), "set_stretch_mode", "get_stretch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001,or_greater"), "set_ratio", "get_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Width Controls Height,Height Controls Width,Fit,Cover"), "set_stretch_mode", "get_stretch_mode");
 
 	ADD_GROUP("Alignment", "alignment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment_horizontal", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment_horizontal", "get_alignment_horizontal");
@@ -161,7 +208,7 @@ void AspectRatioContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_FIT);
 	BIND_ENUM_CONSTANT(STRETCH_COVER);
 
-	BIND_ENUM_CONSTANT(ALIGN_BEGIN);
-	BIND_ENUM_CONSTANT(ALIGN_CENTER);
-	BIND_ENUM_CONSTANT(ALIGN_END);
+	BIND_ENUM_CONSTANT(ALIGNMENT_BEGIN);
+	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
+	BIND_ENUM_CONSTANT(ALIGNMENT_END);
 }

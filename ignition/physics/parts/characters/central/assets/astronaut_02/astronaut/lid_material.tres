@@ -1,9 +1,0 @@
-[gd_resource type="SpatialMaterial" format=2]
-
-[resource]
-resource_name = "lid_material"
-vertex_color_use_as_albedo = true
-params_cull_mode = 2
-albedo_color = Color( 0.558335, 0.558335, 0.558335, 1 )
-metallic = 0.647273
-roughness = 0.383636

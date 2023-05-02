@@ -1,22 +1,25 @@
 
-extends Spatial
+extends Node3D
 class_name InteractionNode
 
-var target: Node = null setget _set_target, _get_target
-var icon_visible: bool = false setget _set_icon_visible, _get_icon_visible
+const icon_scene: PackedScene = preload( "res://physics/interact_icon/icon.tscn" )
+const container_window_scene: PackedScene = preload( "res://physics/interact_icon/container_window.tscn" )
+
+var target: Node = null: get = _get_target, set = _set_target
+var icon_visible: bool = false: get = _get_icon_visible, set = _set_icon_visible
 
 var _icon: Control             = null
 var _container_window: Control = null
 
 
 # Can be overwritten in order to show different icon.
-func get_icon_scene():
-	return load( "res://physics/interact_icon/icon.tscn" )
+#func get_icon_scene():
+#	return icon_scene
 
 
 # Can be overwritten in order to show different container window.
-func get_container_scene():
-	return load( "res://physics/interact_icon/container_window.tscn" )
+#func get_container_scene():
+#	return container_window_scene
 
 
 
@@ -31,6 +34,8 @@ func _get_target():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	add_to_group( Constants.INTERACT_NODES_GROUP_NAME )
+
+
 
 
 func _process( delta ):
@@ -78,8 +83,7 @@ func _create_icon():
 	if (_icon != null) and is_instance_valid(_icon):
 		return _icon
 	
-	var Icon: PackedScene = get_icon_scene()
-	_icon = Icon.instance()
+	_icon = icon_scene.instantiate()
 	var root_node: Node = RootScene.get_root_for_gui_popups()
 	root_node.add_child( _icon )
 	
@@ -88,20 +92,20 @@ func _create_icon():
 	# In order to position it properly immediately.
 	_process(0.0)
 	
-	_icon.connect( "icon_clicked", self, "_on_clicked" )
+	_icon.connect("icon_clicked", Callable(self, "_on_clicked"))
 	
 	return _icon
 
 
 func distance_to_camera_ray():
-	var vp: Viewport = get_viewport()
-	var cam: Camera = vp.get_camera()
+	var vp: Viewport  = get_viewport()
+	var cam: Camera3D = vp.get_camera_3d()
 	if (cam == null) or (not is_instance_valid(cam)):
 		return -1.0
 
 	var mouse_mode = Input.get_mouse_mode() 
-	if (mouse_mode == Input.MOUSE_MODE_HIDDEN) or \
-	   (mouse_mode == Input.MOUSE_MODE_CAPTURED):
+	if  (mouse_mode == Input.MOUSE_MODE_HIDDEN) or \
+		(mouse_mode == Input.MOUSE_MODE_CAPTURED):
 		return -1.0
 	
 	var cam_at: Vector3  = cam.global_transform.origin
@@ -129,7 +133,7 @@ func distance_to_camera_ray():
 
 func _position_on_screen() -> Vector2:
 	var vp: Viewport   = get_viewport()
-	var cam: Camera    = vp.get_camera()
+	var cam: Camera3D  = vp.get_camera_3d()
 	var at_3d: Vector3 = self.global_transform.origin
 	var at_2d: Vector2 =  cam.unproject_position( at_3d )
 	
@@ -153,13 +157,13 @@ func _on_clicked():
 	if (_container_window != null) and (is_instance_valid(_container_window)):
 		return
 	
-	var Window: PackedScene = get_container_scene()
-	_container_window = Window.instance()
+	#var Window: PackedScene = get_container_scene()
+	_container_window = container_window_scene.instantiate()
 
 	var parent_for_windows: Control = RootScene.get_root_for_gui_windows()
 	parent_for_windows.add_child( _container_window )
 	var at: Vector2 = get_viewport().get_mouse_position()
-	_container_window.rect_position = at
+	_container_window.position = at
 	
 	_container_window.setup_gui( target )
 

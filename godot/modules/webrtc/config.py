@@ -7,7 +7,13 @@ def configure(env):
 
 
 def get_doc_classes():
-    return ["WebRTCPeerConnection", "WebRTCDataChannel", "WebRTCMultiplayer"]
+    return [
+        "WebRTCPeerConnection",
+        "WebRTCDataChannel",
+        "WebRTCMultiplayerPeer",
+        "WebRTCPeerConnectionExtension",
+        "WebRTCDataChannelExtension",
+    ]
 
 
 def get_doc_path():

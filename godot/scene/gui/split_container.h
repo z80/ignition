@@ -33,8 +33,26 @@
 
 #include "scene/gui/container.h"
 
+class SplitContainerDragger : public Control {
+	GDCLASS(SplitContainerDragger, Control);
+
+protected:
+	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+private:
+	bool dragging = false;
+	int drag_from = 0;
+	int drag_ofs = 0;
+	bool mouse_inside = false;
+
+public:
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+};
+
 class SplitContainer : public Container {
 	GDCLASS(SplitContainer, Container);
+	friend class SplitContainerDragger;
 
 public:
 	enum DraggerVisibility {
@@ -44,24 +62,38 @@ public:
 	};
 
 private:
-	bool should_clamp_split_offset;
-	int split_offset;
-	int middle_sep;
-	bool vertical;
-	bool dragging;
-	int drag_from;
-	int drag_ofs;
-	bool collapsed;
-	DraggerVisibility dragger_visibility;
-	bool mouse_inside;
+	int split_offset = 0;
+	int middle_sep = 0;
+	bool vertical = false;
+	bool collapsed = false;
+	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
+
+	SplitContainerDragger *dragging_area_control = nullptr;
+
+	struct ThemeCache {
+		int separation = 0;
+		int minimum_grab_thickness = 0;
+		int autohide = 0;
+		Ref<Texture2D> grabber_icon;
+		Ref<Texture2D> grabber_icon_h;
+		Ref<Texture2D> grabber_icon_v;
+	} theme_cache;
 
 	Control *_getch(int p_idx) const;
 
+	Ref<Texture2D> _get_grabber_icon() const;
+	void _compute_middle_sep(bool p_clamp);
 	void _resort();
 
+	void _dragging_area_gui_input(const Ref<InputEvent> &p_event);
+
 protected:
-	void _gui_input(const Ref<InputEvent> &p_event);
+	bool is_fixed = false;
+
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -75,9 +107,13 @@ public:
 	void set_dragger_visibility(DraggerVisibility p_visibility);
 	DraggerVisibility get_dragger_visibility() const;
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
+
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
+	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
 	SplitContainer(bool p_vertical = false);
 };
@@ -89,7 +125,7 @@ class HSplitContainer : public SplitContainer {
 
 public:
 	HSplitContainer() :
-			SplitContainer(false) {}
+			SplitContainer(false) { is_fixed = true; }
 };
 
 class VSplitContainer : public SplitContainer {
@@ -97,7 +133,7 @@ class VSplitContainer : public SplitContainer {
 
 public:
 	VSplitContainer() :
-			SplitContainer(true) {}
+			SplitContainer(true) { is_fixed = true; }
 };
 
 #endif // SPLIT_CONTAINER_H

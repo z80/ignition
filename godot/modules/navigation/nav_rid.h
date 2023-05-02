@@ -31,9 +31,9 @@
 #ifndef NAV_RID_H
 #define NAV_RID_H
 
-#include "core/rid.h"
+#include "core/templates/rid.h"
 
-class NavRid : public RID_Data {
+class NavRid {
 	RID self;
 
 public:

@@ -34,26 +34,22 @@ bool AudioEffectCapture::can_get_buffer(int p_frames) const {
 	return buffer.data_left() >= p_frames;
 }
 
-PoolVector2Array AudioEffectCapture::get_buffer(int p_frames) {
-	ERR_FAIL_COND_V(!buffer_initialized, PoolVector2Array());
-	ERR_FAIL_INDEX_V(p_frames, buffer.size(), PoolVector2Array());
+PackedVector2Array AudioEffectCapture::get_buffer(int p_frames) {
+	ERR_FAIL_COND_V(!buffer_initialized, PackedVector2Array());
+	ERR_FAIL_INDEX_V(p_frames, buffer.size(), PackedVector2Array());
 	int data_left = buffer.data_left();
 	if (data_left < p_frames || p_frames == 0) {
-		return PoolVector2Array();
+		return PackedVector2Array();
 	}
 
-	PoolVector2Array ret;
+	PackedVector2Array ret;
 	ret.resize(p_frames);
 
-	{
-		PoolVector<AudioFrame> streaming_data;
-		streaming_data.resize(p_frames);
-		buffer.read(streaming_data.write().ptr(), p_frames);
-
-		PoolVector2Array::Write retw = ret.write();
-		for (int32_t i = 0; i < p_frames; i++) {
-			retw[i] = Vector2(streaming_data[i].l, streaming_data[i].r);
-		}
+	Vector<AudioFrame> streaming_data;
+	streaming_data.resize(p_frames);
+	buffer.read(streaming_data.ptrw(), p_frames);
+	for (int32_t i = 0; i < p_frames; i++) {
+		ret.write[i] = Vector2(streaming_data[i].l, streaming_data[i].r);
 	}
 	return ret;
 }
@@ -74,10 +70,10 @@ void AudioEffectCapture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_buffer_length_frames"), &AudioEffectCapture::get_buffer_length_frames);
 	ClassDB::bind_method(D_METHOD("get_pushed_frames"), &AudioEffectCapture::get_pushed_frames);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_buffer_length", "get_buffer_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), "set_buffer_length", "get_buffer_length");
 }
 
-Ref<AudioEffectInstance> AudioEffectCapture::instance() {
+Ref<AudioEffectInstance> AudioEffectCapture::instantiate() {
 	if (!buffer_initialized) {
 		float target_buffer_size = AudioServer::get_singleton()->get_mix_rate() * buffer_length_seconds;
 		ERR_FAIL_COND_V(target_buffer_size <= 0 || target_buffer_size >= (1 << 27), Ref<AudioEffectInstance>());
@@ -88,7 +84,7 @@ Ref<AudioEffectInstance> AudioEffectCapture::instance() {
 	clear_buffer();
 
 	Ref<AudioEffectCaptureInstance> ins;
-	ins.instance();
+	ins.instantiate();
 	ins->base = Ref<AudioEffectCapture>(this);
 
 	return ins;
@@ -108,7 +104,7 @@ int AudioEffectCapture::get_frames_available() const {
 }
 
 int64_t AudioEffectCapture::get_discarded_frames() const {
-	return discarded_frames;
+	return discarded_frames.get();
 }
 
 int AudioEffectCapture::get_buffer_length_frames() const {
@@ -117,7 +113,7 @@ int AudioEffectCapture::get_buffer_length_frames() const {
 }
 
 int64_t AudioEffectCapture::get_pushed_frames() const {
-	return pushed_frames;
+	return pushed_frames.get();
 }
 
 void AudioEffectCaptureInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
@@ -131,9 +127,9 @@ void AudioEffectCaptureInstance::process(const AudioFrame *p_src_frames, AudioFr
 		// Add incoming audio frames to the IO ring buffer
 		int32_t ret = buffer.write(p_src_frames, p_frame_count);
 		ERR_FAIL_COND_MSG(ret != p_frame_count, "Failed to add data to effect capture ring buffer despite sufficient space.");
-		base->pushed_frames += p_frame_count;
+		base->pushed_frames.add(p_frame_count);
 	} else {
-		base->discarded_frames += p_frame_count;
+		base->discarded_frames.add(p_frame_count);
 	}
 }
 

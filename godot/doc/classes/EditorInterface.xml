@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInterface" inherits="Node" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorInterface" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Godot editor's interface.
 	</brief_description>
@@ -12,24 +12,24 @@
 	<methods>
 		<method name="edit_node">
 			<return type="void" />
-			<argument index="0" name="node" type="Node" />
+			<param index="0" name="node" type="Node" />
 			<description>
 				Edits the given [Node]. The node will be also selected if it's inside the scene tree.
 			</description>
 		</method>
 		<method name="edit_resource">
 			<return type="void" />
-			<argument index="0" name="resource" type="Resource" />
+			<param index="0" name="resource" type="Resource" />
 			<description>
 				Edits the given [Resource]. If the resource is a [Script] you can also edit it with [method edit_script] to specify the line and column position.
 			</description>
 		</method>
 		<method name="edit_script">
 			<return type="void" />
-			<argument index="0" name="script" type="Script" />
-			<argument index="1" name="line" type="int" default="-1" />
-			<argument index="2" name="column" type="int" default="0" />
-			<argument index="3" name="grab_focus" type="bool" default="true" />
+			<param index="0" name="script" type="Script" />
+			<param index="1" name="line" type="int" default="-1" />
+			<param index="2" name="column" type="int" default="0" />
+			<param index="3" name="grab_focus" type="bool" default="true" />
 			<description>
 				Edits the given [Script]. The line and column on which to open the script can also be specified. The script will be open with the user-configured editor for the script's language which may be an external editor.
 			</description>
@@ -39,6 +39,19 @@
 			<description>
 				Returns the main container of Godot editor's window. For example, you can use it to retrieve the size of the container and place your controls accordingly.
 				[b]Warning:[/b] Removing and freeing this node will render the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_command_palette" qualifiers="const">
+			<return type="EditorCommandPalette" />
+			<description>
+				Returns the editor's [EditorCommandPalette] instance.
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_current_directory" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current directory being viewed in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
 			</description>
 		</method>
 		<method name="get_current_path" qualifiers="const">
@@ -53,6 +66,19 @@
 				Returns the edited (current) scene's root [Node].
 			</description>
 		</method>
+		<method name="get_editor_main_screen">
+			<return type="VBoxContainer" />
+			<description>
+				Returns the editor control responsible for main screen plugins and tools. Use it with plugins that implement [method EditorPlugin._has_main_screen].
+				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
+			</description>
+		</method>
+		<method name="get_editor_paths">
+			<return type="EditorPaths" />
+			<description>
+				Returns the [EditorPaths] singleton.
+			</description>
+		</method>
 		<method name="get_editor_scale" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -64,14 +90,6 @@
 			<return type="EditorSettings" />
 			<description>
 				Returns the editor's [EditorSettings] instance.
-			</description>
-		</method>
-		<method name="get_editor_viewport">
-			<return type="Control" />
-			<description>
-				Returns the main editor control. Use this as a parent for main screens.
-				[b]Note:[/b] This returns the main editor control containing the whole editor, not the 2D or 3D viewports specifically.
-				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
 		<method name="get_file_system_dock">
@@ -89,7 +107,7 @@
 			</description>
 		</method>
 		<method name="get_open_scenes" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<description>
 				Returns an [Array] with the file paths of the currently opened scenes.
 			</description>
@@ -119,10 +137,10 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
-		<method name="get_selected_path" qualifiers="const">
-			<return type="String" />
+		<method name="get_selected_paths" qualifiers="const">
+			<return type="PackedStringArray" />
 			<description>
-				Returns the path of the directory currently selected in the [FileSystemDock]. If a file is selected, its base directory will be returned using [method String.get_base_dir] instead.
+				Returns an array containing the paths of the currently selected files (and directories) in the [FileSystemDock].
 			</description>
 		</method>
 		<method name="get_selection">
@@ -133,11 +151,17 @@
 		</method>
 		<method name="inspect_object">
 			<return type="void" />
-			<argument index="0" name="object" type="Object" />
-			<argument index="1" name="for_property" type="String" default="&quot;&quot;" />
-			<argument index="2" name="inspector_only" type="bool" default="false" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="for_property" type="String" default="&quot;&quot;" />
+			<param index="2" name="inspector_only" type="bool" default="false" />
 			<description>
-				Shows the given property on the given [code]object[/code] in the editor's Inspector dock. If [code]inspector_only[/code] is [code]true[/code], plugins will not attempt to edit [code]object[/code].
+				Shows the given property on the given [param object] in the editor's Inspector dock. If [param inspector_only] is [code]true[/code], plugins will not attempt to edit [param object].
+			</description>
+		</method>
+		<method name="is_movie_maker_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if Movie Maker mode is enabled in the editor. See also [method set_movie_maker_enabled]. See [MovieWriter] for more information.
 			</description>
 		</method>
 		<method name="is_playing_scene" qualifiers="const">
@@ -148,22 +172,22 @@
 		</method>
 		<method name="is_plugin_enabled" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="plugin" type="String" />
+			<param index="0" name="plugin" type="String" />
 			<description>
-				Returns [code]true[/code] if the specified [code]plugin[/code] is enabled. The plugin name is the same as its directory name.
+				Returns [code]true[/code] if the specified [param plugin] is enabled. The plugin name is the same as its directory name.
 			</description>
 		</method>
 		<method name="make_mesh_previews">
-			<return type="Array" />
-			<argument index="0" name="meshes" type="Array" />
-			<argument index="1" name="preview_size" type="int" />
+			<return type="Texture2D[]" />
+			<param index="0" name="meshes" type="Mesh[]" />
+			<param index="1" name="preview_size" type="int" />
 			<description>
-				Returns mesh previews rendered at the given size as an [Array] of [Texture]s.
+				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.
 			</description>
 		</method>
 		<method name="open_scene_from_path">
 			<return type="void" />
-			<argument index="0" name="scene_filepath" type="String" />
+			<param index="0" name="scene_filepath" type="String" />
 			<description>
 				Opens the scene at the given path.
 			</description>
@@ -176,7 +200,7 @@
 		</method>
 		<method name="play_custom_scene">
 			<return type="void" />
-			<argument index="0" name="scene_filepath" type="String" />
+			<param index="0" name="scene_filepath" type="String" />
 			<description>
 				Plays the scene specified by its filepath.
 			</description>
@@ -189,43 +213,57 @@
 		</method>
 		<method name="reload_scene_from_path">
 			<return type="void" />
-			<argument index="0" name="scene_filepath" type="String" />
+			<param index="0" name="scene_filepath" type="String" />
 			<description>
 				Reloads the scene at the given path.
+			</description>
+		</method>
+		<method name="restart_editor">
+			<return type="void" />
+			<param index="0" name="save" type="bool" default="true" />
+			<description>
+				Restarts the editor. This closes the editor and then opens the same project. If [param save] is [code]true[/code], the project will be saved before restarting.
 			</description>
 		</method>
 		<method name="save_scene">
 			<return type="int" enum="Error" />
 			<description>
-				Saves the scene. Returns either [code]OK[/code] or [code]ERR_CANT_CREATE[/code] (see [@GlobalScope] constants).
+				Saves the scene. Returns either [constant OK] or [constant ERR_CANT_CREATE].
 			</description>
 		</method>
 		<method name="save_scene_as">
 			<return type="void" />
-			<argument index="0" name="path" type="String" />
-			<argument index="1" name="with_preview" type="bool" default="true" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="with_preview" type="bool" default="true" />
 			<description>
-				Saves the scene as a file at [code]path[/code].
+				Saves the scene as a file at [param path].
 			</description>
 		</method>
 		<method name="select_file">
 			<return type="void" />
-			<argument index="0" name="file" type="String" />
+			<param index="0" name="file" type="String" />
 			<description>
-				Selects the file, with the path provided by [code]file[/code], in the FileSystem dock.
+				Selects the file, with the path provided by [param file], in the FileSystem dock.
 			</description>
 		</method>
 		<method name="set_main_screen_editor">
 			<return type="void" />
-			<argument index="0" name="name" type="String" />
+			<param index="0" name="name" type="String" />
 			<description>
-				Sets the editor's current main screen to the one specified in [code]name[/code]. [code]name[/code] must match the text of the tab in question exactly ([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/code]).
+				Sets the editor's current main screen to the one specified in [param name]. [param name] must match the text of the tab in question exactly ([code]2D[/code], [code]3D[/code], [code]Script[/code], [code]AssetLib[/code]).
+			</description>
+		</method>
+		<method name="set_movie_maker_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Sets whether Movie Maker mode is enabled in the editor. See also [method is_movie_maker_enabled]. See [MovieWriter] for more information.
 			</description>
 		</method>
 		<method name="set_plugin_enabled">
 			<return type="void" />
-			<argument index="0" name="plugin" type="String" />
-			<argument index="1" name="enabled" type="bool" />
+			<param index="0" name="plugin" type="String" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets the enabled status of a plugin. The plugin name is the same as its directory name.
 			</description>
@@ -242,6 +280,4 @@
 			If [code]true[/code], enables distraction-free mode which hides side docks to increase the space available for the main view.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

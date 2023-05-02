@@ -31,45 +31,59 @@
 #ifndef MONO_GC_HANDLE_H
 #define MONO_GC_HANDLE_H
 
-#include <mono/jit/jit.h>
+#include "core/object/ref_counted.h"
 
-#include "core/reference.h"
+namespace gdmono {
 
-class MonoGCHandle : public Reference {
-	GDCLASS(MonoGCHandle, Reference);
+enum class GCHandleType : char {
+	NIL,
+	STRONG_HANDLE,
+	WEAK_HANDLE
+};
+}
 
-	bool released;
-	bool weak;
-	uint32_t handle;
+extern "C" {
+struct GCHandleIntPtr {
+	void *value;
 
-public:
-	enum HandleType {
-		STRONG_HANDLE,
-		WEAK_HANDLE
-	};
+	_FORCE_INLINE_ bool operator==(const GCHandleIntPtr &p_other) { return value == p_other.value; }
+	_FORCE_INLINE_ bool operator!=(const GCHandleIntPtr &p_other) { return value != p_other.value; }
 
-	static uint32_t new_strong_handle(MonoObject *p_object);
-	static uint32_t new_strong_handle_pinned(MonoObject *p_object);
-	static uint32_t new_weak_handle(MonoObject *p_object);
-	static void free_handle(uint32_t p_gchandle);
+	GCHandleIntPtr() = delete;
+};
+}
 
-	static Ref<MonoGCHandle> create_strong(MonoObject *p_object);
-	static Ref<MonoGCHandle> create_weak(MonoObject *p_object);
+static_assert(sizeof(GCHandleIntPtr) == sizeof(void *));
 
-	_FORCE_INLINE_ bool is_released() { return released; }
-	_FORCE_INLINE_ bool is_weak() { return weak; }
+// Manual release of the GC handle must be done when using this struct
+struct MonoGCHandleData {
+	GCHandleIntPtr handle = { nullptr };
+	gdmono::GCHandleType type = gdmono::GCHandleType::NIL;
 
-	_FORCE_INLINE_ MonoObject *get_target() const { return released ? NULL : mono_gchandle_get_target(handle); }
+	_FORCE_INLINE_ bool is_released() const { return !handle.value; }
+	_FORCE_INLINE_ bool is_weak() const { return type == gdmono::GCHandleType::WEAK_HANDLE; }
+	_FORCE_INLINE_ GCHandleIntPtr get_intptr() const { return handle; }
 
-	_FORCE_INLINE_ void set_handle(uint32_t p_handle, HandleType p_handle_type) {
-		released = false;
-		weak = p_handle_type == WEAK_HANDLE;
-		handle = p_handle;
-	}
 	void release();
 
-	MonoGCHandle(uint32_t p_handle, HandleType p_handle_type);
-	~MonoGCHandle();
+	static void free_gchandle(GCHandleIntPtr p_gchandle);
+
+	void operator=(const MonoGCHandleData &p_other) {
+#ifdef DEBUG_ENABLED
+		CRASH_COND(!is_released());
+#endif
+		handle = p_other.handle;
+		type = p_other.type;
+	}
+
+	MonoGCHandleData(const MonoGCHandleData &) = default;
+
+	MonoGCHandleData() {}
+
+	MonoGCHandleData(GCHandleIntPtr p_handle, gdmono::GCHandleType p_type) :
+			handle(p_handle),
+			type(p_type) {
+	}
 };
 
 #endif // MONO_GC_HANDLE_H

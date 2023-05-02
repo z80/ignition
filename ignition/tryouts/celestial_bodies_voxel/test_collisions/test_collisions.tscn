@@ -21,7 +21,7 @@ orbital_period_hrs = 1.0
 orbital_eccentricity = 0.9
 
 [node name="RefFramePhysics" type="RefFrameNonInertialNode" parent="Sun/Planet/Rotation" index="1"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9992, 0, 0 )
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9992, 0, 0 )
 script = ExtResource( 2 )
 
 [node name="Character" parent="Sun/Planet/Rotation/RefFramePhysics" instance=ExtResource( 4 )]
@@ -30,7 +30,7 @@ script = ExtResource( 2 )
 map_mode = true
 
 [node name="Construction" parent="Sun/Planet/Rotation" index="2" instance=ExtResource( 8 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9990, 0, 0 )
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9990, 0, 0 )
 
 [node name="RootUi" parent="." instance=ExtResource( 7 )]
 

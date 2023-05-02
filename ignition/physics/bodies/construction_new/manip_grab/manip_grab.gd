@@ -5,18 +5,18 @@ signal drag_started
 signal drag_finished
 
 
-export(NodePath) var target_path setget set_path
+@export var target_path: NodePath: set = set_path
 var target: Node = null
 
 # Use parent's space or local object's space.
-export(bool) var use_local_space = false
+@export var use_local_space: bool = false
 
 var _buttons: Control = null
 
 # size dimensions.
-export(float) var axis_length = 3.0
-export(float) var origin_dist = 10.0
-export(float) var sensitivity_radius = 12.0
+@export var axis_length: float = 3.0
+@export var origin_dist: float = 10.0
+@export var sensitivity_radius: float = 12.0
 
 const COLOR_X: Color = Color( 0.7, 0.0, 0.0, 0.7 )
 const COLOR_Y: Color = Color( 0.0, 0.7, 0.0, 0.7 )
@@ -43,7 +43,7 @@ var _dragging = {
 	
 	rot_enabled = false, 
 	rotation_scale = 1.0, 
-	start_q = Quat.IDENTITY, 
+	start_q = Quaternion.IDENTITY, 
 	euler   = Vector3.ZERO
 }
 
@@ -72,10 +72,10 @@ func _ready():
 	set_path( target_path )
 	var root: Control = RootScene.get_root_for_gui_popups()
 	var Buttons: PackedScene = load( "res://physics/bodies/construction/manip_grab/buttons.tscn" )
-	_buttons = Buttons.instance()
+	_buttons = Buttons.instantiate()
 	root.add_child( _buttons )
-	_buttons.connect( "world", self, "_on_world" )
-	_buttons.connect( "local", self, "_on_local" )
+	_buttons.connect("world", Callable(self, "_on_world"))
+	_buttons.connect("local", Callable(self, "_on_local"))
 
 #	root.visible = true
 #	_buttons.visible = true
@@ -111,7 +111,7 @@ func _draw_drag_axes():
 	else:
 		c = COLOR_X
 	to = dp.origin+dp.axis_x
-	draw_line( dp.origin, to, c, LINE_WIDTH, false )
+	draw_line(dp.origin, to, c, LINE_WIDTH)
 	draw_circle( to, sensitivity_radius, c )
 	
 	# Draw Y
@@ -120,7 +120,7 @@ func _draw_drag_axes():
 	else:
 		c = COLOR_Y
 	to = dp.origin+dp.axis_y
-	draw_line( dp.origin, to, c, LINE_WIDTH, false )
+	draw_line(dp.origin, to, c, LINE_WIDTH)
 	draw_circle( to, sensitivity_radius, c )
 	
 	# Draw Z
@@ -129,7 +129,7 @@ func _draw_drag_axes():
 	else:
 		c = COLOR_Z
 	to = dp.origin+dp.axis_z
-	draw_line( dp.origin, to, c, LINE_WIDTH, false )
+	draw_line(dp.origin, to, c, LINE_WIDTH)
 	draw_circle( to, sensitivity_radius, c )
 
 
@@ -182,7 +182,7 @@ func _draw_rot_circle( center: Vector2, e1: Vector2, e2: Vector2, color: Color )
 		var si2 = sin(a2)
 		var v1: Vector2 = center + co1*e1 + si1*e2
 		var v2: Vector2 = center + co2*e1 + si2*e2
-		draw_line( v1, v2, color, LINE_WIDTH, false )
+		draw_line(v1, v2, color, LINE_WIDTH)
 	
 	var c: Vector2 = center + 0.707 * ( e1 + e2 )
 	draw_circle( c, sensitivity_radius, color )
@@ -209,7 +209,7 @@ func _process(_delta):
 func _input( event ):
 	var me: InputEventMouseButton = event as InputEventMouseButton
 	if me != null:
-		if (me.button_index != BUTTON_LEFT):
+		if (me.button_index != MOUSE_BUTTON_LEFT):
 			return
 		
 		if me.pressed:
@@ -258,52 +258,52 @@ func _need_redraw( draw ):
 func _compute_draw_params():
 	if target == null:
 		return null
-	var vp: Viewport = get_viewport()
+	var vp: SubViewport = get_viewport()
 	if vp == null:
 		return null
-	var cam = vp.get_camera()
+	var cam = vp.get_camera_3d()
 	if cam == null:
 		return null
 	
 	# Axes in target parent ref frame.
 	var target_parent_rf: RefFrameNode = target.get_parent()
-	var target_rf_tr: Transform        = target.transform
+	var target_rf_tr: Transform3D        = target.transform
 	var cam_rf: RefFrameNode           = RootScene.ref_frame_root.player_camera
 	var cam_rf_se3: Se3Ref             = cam_rf.relative_to( target_parent_rf )
-	var cam_rf_tr: Transform           = cam_rf_se3.transform
-	var target_parent_to_camera_rf_tr: Transform = cam_rf_tr.inverse()
-	var target_rf_to_camera_rf_tr: Transform = target_parent_to_camera_rf_tr * target_rf_tr
+	var cam_rf_tr: Transform3D           = cam_rf_se3.transform
+	var target_parent_to_camera_rf_tr: Transform3D = cam_rf_tr.inverse()
+	var target_rf_to_camera_rf_tr: Transform3D = target_parent_to_camera_rf_tr * target_rf_tr
 	
 	var target_se3: Se3Ref = target.get_se3()
-	var target_q: Quat     = target_se3.q
+	var target_q: Quaternion     = target_se3.q
 
-	var t_camera: Transform = cam.global_transform
+	var t_camera: Transform3D = cam.global_transform
 	
 	var origin_3d_in_parent: Vector3 = target_rf_tr.origin
-	var origin_3d: Vector3           = target_parent_to_camera_rf_tr.xform( origin_3d_in_parent ) #origin.normalized() * origin_dist
+	var origin_3d: Vector3           = target_parent_to_camera_rf_tr * (origin_3d_in_parent) #origin.normalized() * origin_dist
 	var origin_2d: Vector2           = cam.unproject_position( origin_3d )
 	
 	var ox3_w: Vector3 = Vector3( axis_length, 0.0, 0.0 )
 	if use_local_space:
-		ox3_w = target_q.xform( ox3_w )
+		ox3_w = target_q * (ox3_w)
 	var axis_x_w: Vector3 = ox3_w.normalized()
-	ox3_w = target_parent_to_camera_rf_tr.xform( ox3_w + origin_3d_in_parent )
+	ox3_w = target_parent_to_camera_rf_tr * (ox3_w + origin_3d_in_parent)
 	var ox: Vector2 = cam.unproject_position( ox3_w )
 	ox -= origin_2d
 	
 	var oy3_w: Vector3 = Vector3( 0.0, axis_length, 0.0 )
 	if use_local_space:
-		oy3_w = target_q.xform( oy3_w )
+		oy3_w = target_q * (oy3_w)
 	var axis_y_w: Vector3 = oy3_w.normalized()
-	oy3_w = target_parent_to_camera_rf_tr.xform( oy3_w + origin_3d_in_parent )
+	oy3_w = target_parent_to_camera_rf_tr * (oy3_w + origin_3d_in_parent)
 	var oy: Vector2 = cam.unproject_position( oy3_w )
 	oy -= origin_2d
 	
 	var oz3_w: Vector3 = Vector3( 0.0, 0.0, axis_length )
 	if use_local_space:
-		oz3_w = target_q.xform( oz3_w )
+		oz3_w = target_q * (oz3_w)
 	var axis_z_w: Vector3 = oz3_w.normalized()
-	oz3_w = target_parent_to_camera_rf_tr.xform( oz3_w + origin_3d_in_parent )
+	oz3_w = target_parent_to_camera_rf_tr * (oz3_w + origin_3d_in_parent)
 	var oz: Vector2 = cam.unproject_position( oz3_w )
 	oz -= origin_2d
 	
@@ -350,10 +350,10 @@ func _init_dragging( axis: Vector3 ):
 	_dragging.enabled = true
 	
 	# Own origin and unit vector.
-	var t: Transform = target.transform
+	var t: Transform3D = target.transform
 
 	var own_r: Vector3 = t.origin
-	var own_a: Vector3 = axis #t.basis.xform( axis )
+	var own_a: Vector3 = axis #t.basis * (axis)
 	
 	_dragging.axis      = own_a
 	_dragging.drag_axis = own_a
@@ -401,14 +401,14 @@ func _init_rotating( axis: Vector3 ):
 	_dragging.rot_enabled = true
 	
 	# Own origin and unit vector.
-	var t: Transform 
+	var t: Transform3D 
 	var b: PhysicsBodyBase = target as PhysicsBodyBase
 	if b != null:
 		t = b.t()
 	else:
 		t = target.global_transform
 	var axis_r: Vector3 = t.origin
-	var axis_a: Vector3 = axis #t.basis.xform( axis )
+	var axis_a: Vector3 = axis #t.basis * (axis)
 	
 	var mouse_crossing_r: Vector3 = _mouse_intersection_plane( axis_a, axis_r )
 	# Going to drag along the line axis_a x (mouse_crossing_r - aixs_r).
@@ -417,10 +417,10 @@ func _init_rotating( axis: Vector3 ):
 	
 	
 	
-	var vp: Viewport = get_viewport()
+	var vp: SubViewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
-	var camera: Camera = vp.get_camera()
+	var camera: Camera3D = vp.get_camera_3d()
 	
 	# Camera origin and unit vector.
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
@@ -428,7 +428,7 @@ func _init_rotating( axis: Vector3 ):
 	
 
 	
-	var q: Quat = t.basis
+	var q: Quaternion = t.basis
 	
 	var dist: float = (axis_r - cam_r).length()
 	
@@ -461,14 +461,14 @@ func _process_rotating():
 	var co2 = cos( angle_2 )
 	var si2 = sin( angle_2 )
 	var a: Vector3 = _dragging.axis
-	var dq: Quat = Quat( a.x * si2, a.y * si2, a.z * si2, co2 )
-	var q: Quat = dq * _dragging.start_q
+	var dq: Quaternion = Quaternion( a.x * si2, a.y * si2, a.z * si2, co2 )
+	var q: Quaternion = dq * _dragging.start_q
 	var b: Basis = q
 	var euler: Vector3 = b.get_euler()
 	euler.x = round( euler.x / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.y = round( euler.y / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.z = round( euler.z / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
-	q = Quat( euler )
+	q = Quaternion( euler )
 
 	#print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
 	
@@ -498,10 +498,10 @@ func _mouse_on_axis( mouse_start: Vector3, drag_axis: Vector3 ):
 
 
 func _mouse_intersection_line( axis_a: Vector3, axis_r: Vector3 ):
-	var vp: Viewport = get_viewport()
+	var vp: SubViewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
-	var camera: Camera = vp.get_camera()
+	var camera: Camera3D = vp.get_camera_3d()
 	
 	# Camera origin and unit vector.
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
@@ -510,10 +510,10 @@ func _mouse_intersection_line( axis_a: Vector3, axis_r: Vector3 ):
 	var target_parent_rf: RefFrameNode     = target.get_parent()
 	var cam_rf: RefFrameNode               = RootScene.ref_frame_root.player_camera
 	var cam_rf_se3: Se3Ref                 = cam_rf.relative_to( target_parent_rf )
-	var cam_to_target_parent_tr: Transform = cam_rf_se3.transform
+	var cam_to_target_parent_tr: Transform3D = cam_rf_se3.transform
 	
-	cam_r = cam_to_target_parent_tr.xform( cam_r )
-	cam_a = cam_to_target_parent_tr.basis.xform( cam_a )
+	cam_r = cam_to_target_parent_tr * (cam_r)
+	cam_a = cam_to_target_parent_tr.basis * (cam_a)
 	
 	var r: Vector3 = _line_crossing_point( cam_r, cam_a, axis_r, axis_a )
 	
@@ -523,10 +523,10 @@ func _mouse_intersection_line( axis_a: Vector3, axis_r: Vector3 ):
 
 
 func _mouse_intersection_plane( plane_a: Vector3, plane_r: Vector3 ):
-	var vp: Viewport = get_viewport()
+	var vp: SubViewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
-	var camera: Camera = vp.get_camera()
+	var camera: Camera3D = vp.get_camera_3d()
 	
 	# Camera origin and unit vector.
 	var cam_r: Vector3 = camera.project_ray_origin(mouse_uv)
@@ -535,10 +535,10 @@ func _mouse_intersection_plane( plane_a: Vector3, plane_r: Vector3 ):
 	var target_parent_rf: RefFrameNode     = target.get_parent()
 	var cam_rf: RefFrameNode               = RootScene.ref_frame_root.player_camera
 	var cam_rf_se3: Se3Ref                 = cam_rf.relative_to( target_parent_rf )
-	var cam_to_target_parent_tr: Transform = cam_rf_se3.transform
+	var cam_to_target_parent_tr: Transform3D = cam_rf_se3.transform
 	
-	cam_r = cam_to_target_parent_tr.xform( cam_r )
-	cam_a = cam_to_target_parent_tr.basis.xform( cam_a )
+	cam_r = cam_to_target_parent_tr * (cam_r)
+	cam_a = cam_to_target_parent_tr.basis * (cam_a)
 	
 	# r = plane_a.dot( cam_a * t + cam_r - plane_r ) = 0
 	# t * dot(plane_a, cam_a) = dot(plane_a, plane_r - cam_r)
@@ -590,11 +590,11 @@ func _line_crossing_point( r_a: Vector3, a_a: Vector3, r_b: Vector3, a_b: Vector
 	
 	var inv_A: Basis = A.inverse()
 	
-	var p_a: Vector3 = a_A.xform( r_a )
-	var p_b: Vector3 = b_A.xform( r_b )
+	var p_a: Vector3 = a_A * (r_a)
+	var p_b: Vector3 = b_A * (r_b)
 	var p: Vector3 = p_b + p_a
 	
-	var r: Vector3 = inv_A.xform( p )
+	var r: Vector3 = inv_A * (p)
 	
 	#print( "mouse uv: ", mouse_uv, ", ro: ", cam_r, ", a: ", cam_a )
 	return r

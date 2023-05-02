@@ -31,20 +31,20 @@
 #ifndef CAMERA_SERVER_H
 #define CAMERA_SERVER_H
 
-#include "core/object.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
-#include "core/reference.h"
-#include "core/rid.h"
-#include "core/variant.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
 
 /**
-	@author Bastiaan Olij <mux213@gmail.com>
-
 	The camera server is a singleton object that gives access to the various
 	camera feeds that can be used as the background for our environment.
 **/
 
 class CameraFeed;
+template <typename T>
+class TypedArray;
 
 class CameraServer : public Object {
 	GDCLASS(CameraServer, Object);
@@ -95,15 +95,16 @@ public:
 	int get_feed_index(int p_id);
 	Ref<CameraFeed> get_feed_by_id(int p_id);
 
-	// add and remove feeds
+	// Add and remove feeds.
 	void add_feed(const Ref<CameraFeed> &p_feed);
 	void remove_feed(const Ref<CameraFeed> &p_feed);
 
-	// get our feeds
+	// Get our feeds.
 	Ref<CameraFeed> get_feed(int p_index);
 	int get_feed_count();
-	Array get_feeds();
+	TypedArray<CameraFeed> get_feeds();
 
+	// Intended for use with custom CameraServer implementation.
 	RID feed_texture(int p_id, FeedImage p_texture);
 
 	CameraServer();

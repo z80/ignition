@@ -7,39 +7,39 @@
 
 [node name="Control" type="Control"]
 anchor_bottom = 1.0
-margin_right = 288.0
-margin_bottom = 5.0
+offset_right = 288.0
+offset_bottom = 5.0
 script = ExtResource( 3 )
 
 [node name="VBox" type="VBoxContainer" parent="."]
 anchor_bottom = 1.0
-margin_right = 288.0
-margin_bottom = 5.0
+offset_right = 288.0
+offset_bottom = 5.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="PanelCommands" parent="VBox" instance=ExtResource( 4 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_right = 288.0
-margin_bottom = 72.0
+offset_right = 288.0
+offset_bottom = 72.0
 
 [node name="HBox" type="HBoxContainer" parent="VBox"]
-margin_top = 76.0
-margin_right = 288.0
-margin_bottom = 610.0
+offset_top = 76.0
+offset_right = 288.0
+offset_bottom = 610.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="PanelCategories" parent="VBox/HBox" instance=ExtResource( 1 )]
-margin_bottom = 534.0
+offset_bottom = 534.0
 
 [node name="PanelBlocks" parent="VBox/HBox" instance=ExtResource( 2 )]
 anchor_right = 0.0
 anchor_bottom = 0.0
-margin_left = 76.0
-margin_right = 288.0
-margin_bottom = 534.0
+offset_left = 76.0
+offset_right = 288.0
+offset_bottom = 534.0
 
 [connection signal="abort" from="." to="." method="_on_Control_abort"]
 [connection signal="abort" from="VBox/PanelCommands" to="." method="_on_PanelCommands_abort"]

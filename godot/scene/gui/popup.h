@@ -31,43 +31,41 @@
 #ifndef POPUP_H
 #define POPUP_H
 
-#include "scene/gui/control.h"
+#include "scene/main/window.h"
 
-class Popup : public Control {
-	GDCLASS(Popup, Control);
+#include "core/templates/local_vector.h"
 
-	bool exclusive;
-	bool popped_up;
+class Panel;
 
-private:
-	void _popup(const Rect2 &p_bounds = Rect2(), const bool p_centered = false);
+class Popup : public Window {
+	GDCLASS(Popup, Window);
+
+	LocalVector<Window *> visible_parents;
+	bool popped_up = false;
+
+	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+	} theme_cache;
+
+	void _input_from_window(const Ref<InputEvent> &p_event);
+
+	void _initialize_visible_parents();
+	void _deinitialize_visible_parents();
 
 protected:
-	virtual void _post_popup() {}
+	void _close_pressed();
+	virtual Rect2i _popup_adjust_rect() const override;
 
-	void _gui_input(Ref<InputEvent> p_event);
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
-	virtual void _fix_size();
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
+
+	virtual void _parent_focused();
+
+	virtual void _post_popup() override;
 
 public:
-	enum {
-		NOTIFICATION_POST_POPUP = 80,
-		NOTIFICATION_POPUP_HIDE = 81
-	};
-
-	void set_exclusive(bool p_exclusive);
-	bool is_exclusive() const;
-
-	void popup_centered_ratio(float p_screen_ratio = 0.75);
-	void popup_centered(const Size2 &p_size = Size2());
-	void popup_centered_minsize(const Size2 &p_minsize = Size2());
-	void set_as_minsize();
-	void popup_centered_clamped(const Size2 &p_size = Size2(), float p_fallback_ratio = 0.75);
-	virtual void popup(const Rect2 &p_bounds = Rect2());
-
-	virtual String get_configuration_warning() const;
-
 	Popup();
 	~Popup();
 };
@@ -75,12 +73,21 @@ public:
 class PopupPanel : public Popup {
 	GDCLASS(PopupPanel, Popup);
 
+	Panel *panel = nullptr;
+
+	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+	} theme_cache;
+
 protected:
 	void _update_child_rects();
+
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 
+	virtual Size2 _get_contents_minimum_size() const override;
+
 public:
-	virtual Size2 get_minimum_size() const;
 	PopupPanel();
 };
 

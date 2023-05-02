@@ -66,6 +66,12 @@ Vector3 BulletPhysicsDirectBodyState::get_center_of_mass() const {
 	return gVec;
 }
 
+Vector3 BulletPhysicsDirectBodyState::get_center_of_mass_local() const
+{
+	const Vector3 gVec( 0.0, 0.0, 0.0 );
+	return gVec;
+}
+
 Basis BulletPhysicsDirectBodyState::get_principal_inertia_axes() const {
 	return Basis();
 }
@@ -102,11 +108,11 @@ Vector3 BulletPhysicsDirectBodyState::get_angular_velocity() const {
 	return body->get_angular_velocity();
 }
 
-void BulletPhysicsDirectBodyState::set_transform(const Transform &p_transform) {
+void BulletPhysicsDirectBodyState::set_transform(const Transform3D &p_transform) {
 	body->set_transform(p_transform);
 }
 
-Transform BulletPhysicsDirectBodyState::get_transform() const {
+Transform3D BulletPhysicsDirectBodyState::get_transform() const {
 	return body->get_transform();
 }
 
@@ -120,17 +126,17 @@ Vector3 BulletPhysicsDirectBodyState::get_velocity_at_local_position(const Vecto
 	return velocity;
 }
 
-void BulletPhysicsDirectBodyState::add_central_force(const Vector3 &p_force) {
-	body->apply_central_force(p_force);
-}
-
-void BulletPhysicsDirectBodyState::add_force(const Vector3 &p_force, const Vector3 &p_pos) {
-	body->apply_force(p_force, p_pos);
-}
-
-void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
-	body->apply_torque(p_torque);
-}
+//void BulletPhysicsDirectBodyState::add_central_force(const Vector3 &p_force) {
+//	body->apply_central_force(p_force);
+//}
+//
+//void BulletPhysicsDirectBodyState::add_force(const Vector3 &p_force, const Vector3 &p_pos) {
+//	body->apply_force(p_force, p_pos);
+//}
+//
+//void BulletPhysicsDirectBodyState::add_torque(const Vector3 &p_torque) {
+//	body->apply_torque(p_torque);
+//}
 
 void BulletPhysicsDirectBodyState::apply_central_impulse(const Vector3 &p_impulse) {
 	body->apply_central_impulse(p_impulse);
@@ -143,6 +149,54 @@ void BulletPhysicsDirectBodyState::apply_impulse(const Vector3 &p_pos, const Vec
 void BulletPhysicsDirectBodyState::apply_torque_impulse(const Vector3 &p_impulse) {
 	body->apply_torque_impulse(p_impulse);
 }
+
+
+void BulletPhysicsDirectBodyState::apply_central_force(const Vector3 &p_force)
+{
+	body->apply_central_force(p_force);
+}
+
+void BulletPhysicsDirectBodyState::apply_force(const Vector3 &p_force, const Vector3 &p_position)
+{
+	body->apply_force(p_force, p_position);
+}
+
+void BulletPhysicsDirectBodyState::apply_torque(const Vector3 &p_torque)
+{
+	body->apply_torque(p_torque);
+}
+
+void BulletPhysicsDirectBodyState::add_constant_central_force(const Vector3 &p_force)
+{
+}
+
+void BulletPhysicsDirectBodyState::add_constant_force(const Vector3 &p_force, const Vector3 &p_position)
+{
+}
+
+void BulletPhysicsDirectBodyState::add_constant_torque(const Vector3 &p_torque)
+{
+}
+
+void BulletPhysicsDirectBodyState::set_constant_force(const Vector3 &p_force)
+{
+}
+
+Vector3 BulletPhysicsDirectBodyState::get_constant_force() const
+{
+	return Vector3(0.0, 0.0, 0.0);
+}
+
+void BulletPhysicsDirectBodyState::set_constant_torque(const Vector3 &p_torque)
+{
+}
+
+Vector3 BulletPhysicsDirectBodyState::get_constant_torque() const
+{
+	return Vector3(0.0, 0.0, 0.0);
+}
+
+
 
 void BulletPhysicsDirectBodyState::set_sleep_state(bool p_enable) {
 	body->set_activation_state(p_enable);
@@ -164,8 +218,11 @@ Vector3 BulletPhysicsDirectBodyState::get_contact_local_normal(int p_contact_idx
 	return body->collisions[p_contact_idx].hitNormal;
 }
 
-float BulletPhysicsDirectBodyState::get_contact_impulse(int p_contact_idx) const {
-	return body->collisions[p_contact_idx].appliedImpulse;
+Vector3 BulletPhysicsDirectBodyState::get_contact_impulse(int p_contact_idx) const {
+        const Vector3 norm      = body->collisions[p_contact_idx].hitNormal;
+        const real_t  magnitude = body->collisions[p_contact_idx].appliedImpulse;
+	//return body->collisions[p_contact_idx].appliedImpulse;
+	return (norm * magnitude);
 }
 
 int BulletPhysicsDirectBodyState::get_contact_local_shape(int p_contact_idx) const {
@@ -204,7 +261,7 @@ real_t BulletPhysicsDirectBodyState::get_step() const {
 	return body->get_space()->get_delta_time();
 }
 
-PhysicsDirectSpaceState *BulletPhysicsDirectBodyState::get_space_state() {
+PhysicsDirectSpaceState3D *BulletPhysicsDirectBodyState::get_space_state() {
 	return body->get_space()->get_direct_state();
 }
 
@@ -241,12 +298,14 @@ void RigidBodyBullet::KinematicUtilities::copyAllOwnerShapes() {
 		shapes.write[i].transform = shape_wrapper->transform;
 		shapes.write[i].transform.getOrigin() *= owner_scale;
 		switch (shape_wrapper->shape->get_type()) {
-			case PhysicsServer::SHAPE_SPHERE:
-			case PhysicsServer::SHAPE_BOX:
-			case PhysicsServer::SHAPE_CAPSULE:
-			case PhysicsServer::SHAPE_CYLINDER:
-			case PhysicsServer::SHAPE_CONVEX_POLYGON:
-			case PhysicsServer::SHAPE_RAY: {
+			case PhysicsServer3D::SHAPE_SPHERE:
+			case PhysicsServer3D::SHAPE_BOX:
+			case PhysicsServer3D::SHAPE_CAPSULE:
+			case PhysicsServer3D::SHAPE_CYLINDER:
+			case PhysicsServer3D::SHAPE_CONVEX_POLYGON:
+			//case PhysicsServer3D::SHAPE_RAY:
+			case PhysicsServer3D::SHAPE_SEPARATION_RAY:
+			{
 				shapes.write[i].shape = static_cast<btConvexShape *>(shape_wrapper->shape->create_bt_shape(owner_scale * shape_wrapper->scale, safe_margin));
 			} break;
 			default:
@@ -263,6 +322,37 @@ void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
 		}
 	}
 	shapes.resize(new_size);
+}
+
+void RigidBodyBullet::set_state_sync_callback(const Callable &p_callable)
+{
+	body_state_callback = p_callable;
+}
+
+void RigidBodyBullet::call_queries()
+{
+	Variant direct_state_variant = get_direct_state();
+
+	//if (fi_callback_data) {
+	//	if (!fi_callback_data->callable.get_object()) {
+	//		set_force_integration_callback(Callable());
+	//	} else {
+	//		const Variant *vp[2] = { &direct_state_variant, &fi_callback_data->udata };
+
+	//		Callable::CallError ce;
+	//		int argc = (fi_callback_data->udata.get_type() == Variant::NIL) ? 1 : 2;
+	//		Variant rv;
+	//		fi_callback_data->callable.callp(vp, argc, rv, ce);
+	//	}
+	//}
+
+	if ( body_state_callback.get_object() != nullptr )
+	{
+		const Variant *vp[1] = { &direct_state_variant };
+		Callable::CallError ce;
+		Variant rv;
+		body_state_callback.callp(vp, 1, rv, ce);
+	}
 }
 
 RigidBodyBullet::RigidBodyBullet() :
@@ -295,7 +385,7 @@ RigidBodyBullet::RigidBodyBullet() :
 	reload_shapes();
 	setupBulletCollisionObject(btBody);
 
-	set_mode(PhysicsServer::BODY_MODE_RIGID);
+	set_mode(PhysicsServer3D::BODY_MODE_RIGID);
 	reload_axis_lock();
 
 	areasWhereIam.resize(maxAreasWhereIam);
@@ -378,13 +468,13 @@ void RigidBodyBullet::dispatch_callbacks() {
 		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
 		if (!obj) {
 			// Remove integration callback
-			set_force_integration_callback(0, StringName());
+			set_force_integration_callback(ObjectID(), StringName());
 		} else {
 			const Variant *vp[2] = { &variantBodyDirect, &force_integration_callback->udata };
 
-			Variant::CallError responseCallError;
+			Callable::CallError responseCallError;
 			int argc = (force_integration_callback->udata.get_type() == Variant::NIL) ? 1 : 2;
-			obj->call(force_integration_callback->method, vp, argc, responseCallError);
+			obj->callp(force_integration_callback->method, vp, argc, responseCallError);
 		}
 	}
 
@@ -406,7 +496,8 @@ void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const String
 		force_integration_callback = nullptr;
 	}
 
-	if (p_id != 0) {
+	if (p_id.is_valid())
+	{
 		force_integration_callback = memnew(ForceIntegrationCallback);
 		force_integration_callback->id = p_id;
 		force_integration_callback->method = p_method;
@@ -486,31 +577,31 @@ void RigidBodyBullet::set_omit_forces_integration(bool p_omit) {
 	omit_forces_integration = p_omit;
 }
 
-void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_value) {
+void RigidBodyBullet::set_param(PhysicsServer3D::BodyParameter p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer::BODY_PARAM_BOUNCE:
+		case PhysicsServer3D::BODY_PARAM_BOUNCE:
 			btBody->setRestitution(p_value);
 			break;
-		case PhysicsServer::BODY_PARAM_FRICTION:
+		case PhysicsServer3D::BODY_PARAM_FRICTION:
 			btBody->setFriction(p_value);
 			break;
-		case PhysicsServer::BODY_PARAM_MASS: {
+		case PhysicsServer3D::BODY_PARAM_MASS: {
 			ERR_FAIL_COND(p_value < 0);
 			mass = p_value;
 			_internal_set_mass(p_value);
 			break;
 		}
-		case PhysicsServer::BODY_PARAM_LINEAR_DAMP:
+		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP:
 			linearDamp = p_value;
 			// Mark for updating total linear damping.
 			scratch_space_override_modificator();
 			break;
-		case PhysicsServer::BODY_PARAM_ANGULAR_DAMP:
+		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP:
 			angularDamp = p_value;
 			// Mark for updating total angular damping.
 			scratch_space_override_modificator();
 			break;
-		case PhysicsServer::BODY_PARAM_GRAVITY_SCALE:
+		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE:
 			gravity_scale = p_value;
 			// The Bullet gravity will be is set by reload_space_override_modificator.
 			// Mark for updating total gravity scale.
@@ -521,21 +612,21 @@ void RigidBodyBullet::set_param(PhysicsServer::BodyParameter p_param, real_t p_v
 	}
 }
 
-real_t RigidBodyBullet::get_param(PhysicsServer::BodyParameter p_param) const {
+real_t RigidBodyBullet::get_param(PhysicsServer3D::BodyParameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer::BODY_PARAM_BOUNCE:
+		case PhysicsServer3D::BODY_PARAM_BOUNCE:
 			return btBody->getRestitution();
-		case PhysicsServer::BODY_PARAM_FRICTION:
+		case PhysicsServer3D::BODY_PARAM_FRICTION:
 			return btBody->getFriction();
-		case PhysicsServer::BODY_PARAM_MASS: {
+		case PhysicsServer3D::BODY_PARAM_MASS: {
 			const btScalar invMass = btBody->getInvMass();
 			return 0 == invMass ? 0 : 1 / invMass;
 		}
-		case PhysicsServer::BODY_PARAM_LINEAR_DAMP:
+		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP:
 			return linearDamp;
-		case PhysicsServer::BODY_PARAM_ANGULAR_DAMP:
+		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP:
 			return angularDamp;
-		case PhysicsServer::BODY_PARAM_GRAVITY_SCALE:
+		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE:
 			return gravity_scale;
 		default:
 			WARN_PRINT("Parameter " + itos(p_param) + " not supported by bullet");
@@ -543,59 +634,59 @@ real_t RigidBodyBullet::get_param(PhysicsServer::BodyParameter p_param) const {
 	}
 }
 
-void RigidBodyBullet::set_mode(PhysicsServer::BodyMode p_mode) {
+void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
 	// This is necessary to block force_integration untile next move
 	can_integrate_forces = false;
 	destroy_kinematic_utilities();
 	// The mode change is relevant to its mass
 	switch (p_mode) {
-		case PhysicsServer::BODY_MODE_KINEMATIC:
-			mode = PhysicsServer::BODY_MODE_KINEMATIC;
+		case PhysicsServer3D::BODY_MODE_KINEMATIC:
+			mode = PhysicsServer3D::BODY_MODE_KINEMATIC;
 			reload_axis_lock();
 			_internal_set_mass(0);
 			init_kinematic_utilities();
 			break;
-		case PhysicsServer::BODY_MODE_STATIC:
-			mode = PhysicsServer::BODY_MODE_STATIC;
+		case PhysicsServer3D::BODY_MODE_STATIC:
+			mode = PhysicsServer3D::BODY_MODE_STATIC;
 			reload_axis_lock();
 			_internal_set_mass(0);
 			break;
-		case PhysicsServer::BODY_MODE_RIGID:
-			mode = PhysicsServer::BODY_MODE_RIGID;
+		case PhysicsServer3D::BODY_MODE_RIGID:
+			mode = PhysicsServer3D::BODY_MODE_RIGID;
 			reload_axis_lock();
 			_internal_set_mass(0 == mass ? 1 : mass);
 			scratch_space_override_modificator();
 			break;
-		case PhysicsServer::BODY_MODE_CHARACTER:
-			mode = PhysicsServer::BODY_MODE_CHARACTER;
-			reload_axis_lock();
-			_internal_set_mass(0 == mass ? 1 : mass);
-			scratch_space_override_modificator();
-			break;
+		//case PhysicsServer3D::BODY_MODE_CHARACTER:
+		//	mode = PhysicsServer3D::BODY_MODE_CHARACTER;
+		//	reload_axis_lock();
+		//	_internal_set_mass(0 == mass ? 1 : mass);
+		//	scratch_space_override_modificator();
+		//	break;
 	}
 
 	btBody->setAngularVelocity(btVector3(0, 0, 0));
 	btBody->setLinearVelocity(btVector3(0, 0, 0));
 }
-PhysicsServer::BodyMode RigidBodyBullet::get_mode() const {
+PhysicsServer3D::BodyMode RigidBodyBullet::get_mode() const {
 	return mode;
 }
 
-void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant &p_variant) {
+void RigidBodyBullet::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant) {
 	switch (p_state) {
-		case PhysicsServer::BODY_STATE_TRANSFORM:
+		case PhysicsServer3D::BODY_STATE_TRANSFORM:
 			set_transform(p_variant);
 			break;
-		case PhysicsServer::BODY_STATE_LINEAR_VELOCITY:
+		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY:
 			set_linear_velocity(p_variant);
 			break;
-		case PhysicsServer::BODY_STATE_ANGULAR_VELOCITY:
+		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY:
 			set_angular_velocity(p_variant);
 			break;
-		case PhysicsServer::BODY_STATE_SLEEPING:
+		case PhysicsServer3D::BODY_STATE_SLEEPING:
 			set_activation_state(!bool(p_variant));
 			break;
-		case PhysicsServer::BODY_STATE_CAN_SLEEP:
+		case PhysicsServer3D::BODY_STATE_CAN_SLEEP:
 			can_sleep = bool(p_variant);
 			if (!can_sleep) {
 				// Can't sleep
@@ -607,17 +698,17 @@ void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant 
 	}
 }
 
-Variant RigidBodyBullet::get_state(PhysicsServer::BodyState p_state) const {
+Variant RigidBodyBullet::get_state(PhysicsServer3D::BodyState p_state) const {
 	switch (p_state) {
-		case PhysicsServer::BODY_STATE_TRANSFORM:
+		case PhysicsServer3D::BODY_STATE_TRANSFORM:
 			return get_transform();
-		case PhysicsServer::BODY_STATE_LINEAR_VELOCITY:
+		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY:
 			return get_linear_velocity();
-		case PhysicsServer::BODY_STATE_ANGULAR_VELOCITY:
+		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY:
 			return get_angular_velocity();
-		case PhysicsServer::BODY_STATE_SLEEPING:
+		case PhysicsServer3D::BODY_STATE_SLEEPING:
 			return !is_active();
-		case PhysicsServer::BODY_STATE_CAN_SLEEP:
+		case PhysicsServer3D::BODY_STATE_CAN_SLEEP:
 			return can_sleep;
 		default:
 			WARN_PRINT("This state " + itos(p_state) + " is not supported by Bullet");
@@ -723,7 +814,7 @@ Vector3 RigidBodyBullet::get_applied_torque() const {
 	return gTotTorq;
 }
 
-void RigidBodyBullet::set_axis_lock(PhysicsServer::BodyAxis p_axis, bool lock) {
+void RigidBodyBullet::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock) {
 	if (lock) {
 		locked_axis |= p_axis;
 	} else {
@@ -733,18 +824,18 @@ void RigidBodyBullet::set_axis_lock(PhysicsServer::BodyAxis p_axis, bool lock) {
 	reload_axis_lock();
 }
 
-bool RigidBodyBullet::is_axis_locked(PhysicsServer::BodyAxis p_axis) const {
+bool RigidBodyBullet::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 	return locked_axis & p_axis;
 }
 
 void RigidBodyBullet::reload_axis_lock() {
-	btBody->setLinearFactor(btVector3(float(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_X)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Y)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Z))));
-	if (PhysicsServer::BODY_MODE_CHARACTER == mode) {
-		/// When character angular is always locked
-		btBody->setAngularFactor(btVector3(0., 0., 0.));
-	} else {
-		btBody->setAngularFactor(btVector3(float(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_X)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Y)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Z))));
-	}
+	btBody->setLinearFactor(btVector3(float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_X)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Y)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_LINEAR_Z))));
+	//if (PhysicsServer3D::BODY_MODE_CHARACTER == mode) {
+	//	/// When character angular is always locked
+	//	btBody->setAngularFactor(btVector3(0., 0., 0.));
+	//} else {
+		btBody->setAngularFactor(btVector3(float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_X)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Y)), float(!is_axis_locked(PhysicsServer3D::BODY_AXIS_ANGULAR_Z))));
+	//}
 }
 
 void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
@@ -804,7 +895,7 @@ Vector3 RigidBodyBullet::get_angular_velocity() const {
 }
 
 void RigidBodyBullet::set_transform__bullet(const btTransform &p_global_transform) {
-	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
+	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		if (space && space->get_delta_time() != 0) {
 			btBody->setLinearVelocity((p_global_transform.getOrigin() - btBody->getWorldTransform().getOrigin()) / space->get_delta_time());
 		}
@@ -871,7 +962,7 @@ void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
 			}
 		}
 	}
-	if (PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED != p_area->get_spOv_mode()) {
+	if (PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED != p_area->get_spOv_mode()) {
 		scratch_space_override_modificator();
 	}
 
@@ -904,14 +995,14 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 
 		--areaWhereIamCount;
 		areasWhereIam.write[areaWhereIamCount] = NULL; // Even if this is not required, I clear the last element to be safe
-		if (PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED != p_area->get_spOv_mode()) {
+		if (PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED != p_area->get_spOv_mode()) {
 			scratch_space_override_modificator();
 		}
 	}
 }
 
 void RigidBodyBullet::reload_space_override_modificator() {
-	if (mode == PhysicsServer::BODY_MODE_STATIC) {
+	if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
 		return;
 	}
 
@@ -927,7 +1018,7 @@ void RigidBodyBullet::reload_space_override_modificator() {
 	for (int i = areaWhereIamCount - 1; (0 <= i) && !stopped; --i) {
 		currentArea = areasWhereIam[i];
 
-		if (!currentArea || PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED == currentArea->get_spOv_mode()) {
+		if (!currentArea || PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED == currentArea->get_spOv_mode()) {
 			continue;
 		}
 
@@ -960,11 +1051,11 @@ void RigidBodyBullet::reload_space_override_modificator() {
 		}
 
 		switch (currentArea->get_spOv_mode()) {
-			case PhysicsServer::AREA_SPACE_OVERRIDE_DISABLED:
+			case PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED:
 				/// This area does not affect gravity/damp. These are generally areas
 				/// that exist only to detect collisions, and objects entering or exiting them.
 				break;
-			case PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE:
+			case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
 				/// This area adds its gravity/damp values to whatever has been
 				/// calculated so far. This way, many overlapping areas can combine
 				/// their physics to make interesting
@@ -972,7 +1063,7 @@ void RigidBodyBullet::reload_space_override_modificator() {
 				total_linear_damp += currentArea->get_spOv_linearDamp();
 				total_angular_damp += currentArea->get_spOv_angularDamp();
 				break;
-			case PhysicsServer::AREA_SPACE_OVERRIDE_COMBINE_REPLACE:
+			case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE:
 				/// This area adds its gravity/damp values to whatever has been calculated
 				/// so far. Then stops taking into account the rest of the areas, even the
 				/// default one.
@@ -981,7 +1072,7 @@ void RigidBodyBullet::reload_space_override_modificator() {
 				total_angular_damp += currentArea->get_spOv_angularDamp();
 				stopped = true;
 				break;
-			case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE:
+			case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
 				/// This area replaces any gravity/damp, even the default one, and
 				/// stops taking into account the rest of the areas.
 				total_gravity = support_gravity;
@@ -989,7 +1080,7 @@ void RigidBodyBullet::reload_space_override_modificator() {
 				total_angular_damp = currentArea->get_spOv_angularDamp();
 				stopped = true;
 				break;
-			case PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE_COMBINE:
+			case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE:
 				/// This area replaces any gravity/damp calculated so far, but keeps
 				/// calculating the rest of the areas, down to the default one.
 				total_gravity = support_gravity;
@@ -1039,7 +1130,9 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 	// Rigidbody is dynamic if and only if mass is non Zero, otherwise static
 	const bool isDynamic = p_mass != 0.f;
 	if (isDynamic) {
-		if (PhysicsServer::BODY_MODE_RIGID != mode && PhysicsServer::BODY_MODE_CHARACTER != mode) {
+		// != rigid and simultaneously != character ??? How can it be a valid statement?
+		if (PhysicsServer3D::BODY_MODE_RIGID != mode /*&& PhysicsServer3D::BODY_MODE_CHARACTER != mode*/)
+		{
 			return;
 		}
 
@@ -1048,7 +1141,7 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 			mainShape->calculateLocalInertia(p_mass, localInertia);
 		}
 
-		if (PhysicsServer::BODY_MODE_RIGID == mode) {
+		if (PhysicsServer3D::BODY_MODE_RIGID == mode) {
 			btBody->setCollisionFlags(clearedCurrentFlags); // Just set the flags without Kin and Static
 		} else {
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_CHARACTER_OBJECT);
@@ -1060,12 +1153,12 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 			btBody->forceActivationState(DISABLE_DEACTIVATION); // DISABLE_DEACTIVATION 4
 		}
 	} else {
-		if (PhysicsServer::BODY_MODE_STATIC != mode && PhysicsServer::BODY_MODE_KINEMATIC != mode) {
+		if (PhysicsServer3D::BODY_MODE_STATIC != mode && PhysicsServer3D::BODY_MODE_KINEMATIC != mode) {
 			return;
 		}
 
 		m_isStatic = true;
-		if (PhysicsServer::BODY_MODE_STATIC == mode) {
+		if (PhysicsServer3D::BODY_MODE_STATIC == mode) {
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_STATIC_OBJECT);
 		} else {
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);

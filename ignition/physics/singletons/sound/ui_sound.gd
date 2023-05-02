@@ -5,7 +5,7 @@ var _players_pool: Array = []
 var _sounds: Dictionary  = {}
 
 
-func play( sound_path: String, var music: bool = false ):
+func play(sound_path: String, music: bool = false):
 	var has: bool = _sounds.has( sound_path )
 	var sound: AudioStream
 	if has:
@@ -62,12 +62,12 @@ func _find_all_players():
 		var c: Node = get_child( i )
 		var p: AudioStreamPlayer = c as AudioStreamPlayer
 		_players_pool.push_back( p )
-		p.connect( "finished", self, "_on_playback_finished", [p] )
+		p.connect("finished", Callable(self, "_on_playback_finished").bind(p))
 		
 
 
 func _get_player():
-	var empty: bool = _players_pool.empty()
+	var empty: bool = _players_pool.is_empty()
 	if not empty:
 		var ret: AudioStreamPlayer = _players_pool.back()
 		_players_pool.resize( _players_pool.size()-1 )
@@ -76,7 +76,7 @@ func _get_player():
 	var p: AudioStreamPlayer = AudioStreamPlayer.new()
 	p.name = _get_unique_name( "Player_" )
 	add_child( p )
-	p.connect( "finished", self, "_on_playback_finished", [p] )
+	p.connect("finished", Callable(self, "_on_playback_finished").bind(p))
 	return p
 
 

@@ -31,10 +31,10 @@
 #ifndef HASHING_CONTEXT_H
 #define HASHING_CONTEXT_H
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
-class HashingContext : public Reference {
-	GDCLASS(HashingContext, Reference);
+class HashingContext : public RefCounted {
+	GDCLASS(HashingContext, RefCounted);
 
 public:
 	enum HashType {
@@ -44,8 +44,8 @@ public:
 	};
 
 private:
-	void *ctx;
-	HashType type;
+	void *ctx = nullptr;
+	HashType type = HASH_MD5;
 
 protected:
 	static void _bind_methods();
@@ -54,10 +54,10 @@ protected:
 
 public:
 	Error start(HashType p_type);
-	Error update(PoolByteArray p_chunk);
-	PoolByteArray finish();
+	Error update(PackedByteArray p_chunk);
+	PackedByteArray finish();
 
-	HashingContext();
+	HashingContext() {}
 	~HashingContext();
 };
 

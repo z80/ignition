@@ -6,14 +6,14 @@ static func rotation_to( v0: Vector3, v1: Vector3 ):
 	var r: Vector3 = v0.cross( v1 )
 	var sin_a: float = r.length()
 	if sin_a < EPS:
-		return Quat.IDENTITY
+		return Quaternion.IDENTITY
 	
 	var a: float = asin( sin_a )
 	var a2: float = a * 0.5
 	var si2: float = sin( a2 )
 	var co2: float = cos( a2 )
 	var k: float = si2 / sin_a
-	var q: Quat = Quat( r.x*k, r.y*k, r.z*k, co2 )
+	var q: Quaternion = Quaternion( r.x*k, r.y*k, r.z*k, co2 )
 	
 	return q
 
@@ -39,7 +39,7 @@ static func local_ref_frame( n: Vector3 ):
 		z = x.cross( y )
 	
 	var b: Basis = Basis( x, y, z )
-	var q: Quat = b.get_rotation_quat()
+	var q: Quaternion = b.get_rotation_quaternion()
 	return q
 
 

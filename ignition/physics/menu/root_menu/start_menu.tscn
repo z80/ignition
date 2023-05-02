@@ -1,65 +1,72 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=10 format=3 uid="uid://cxyivqxj4xnsk"]
 
-[ext_resource path="res://physics/menu/root_menu/rigid_menu_item.tscn" type="PackedScene" id=1]
-[ext_resource path="res://physics/menu/root_menu/start_menu.gd" type="Script" id=2]
-[ext_resource path="res://physics/menu/root_menu/video_background.tscn" type="PackedScene" id=3]
-[ext_resource path="res://physics/menu/root_menu/assets/title.png" type="Texture" id=4]
-[ext_resource path="res://physics/menu/root_menu/assets/quit.png" type="Texture" id=5]
-[ext_resource path="res://physics/menu/root_menu/assets/start.png" type="Texture" id=6]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.tscn" type="PackedScene" id=7]
-[ext_resource path="res://wiki_handler/assets/help.png" type="Texture" id=8]
+[ext_resource type="PackedScene" uid="uid://dqf13u35406io" path="res://physics/menu/root_menu/rigid_menu_item.tscn" id="1"]
+[ext_resource type="Script" path="res://physics/menu/root_menu/start_menu.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://bjnp12owvy3gu" path="res://physics/menu/root_menu/video_background.tscn" id="3"]
+[ext_resource type="Texture2D" uid="uid://qxyethgv4e8q" path="res://physics/menu/root_menu/assets/title.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://d11xefbe7d7f2" path="res://physics/menu/root_menu/assets/quit.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://cmxg6oujff3u5" path="res://physics/menu/root_menu/assets/start.png" id="6"]
+[ext_resource type="PackedScene" uid="uid://b5ljlddno6gt5" path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.tscn" id="7"]
+[ext_resource type="Texture2D" uid="uid://c6hrjg7y07a8g" path="res://wiki_handler/assets/help.png" id="8"]
 
-[sub_resource type="ShortCut" id=1]
+[sub_resource type="Shortcut" id="1"]
 
 [node name="StartMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_pivot_offset = Vector2( -202, 254 )
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(-202, 254)
 mouse_filter = 2
-script = ExtResource( 2 )
-GameScene = ExtResource( 7 )
+script = ExtResource("2")
+GameScene = ExtResource("7")
 
 [node name="Node2D" type="Node2D" parent="."]
 
-[node name="Item01" parent="Node2D" instance=ExtResource( 1 )]
-position = Vector2( 96, -112 )
+[node name="Item01" parent="Node2D" instance=ExtResource("1")]
+z_index = 2
+position = Vector2(96, -112)
 rotation = -0.68766
+
+[node name="Sprite2" type="Sprite2D" parent="Node2D/Item01"]
+position = Vector2(6.30392, 0.929681)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("5")
+
+[node name="Item02" parent="Node2D" instance=ExtResource("1")]
 z_index = 2
-
-[node name="Sprite2" type="Sprite" parent="Node2D/Item01"]
-position = Vector2( 6.30392, 0.929681 )
-scale = Vector2( 0.4, 0.4 )
-texture = ExtResource( 5 )
-
-[node name="Item02" parent="Node2D" instance=ExtResource( 1 )]
-position = Vector2( 136, -384 )
+position = Vector2(136, -384)
 rotation = -0.371755
+
+[node name="Sprite3" type="Sprite2D" parent="Node2D/Item02"]
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("6")
+
+[node name="Title" parent="Node2D" instance=ExtResource("1")]
 z_index = 2
-
-[node name="Sprite3" type="Sprite" parent="Node2D/Item02"]
-scale = Vector2( 0.4, 0.4 )
-texture = ExtResource( 6 )
-
-[node name="Title" parent="Node2D" instance=ExtResource( 1 )]
-position = Vector2( 700, -800 )
+position = Vector2(700, -800)
 rotation = 0.523599
-z_index = 2
 
-[node name="Sprite3" type="Sprite" parent="Node2D/Title"]
-position = Vector2( -500, 200 )
-scale = Vector2( 0.4, 0.4 )
-texture = ExtResource( 4 )
+[node name="Sprite3" type="Sprite2D" parent="Node2D/Title"]
+position = Vector2(-500, 200)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("4")
 
 [node name="Floor" type="RigidBody2D" parent="Node2D"]
-mode = 1
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="Node2D/Floor"]
 build_mode = 1
-polygon = PoolVector2Array( -128, 64, 24, 512, 248, 512, 384, 64, 1088, 64, 1088, 600, -192, 600, -200, 64 )
+polygon = PackedVector2Array(-128, 64, 24, 512, 248, 512, 384, 64, 1088, 64, 1088, 600, -192, 600, -200, 64)
 one_way_collision = true
 one_way_collision_margin = 128.0
 
-[node name="Background" parent="." instance=ExtResource( 3 )]
+[node name="Background" parent="." instance=ExtResource("3")]
+layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
 
 [node name="Timer" type="Timer" parent="."]
 wait_time = 7.0
@@ -67,38 +74,38 @@ one_shot = true
 autostart = true
 
 [node name="HomePage" type="RichTextLabel" parent="."]
+layout_mode = 1
+anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = -549.0
-margin_top = -96.0
-margin_right = -13.0
-margin_bottom = -15.0
+offset_left = -707.0
+offset_top = -104.0
+offset_right = -5.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
 bbcode_enabled = true
-bbcode_text = " [color=black]Source code:[/color] [color=green][url]https://github.com/z80/ignition[/url][/color]
-[color=black]ITCH.io page:[/color] [color=green][url]https://litedictteam.itch.io/ignition[/url][/color]
-[color=black]Gameplay videos:[/color] [color=green][url]https://odysee.com/@ignition:0[/url][/color]
-[color=black]Discord server:[/color] [color=green][url]https://discord.com/channels/1064465760078004234/1064465760078004236[/url][/color]"
 text = " Source code: https://github.com/z80/ignition
 ITCH.io page: https://litedictteam.itch.io/ignition
 Gameplay videos: https://odysee.com/@ignition:0
 Discord server: https://discord.com/channels/1064465760078004234/1064465760078004236"
 
 [node name="Help" type="TextureButton" parent="."]
+layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
-margin_left = -139.0
-margin_top = 8.0
-margin_right = -10.0
-margin_bottom = 42.0
-shortcut = SubResource( 1 )
-texture_normal = ExtResource( 8 )
-texture_pressed = ExtResource( 8 )
-texture_hover = ExtResource( 8 )
-texture_disabled = ExtResource( 8 )
-texture_focused = ExtResource( 8 )
-expand = true
+offset_left = -139.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = 42.0
+shortcut = SubResource("1")
+texture_normal = ExtResource("8")
+texture_pressed = ExtResource("8")
+texture_hover = ExtResource("8")
+texture_disabled = ExtResource("8")
+texture_focused = ExtResource("8")
 
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
 [connection signal="meta_clicked" from="HomePage" to="." method="_on_url_meta_clicked"]

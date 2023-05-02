@@ -1,8 +1,8 @@
+@tool
 
-tool
 extends SurfaceSourceBase
 
-export(Material) var override_material = null
+@export var override_material: Material = null
 
 var _source_solid: VolumeSourceScriptGd = null
 
@@ -31,6 +31,8 @@ func get_source_solid():
 var _source_liquid: VolumeSourceScriptGd = null
 
 func get_source_liquid():
+	return null
+	
 	if _source_liquid != null:
 		return _source_liquid
 	

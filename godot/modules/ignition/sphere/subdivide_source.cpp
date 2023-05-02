@@ -18,7 +18,7 @@ SubdivideSource::~SubdivideSource()
 
 bool SubdivideSource::need_subdivide( const CubeSphere * s, const Vector<Vector3d> & pts )
 {
-    if ( pts.empty() )
+    if ( pts.is_empty() )
         return false;
 
     ptsNew_ = pts;
@@ -29,7 +29,7 @@ bool SubdivideSource::need_subdivide( const CubeSphere * s, const Vector<Vector3
         v.Normalize();
     }
 
-    if ( s->levels_.empty() )
+    if ( s->levels_.is_empty() )
     {
         pts_     = ptsNew_;
 		ptsOrig_ = pts;

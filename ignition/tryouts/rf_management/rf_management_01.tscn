@@ -14,4 +14,4 @@ surface_orbital_vel_kms = 0.03
 detail_size_1 = 200.0
 detail_size_2 = 5000.0
 
-[node name="Camera" parent="." instance=ExtResource( 3 )]
+[node name="Camera3D" parent="." instance=ExtResource( 3 )]

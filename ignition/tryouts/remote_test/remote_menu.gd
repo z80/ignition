@@ -10,11 +10,11 @@ var _all_players = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	get_tree().connect("network_peer_connected", self, "_player_connected")
-	get_tree().connect("network_peer_disconnected", self, "_player_disconnected")
-	get_tree().connect("connected_to_server", self, "_connected_ok")
-	get_tree().connect("connection_failed", self, "_connected_fail")
-	get_tree().connect("server_disconnected", self, "_server_disconnected")
+	get_tree().connect("peer_connected", Callable(self, "_player_connected"))
+	get_tree().connect("peer_disconnected", Callable(self, "_player_disconnected"))
+	get_tree().connect("connected_to_server", Callable(self, "_connected_ok"))
+	get_tree().connect("connection_failed", Callable(self, "_connected_fail"))
+	get_tree().connect("server_disconnected", Callable(self, "_server_disconnected"))
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -23,7 +23,7 @@ func _ready():
 
 
 func _on_Create_pressed():
-	var peer = NetworkedMultiplayerENet.new()
+	var peer = ENetMultiplayerPeer.new()
 	peer.create_server( HOST_PORT )
 	var tree: SceneTree = get_tree()
 	tree.network_peer = peer
@@ -33,7 +33,7 @@ func _on_Create_pressed():
 
 
 func _on_Join_pressed():
-	var peer = NetworkedMultiplayerENet.new()
+	var peer = ENetMultiplayerPeer.new()
 	peer.create_client(HOST_IP, HOST_PORT)
 	var tree: SceneTree = get_tree()
 	tree.network_peer = peer
@@ -64,16 +64,16 @@ func _connected_fail():
 
 
 
-remote func register_player( info ):
+@rpc("any_peer") func register_player( info ):
 	print( "Entered register player: ", info )
 	
 	var tree: SceneTree = get_tree()
 	# Get the id of the RPC sender.
-	var id = tree.get_rpc_sender_id()
+	var id = tree.get_remote_sender_id()
 	# Store the info
 	_all_players[id] = info
 	
-	var own_id: int = tree.get_network_unique_id()
+	var own_id: int = tree.get_unique_id()
 	
 	print( "register_player( info )" )
 	print( "    own id: ", own_id )

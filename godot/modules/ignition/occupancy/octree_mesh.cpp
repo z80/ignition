@@ -4,8 +4,8 @@
 namespace Ign
 {
 
-static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces );
-static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces );
+static void faces_from_surface( const Transform3D & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces );
+static void parse_mesh_arrays( const Transform3D & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces );
 
 
 OctreeMesh::OctreeMesh()
@@ -45,7 +45,7 @@ void OctreeMesh::clear()
     faces_.clear();
 }
 
-void OctreeMesh::append( const Transform & t, const Ref<Mesh> mesh )
+void OctreeMesh::append( const Transform3D & t, const Ref<Mesh> mesh )
 {
     const int qty = mesh->get_surface_count();
     for ( int i=0; i<qty; i++ )
@@ -136,20 +136,20 @@ const Vector3 & OctreeMesh::get_origin() const
     return origin_;
 }
 
-void OctreeMesh::set_quat( const Quat & q )
+void OctreeMesh::set_quat( const Quaternion & q )
 {
     quat_ = q;
 }
 
-const Quat & OctreeMesh::get_quat() const
+const Quaternion & OctreeMesh::get_quat() const
 {
     return quat_;
 }
 
 void OctreeMesh::set_se3( const SE3 & se3 )
 {
-    const Vector3 r = se3.r();
-    const Quat    q = se3.q();
+    const Vector3    r = se3.r();
+    const Quaternion q = se3.q();
 
     origin_ = r;
     quat_   = q;
@@ -166,7 +166,7 @@ SE3  OctreeMesh::get_se3() const
 
 real_t OctreeMesh::size2() const
 {
-	if ( nodes_.empty() )
+	if ( nodes_.is_empty() )
 		return 0.0;
     const OctreeMeshNode & node = nodes_.ptr()[0];
     return node.size2;
@@ -174,9 +174,9 @@ real_t OctreeMesh::size2() const
 
 bool OctreeMesh::intersects_ray( const Vector3 & origin, const Vector3 & dir ) const
 {
-    const Quat    inv_quat     = quat_.inverse();
-    const Vector3 origin_local = inv_quat.xform( origin - origin_ );
-    const Vector3 dir_local    = inv_quat.xform( dir );
+    const Quaternion inv_quat     = quat_.inverse();
+    const Vector3    origin_local = inv_quat.xform( origin - origin_ );
+    const Vector3    dir_local    = inv_quat.xform( dir );
     const OctreeMeshNode & root = nodes_.ptr()[0];
     const bool res = root.intersects_ray( origin_local, dir_local );
     return res;
@@ -184,9 +184,9 @@ bool OctreeMesh::intersects_ray( const Vector3 & origin, const Vector3 & dir ) c
 
 bool OctreeMesh::intersects_ray_face( const Vector3 & origin, const Vector3 & dir, real_t & face_dist, FaceProperties & fp ) const
 {
-    const Quat    inv_quat     = quat_.inverse();
-    const Vector3 origin_local = inv_quat.xform( origin - origin_ );
-    const Vector3 dir_local    = inv_quat.xform( dir );
+    const Quaternion inv_quat     = quat_.inverse();
+    const Vector3    origin_local = inv_quat.xform( origin - origin_ );
+    const Vector3    dir_local    = inv_quat.xform( dir );
     const OctreeMeshNode & root = nodes_.ptr()[0];
     int face_ind = -1;
     real_t dist = 0.0;
@@ -205,9 +205,9 @@ bool OctreeMesh::intersects_ray_face( const Vector3 & origin, const Vector3 & di
 
 bool OctreeMesh::intersects_segment( const Vector3 & start, const Vector3 & end ) const
 {
-    const Quat    inv_quat     = quat_.inverse();
-    const Vector3 start_local = inv_quat.xform( start - origin_ );
-    const Vector3 end_local   = inv_quat.xform( end - origin_ );
+    const Quaternion inv_quat     = quat_.inverse();
+    const Vector3    start_local = inv_quat.xform( start - origin_ );
+    const Vector3    end_local   = inv_quat.xform( end - origin_ );
     const OctreeMeshNode & root = nodes_.ptr()[0];
     const bool res = root.intersects_ray( start_local, end_local );
     return res;
@@ -215,9 +215,9 @@ bool OctreeMesh::intersects_segment( const Vector3 & start, const Vector3 & end 
 
 bool OctreeMesh::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & face_dist, Vector3 & face_at, FaceProperties & fp ) const
 {
-    const Quat    inv_quat     = quat_.inverse();
-    const Vector3 origin_local = inv_quat.xform( start - origin_ );
-    const Vector3 dir_local    = inv_quat.xform( end - origin_ );
+    const Quaternion inv_quat     = quat_.inverse();
+    const Vector3    origin_local = inv_quat.xform( start - origin_ );
+    const Vector3    dir_local    = inv_quat.xform( end - origin_ );
     const OctreeMeshNode & root = nodes_.ptr()[0];
     int face_ind = -1;
     real_t dist = 0.0;
@@ -237,7 +237,7 @@ bool OctreeMesh::intersects_segment_face( const Vector3 & start, const Vector3 &
     return res;
 }
 
-PoolVector<Vector3> OctreeMesh::lines()
+Vector<Vector3> OctreeMesh::lines()
 {
     Vector<Vector3> ls;
     const int qty = nodes_.size();
@@ -247,7 +247,7 @@ PoolVector<Vector3> OctreeMesh::lines()
         const bool has_ch = n.hasChildren();
         if ( has_ch )
                 continue;
-        const bool is_empty = n.ptInds.empty();
+        const bool is_empty = n.ptInds.is_empty();
         if ( is_empty )
                 continue;
 
@@ -291,21 +291,11 @@ PoolVector<Vector3> OctreeMesh::lines()
         //ls.push_back( vs[7] );
     }
 
-    PoolVector<Vector3> res;
-    const int sz = ls.size();
-    res.resize( sz );
-    PoolVector<Vector3>::Write w = res.write();
-    for ( int i=0; i<sz; i++ )
-    {
-        const Vector3 & v = ls.ptr()[i];
-        w[i] = v;
-    }
-
-    return res;
+    return ls;
 }
 
 
-void OctreeMesh::face_lines( Vector<Vector3> & ret, const Transform & t_to_camera ) const
+void OctreeMesh::face_lines( Vector<Vector3> & ret, const Transform3D & t_to_camera ) const
 {
 	const int qty = faces_.size();
 	for (int i=0; i<qty; i++)
@@ -365,7 +355,7 @@ void OctreeMesh::compute_face_properties()
         const real_t area = f.get_area() * 0.5;
         const Plane p     = f.get_plane();
         const Vector3 n   = p.get_normal();
-        const Vector3 r0  = f.get_median_point();
+        const Vector3 r0  = (f.vertex[0] + f.vertex[1] + f.vertex[2]) / 3.0;
         FaceProperties props;
         props.area     = area;
         props.normal   = n;
@@ -410,7 +400,7 @@ OctreeMesh::FaceProperties OctreeMesh::face_properties_world( int ind ) const
 
 
 
-static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces )
+static void faces_from_surface( const Transform3D & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces )
 {
 	// Don't add faces if doesn't consist of triangles.
     if (mesh.surface_get_primitive_type(surface_idx) != Mesh::PRIMITIVE_TRIANGLES)
@@ -421,7 +411,7 @@ static void faces_from_surface( const Transform & t, const Mesh & mesh, int surf
     parse_mesh_arrays( t, mesh, surface_idx, is_index_array, faces );
 }
 
-static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces )
+static void parse_mesh_arrays( const Transform3D & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces )
 {
     const int vert_count = is_index_array ? mesh.surface_get_array_index_len( surface_idx ) :
         mesh.surface_get_array_len( surface_idx );
@@ -435,21 +425,19 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
     Array arrays = mesh.surface_get_arrays( surface_idx );
     //FaceFiller filler(faces, arrays);
 
-    PoolVector<int> indices = arrays[Mesh::ARRAY_INDEX];
-    PoolVector<int>::Read indices_reader = indices.read();
+    Vector<int> indices = arrays[Mesh::ARRAY_INDEX];
 
-    PoolVector<Vector3> vertices = arrays[Mesh::ARRAY_VERTEX];
-    PoolVector<Vector3>::Read vertices_reader = vertices.read();
+    Vector<Vector3> vertices = arrays[Mesh::ARRAY_VERTEX];
 
     if ( is_index_array )
     {
-        for (int i = 0; i < vert_count; i++)
+        for (int i = 0; i<vert_count; i++)
         {
             const int face_idx   = i / 3;
             const int set_offset = i % 3;
-            const int lookup_index = indices_reader[i];
+            const int lookup_index = indices.ptr()[i];
             Face3 & face = faces.ptrw()[ orig_qty + face_idx ];
-            const Vector3 v = vertices_reader[lookup_index];
+            const Vector3 v = vertices.ptr()[lookup_index];
             const Vector3 vt = t.xform( v );
             face.vertex[set_offset] = vt;
         }
@@ -462,7 +450,7 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
             const int set_offset = i % 3;
             const int lookup_index = i;
             Face3 & face = faces.ptrw()[ orig_qty + face_idx ];
-            const Vector3 v = vertices_reader[lookup_index];
+            const Vector3 v = vertices.ptr()[lookup_index];
             const Vector3 vt = t.xform( v );
             face.vertex[set_offset] = vt;
         }

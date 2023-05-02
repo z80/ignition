@@ -1,12 +1,12 @@
 
-extends Spatial
+extends Node3D
 
-export(Resource) var layer_config = null
-export(Resource) var surface_source = null
+@export var layer_config: Resource = null
+@export var surface_source: Resource = null
 
-var solid: MeshInstance  = null
-var liquid: MeshInstance = null
-var atmosphere: Spatial  = null
+var solid: MeshInstance3D  = null
+var liquid: MeshInstance3D = null
+var atmosphere: Node3D  = null
 
 var _rebuild_strategy: MarchingCubesRebuildStrategyGd = null
 var _node_size_strategy: VolumeNodeSizeStrategyGd = null
@@ -14,20 +14,20 @@ var _scale_dist_ratio: ScaleDistanceRatioGd = null
 
 var _center_se3: Se3Ref = null
 
-var _ready: bool = false
+var _is_ready: bool = false
 var _running: bool = false
 var _requested_rebuild: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	var root: Spatial = get_node( "Visual" )
+	var root: Node3D = get_node( "Visual" )
 	solid  = root.solid
 	liquid = root.liquid
 	atmosphere = get_node( "Atmosphere" )
 	
 	_center_se3 = Se3Ref.new()
 	
-	_ready = false
+	_is_ready = false
 	
 	_initialize_scale_distance_ratio()
 	_initialize_strategies()
@@ -67,7 +67,7 @@ func update_source_se3( rotation: RefFrameRotationNode, source_se3: Se3Ref, view
 			_rebuild_start( view_point_se3 )
 	
 	var scale: float = 1.0 / layer_config.scale_divider
-	var t: Transform = _scale_dist_ratio.compute_transform( source_se3, scale )
+	var t: Transform3D = _scale_dist_ratio.compute_transform( source_se3, scale )
 	solid.transform = t
 	liquid.transform = t
 	
@@ -125,7 +125,7 @@ func _rebuild_process( args ):
 
 
 func _rebuild_finished( args ):
-	_ready = true
+	_is_ready = true
 	_running = false
 	
 	var voxel_surface_solid: MarchingCubesDualGd = args.voxel_surface_solid
@@ -139,8 +139,8 @@ func _rebuild_finished( args ):
 		sm = surface_source.materials_solid[0].duplicate()
 	
 	var pt: Vector3 = args.common_point
-	sm.set_shader_param( "common_point", pt )
-	sm.set_shader_param( "to_planet_rf", Basis.IDENTITY )
+	sm.set_shader_parameter( "common_point", pt )
+	sm.set_shader_parameter( "to_planet_rf", Basis.IDENTITY )
 	solid.material_override = sm
 	
 	
@@ -151,8 +151,8 @@ func _rebuild_finished( args ):
 		if sm == null:
 			sm = surface_source.materials_liquid[0].duplicate()
 		
-		sm.set_shader_param( "common_point", pt )
-		sm.set_shader_param( "to_planet_rf", Basis.IDENTITY )
+		sm.set_shader_parameter( "common_point", pt )
+		sm.set_shader_parameter( "to_planet_rf", Basis.IDENTITY )
 		liquid.material_override = sm
 
 

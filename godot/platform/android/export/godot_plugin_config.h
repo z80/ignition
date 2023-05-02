@@ -31,10 +31,10 @@
 #ifndef ANDROID_GODOT_PLUGIN_CONFIG_H
 #define ANDROID_GODOT_PLUGIN_CONFIG_H
 
-#include "core/error_list.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_list.h"
 #include "core/io/config_file.h"
-#include "core/project_settings.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 /*
  The `config` section and fields are required and defined as follow:
@@ -52,22 +52,22 @@ The `dependencies` section and fields are optional and defined as follow:
  See https://github.com/godotengine/godot/issues/38157#issuecomment-618773871
  */
 struct PluginConfigAndroid {
-	static const char *PLUGIN_CONFIG_EXT;
+	inline static const char *PLUGIN_CONFIG_EXT = ".gdap";
 
-	static const char *CONFIG_SECTION;
-	static const char *CONFIG_NAME_KEY;
-	static const char *CONFIG_BINARY_TYPE_KEY;
-	static const char *CONFIG_BINARY_KEY;
+	inline static const char *CONFIG_SECTION = "config";
+	inline static const char *CONFIG_NAME_KEY = "name";
+	inline static const char *CONFIG_BINARY_TYPE_KEY = "binary_type";
+	inline static const char *CONFIG_BINARY_KEY = "binary";
 
-	static const char *DEPENDENCIES_SECTION;
-	static const char *DEPENDENCIES_LOCAL_KEY;
-	static const char *DEPENDENCIES_REMOTE_KEY;
-	static const char *DEPENDENCIES_CUSTOM_MAVEN_REPOS_KEY;
+	inline static const char *DEPENDENCIES_SECTION = "dependencies";
+	inline static const char *DEPENDENCIES_LOCAL_KEY = "local";
+	inline static const char *DEPENDENCIES_REMOTE_KEY = "remote";
+	inline static const char *DEPENDENCIES_CUSTOM_MAVEN_REPOS_KEY = "custom_maven_repos";
 
-	static const char *BINARY_TYPE_LOCAL;
-	static const char *BINARY_TYPE_REMOTE;
+	inline static const char *BINARY_TYPE_LOCAL = "local";
+	inline static const char *BINARY_TYPE_REMOTE = "remote";
 
-	static const char *PLUGIN_VALUE_SEPARATOR;
+	inline static const char *PLUGIN_VALUE_SEPARATOR = "|";
 
 	// Set to true when the config file is properly loaded.
 	bool valid_config = false;
@@ -96,7 +96,7 @@ struct PluginConfigAndroid {
 
 	static PluginConfigAndroid load_plugin_config(Ref<ConfigFile> config_file, const String &path);
 
-	static String get_plugins_binaries(String type, Vector<PluginConfigAndroid> plugins_configs);
+	static String get_plugins_binaries(String binary_type, Vector<PluginConfigAndroid> plugins_configs);
 
 	static String get_plugins_custom_maven_repos(Vector<PluginConfigAndroid> plugins_configs);
 

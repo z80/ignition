@@ -14,8 +14,7 @@ comprehensive set of [common tools](https://godotengine.org/features), so that u
 without having to reinvent the wheel. Games can be exported with one click to a
 number of platforms, including the major desktop platforms (Linux, macOS,
 Windows), mobile platforms (Android, iOS), as well as Web-based platforms
-(HTML5) and
-[consoles](https://docs.godotengine.org/en/latest/tutorials/platform/consoles.html).
+and [consoles](https://docs.godotengine.org/en/latest/tutorials/platform/consoles.html).
 
 ## Free, open source and community-driven
 
@@ -42,7 +41,7 @@ Official binaries for the Godot editor and the export templates can be found
 
 ### Compiling from source
 
-[See the official docs](https://docs.godotengine.org/en/latest/development/compiling/)
+[See the official docs](https://docs.godotengine.org/en/latest/contributing/development/compiling)
 for compilation instructions for every supported platform.
 
 ## Community and contributing
@@ -57,7 +56,7 @@ To get started contributing to the project, see the [contributing guide](CONTRIB
 
 ## Documentation and demos
 
-The official documentation is hosted on [ReadTheDocs](https://docs.godotengine.org).
+The official documentation is hosted on [Read the Docs](https://docs.godotengine.org).
 It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
 
 The [class reference](https://docs.godotengine.org/en/latest/classes/)
@@ -72,8 +71,6 @@ provided by the community, such as text and video tutorials, demos, etc.
 Consult the [community channels](https://godotengine.org/community)
 for more information.
 
-[![Actions Build Status](https://github.com/godotengine/godot/workflows/Godot/badge.svg?branch=master)](https://github.com/godotengine/godot/actions)
 [![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
 [![Translate on Weblate](https://hosted.weblate.org/widgets/godot-engine/-/godot/svg-badge.svg)](https://hosted.weblate.org/engage/godot-engine/?utm_source=widget)
-[![Total alerts on LGTM](https://img.shields.io/lgtm/alerts/g/godotengine/godot.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/godotengine/godot/alerts)
 [![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/godotengine/godot)](https://www.tickgit.com/browse?repo=github.com/godotengine/godot)

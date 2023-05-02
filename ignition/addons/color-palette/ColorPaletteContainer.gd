@@ -1,4 +1,4 @@
-tool
+@tool
 extends PanelContainer
 
 signal palette_updated
@@ -6,37 +6,37 @@ signal palette_color_selected(palette, color_index)
 signal palette_color_deleted(palette, color_index)
 signal container_selected(container_object)
 
-onready var btn_load_to_picker = $MarginContainer/VBoxContainer/HBoxContainer/BtnLoadToPicker
-onready var btn_update_from_picker = $MarginContainer/VBoxContainer/HBoxContainer/BtnUpdateFromPicker
-onready var name_label = $MarginContainer/VBoxContainer/HBoxContainer/PaletteName
-onready var grid = $MarginContainer/VBoxContainer/PaletteTileContainer/TileContainer
+@onready var btn_load_to_picker = $MarginContainer/VBoxContainer/HBoxContainer/BtnLoadToPicker
+@onready var btn_update_from_picker = $MarginContainer/VBoxContainer/HBoxContainer/BtnUpdateFromPicker
+@onready var name_label = $MarginContainer/VBoxContainer/HBoxContainer/PaletteName
+@onready var grid = $MarginContainer/VBoxContainer/PaletteTileContainer/TileContainer
 
 var palette: Palette
 var undoredo: UndoRedo
-var selected: bool = false setget set_selected 
+var selected: bool = false: set = set_selected
 
 
 func _ready():
-	btn_load_to_picker.connect("pressed", self, "load_to_picker")
-	btn_update_from_picker.connect("pressed", self, "update_from_picker")
-	grid.connect("grid_item_reordered", self, "_grid_item_reordered")
+	btn_load_to_picker.connect("pressed", Callable(self, "load_to_picker"))
+	btn_update_from_picker.connect("pressed", Callable(self, "update_from_picker"))
+	grid.connect("grid_item_reordered", Callable(self, "_grid_item_reordered"))
 	
 #	Base settings for all color rects are set in the color tile class
 	var cr = ColorTile.new()
 	
 	if palette:
 		name_label.text = palette.name
-		name_label.hint_tooltip = palette.comments
+		name_label.tooltip_text = palette.comments
 		for c in palette.colors:
 #			Color rect instance properties
 			var cri = cr.duplicate()
 			cri.color = c
-			cri.connect("tile_selected", self, "_on_tile_selected")
-			cri.connect("tile_deleted", self, "_on_tile_deleted")
+			cri.connect("tile_selected", Callable(self, "_on_tile_selected"))
+			cri.connect("tile_deleted", Callable(self, "_on_tile_deleted"))
 			grid.add_child(cri)
 
 func load_to_picker():
-	var new_picker_presets: PoolColorArray
+	var new_picker_presets: PackedColorArray
 	
 	for c in palette.colors:
 		new_picker_presets.append(c)
@@ -44,16 +44,16 @@ func load_to_picker():
 #	Hack?
 	var ep = EditorPlugin.new()
 	ep.get_editor_interface() \
-		.get_editor_settings() \
-		.set_project_metadata("color_picker", "presets", new_picker_presets)
+		super.get_editor_settings() \
+		super.set_project_metadata("color_picker", "presets", new_picker_presets)
 	ep.free()
 
 
 func update_from_picker():
 	var ep = EditorPlugin.new()
-	var colors: PoolColorArray = ep.get_editor_interface() \
-		.get_editor_settings() \
-		.get_project_metadata("color_picker", "presets")
+	var colors: PackedColorArray = ep.get_editor_interface() \
+		super.get_editor_settings() \
+		super.get_project_metadata("color_picker", "presets")
 	
 	palette.colors.clear()
 	for c in colors:
@@ -112,12 +112,12 @@ func set_selected(value: bool) -> void:
 	if selected:
 		var sb: StyleBoxFlat = get_stylebox("panel").duplicate()
 		sb.bg_color = Color("#2c3141")
-		add_stylebox_override("panel", sb)
+		add_theme_stylebox_override("panel", sb)
 		emit_signal("container_selected", self)
 	else:
 		var sb: StyleBoxFlat = get_stylebox("panel").duplicate()
 		sb.bg_color = Color(0.15, 0.17, 0.23)
-		add_stylebox_override("panel", sb)
+		add_theme_stylebox_override("panel", sb)
 	
 
 func _gui_input(event):

@@ -5,7 +5,7 @@
 #include "se3.h"
 #include "celestial_consts.h"
 
-#include "core/math/transform.h"
+#include "core/math/transform_3d.h"
 
 namespace Ign
 {

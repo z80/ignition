@@ -32,19 +32,21 @@
 #define AUDIO_STREAM_PREVIEW_H
 
 #include "core/os/thread.h"
-#include "core/safe_refcount.h"
+#include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 #include "servers/audio/audio_stream.h"
 
-class AudioStreamPreview : public Reference {
-	GDCLASS(AudioStreamPreview, Reference);
+class AudioStreamPreview : public RefCounted {
+	GDCLASS(AudioStreamPreview, RefCounted);
 	friend class AudioStream;
 	Vector<uint8_t> preview;
 	float length;
 
 	friend class AudioStreamPreviewGenerator;
+	uint64_t version = 1;
 
 public:
+	uint64_t get_version() const { return version; }
 	float get_length() const;
 	float get_max(float p_time, float p_time_next) const;
 	float get_min(float p_time, float p_time_next) const;
@@ -63,21 +65,29 @@ class AudioStreamPreviewGenerator : public Node {
 		Ref<AudioStreamPlayback> playback;
 		SafeFlag generating;
 		ObjectID id;
-		Thread *thread;
+		Thread *thread = nullptr;
 
 		// Needed for the bookkeeping of the Map
-		Preview &operator=(const Preview &p_rhs) {
+		void operator=(const Preview &p_rhs) {
 			preview = p_rhs.preview;
 			base_stream = p_rhs.base_stream;
 			playback = p_rhs.playback;
 			generating.set_to(generating.is_set());
 			id = p_rhs.id;
 			thread = p_rhs.thread;
-			return *this;
 		}
+		Preview(const Preview &p_rhs) {
+			preview = p_rhs.preview;
+			base_stream = p_rhs.base_stream;
+			playback = p_rhs.playback;
+			generating.set_to(generating.is_set());
+			id = p_rhs.id;
+			thread = p_rhs.thread;
+		}
+		Preview() {}
 	};
 
-	Map<ObjectID, Preview> previews;
+	HashMap<ObjectID, Preview> previews;
 
 	static void _preview_thread(void *p_preview);
 

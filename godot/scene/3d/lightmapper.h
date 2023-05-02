@@ -31,7 +31,9 @@
 #ifndef LIGHTMAPPER_H
 #define LIGHTMAPPER_H
 
-#include "scene/resources/mesh.h"
+#include "core/object/ref_counted.h"
+
+class Image;
 
 #if !defined(__aligned)
 
@@ -43,8 +45,8 @@
 
 #endif
 
-class LightmapDenoiser : public Reference {
-	GDCLASS(LightmapDenoiser, Reference)
+class LightmapDenoiser : public RefCounted {
+	GDCLASS(LightmapDenoiser, RefCounted)
 protected:
 	static LightmapDenoiser *(*create_function)();
 
@@ -53,8 +55,8 @@ public:
 	static Ref<LightmapDenoiser> create();
 };
 
-class LightmapRaycaster : public Reference {
-	GDCLASS(LightmapRaycaster, Reference)
+class LightmapRaycaster : public RefCounted {
+	GDCLASS(LightmapRaycaster, RefCounted)
 protected:
 	static LightmapRaycaster *(*create_function)();
 
@@ -86,7 +88,9 @@ public:
 				instID(INVALID_GEOMETRY_ID) {}
 
 		/*! Tests if we hit something. */
-		_FORCE_INLINE_ explicit operator bool() const { return geomID != INVALID_GEOMETRY_ID; }
+		_FORCE_INLINE_ explicit operator bool() const {
+			return geomID != INVALID_GEOMETRY_ID;
+		}
 
 	public:
 		Vector3 org; //!< Ray origin + tnear
@@ -114,15 +118,24 @@ public:
 	virtual void set_mesh_alpha_texture(Ref<Image> p_alpha_texture, unsigned int p_id) = 0;
 	virtual void commit() = 0;
 
-	virtual void set_mesh_filter(const Set<int> &p_mesh_ids) = 0;
+	virtual void set_mesh_filter(const HashSet<int> &p_mesh_ids) = 0;
 	virtual void clear_mesh_filter() = 0;
 
 	static Ref<LightmapRaycaster> create();
 };
 
-class Lightmapper : public Reference {
-	GDCLASS(Lightmapper, Reference)
+class Lightmapper : public RefCounted {
+	GDCLASS(Lightmapper, RefCounted)
 public:
+	enum GenerateProbes {
+		GENERATE_PROBES_DISABLED,
+		GENERATE_PROBES_SUBDIV_4,
+		GENERATE_PROBES_SUBDIV_8,
+		GENERATE_PROBES_SUBDIV_16,
+		GENERATE_PROBES_SUBDIV_32,
+
+	};
+
 	enum LightType {
 		LIGHT_TYPE_DIRECTIONAL,
 		LIGHT_TYPE_OMNI,
@@ -132,9 +145,6 @@ public:
 	enum BakeError {
 		BAKE_ERROR_LIGHTMAP_TOO_SMALL,
 		BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES,
-		BAKE_ERROR_NO_MESHES,
-		BAKE_ERROR_USER_ABORTED,
-		BAKE_ERROR_NO_RAYCASTER,
 		BAKE_OK
 	};
 
@@ -153,34 +163,24 @@ public:
 
 protected:
 public:
-	typedef bool (*BakeStepFunc)(float, const String &, void *, bool); //progress, step description, userdata, force refresh
-	typedef void (*BakeEndFunc)(uint32_t); // time_started
+	typedef bool (*BakeStepFunc)(float, const String &, void *, bool); //step index, step total, step description, userdata
 
 	struct MeshData {
-		struct TextureDef {
-			RID tex_rid;
-			Color mul;
-			Color add;
-		};
-
 		//triangle data
 		Vector<Vector3> points;
-		Vector<Vector2> uv;
 		Vector<Vector2> uv2;
 		Vector<Vector3> normal;
-		Vector<TextureDef> albedo;
-		Vector<TextureDef> emission;
-		Vector<int> surface_facecounts;
+		Ref<Image> albedo_on_uv2;
+		Ref<Image> emission_on_uv2;
 		Variant userdata;
 	};
 
-	virtual void add_albedo_texture(Ref<Texture> p_texture) = 0;
-	virtual void add_emission_texture(Ref<Texture> p_texture) = 0;
-	virtual void add_mesh(const MeshData &p_mesh, Vector2i p_size) = 0;
-	virtual void add_directional_light(bool p_bake_direct, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_size) = 0;
-	virtual void add_omni_light(bool p_bake_direct, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_size) = 0;
-	virtual void add_spot_light(bool p_bake_direct, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_multiplier, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) = 0;
-	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bounce_indirect_energy, float p_bias, bool p_generate_atlas, int p_max_texture_size, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_step_userdata = nullptr, BakeStepFunc p_substep_function = nullptr) = 0;
+	virtual void add_mesh(const MeshData &p_mesh) = 0;
+	virtual void add_directional_light(bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_angular_distance, float p_shadow_blur) = 0;
+	virtual void add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) = 0;
+	virtual void add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) = 0;
+	virtual void add_probe(const Vector3 &p_position) = 0;
+	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_step_userdata = nullptr, float p_exposure_normalization = 1.0) = 0;
 
 	virtual int get_bake_texture_count() const = 0;
 	virtual Ref<Image> get_bake_texture(int p_index) const = 0;
@@ -188,6 +188,9 @@ public:
 	virtual Variant get_bake_mesh_userdata(int p_index) const = 0;
 	virtual Rect2 get_bake_mesh_uv_scale(int p_index) const = 0;
 	virtual int get_bake_mesh_texture_slice(int p_index) const = 0;
+	virtual int get_bake_probe_count() const = 0;
+	virtual Vector3 get_bake_probe_point(int p_probe) const = 0;
+	virtual Vector<Color> get_bake_probe_sh(int p_probe) const = 0;
 
 	static Ref<Lightmapper> create();
 

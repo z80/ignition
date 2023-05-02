@@ -30,7 +30,7 @@
 
 #include "texture_loader_dds.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access.h"
 
 #define PF_FOURCC(s) ((uint32_t)(((s)[3] << 24U) | ((s)[2] << 16U) | ((s)[1] << 8U) | ((s)[0])))
 
@@ -68,12 +68,12 @@ enum DDSFormat {
 };
 
 struct DDSFormatInfo {
-	const char *name;
-	bool compressed;
-	bool palette;
-	uint32_t divisor;
-	uint32_t block_size;
-	Image::Format format;
+	const char *name = nullptr;
+	bool compressed = false;
+	bool palette = false;
+	uint32_t divisor = 0;
+	uint32_t block_size = 0;
+	Image::Format format = Image::Format::FORMAT_BPTC_RGBA;
 };
 
 static const DDSFormatInfo dds_format_info[DDS_MAX] = {
@@ -94,23 +94,23 @@ static const DDSFormatInfo dds_format_info[DDS_MAX] = {
 	{ "GRAYSCALE_ALPHA", false, false, 1, 2, Image::FORMAT_LA8 }
 };
 
-RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error) {
+Ref<Resource> ResourceFormatDDS::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
 	}
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (!f) {
-		return RES();
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
+	if (f.is_null()) {
+		return Ref<Resource>();
 	}
 
-	FileAccessRef fref(f);
+	Ref<FileAccess> fref(f);
 	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
 	}
 
-	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open DDS texture file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<Resource>(), "Unable to open DDS texture file '" + p_path + "'.");
 
 	uint32_t magic = f->get_32();
 	uint32_t hsize = f->get_32();
@@ -131,7 +131,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	// We don't check DDSD_CAPS or DDSD_PIXELFORMAT, as they're mandatory when writing,
 	// but non-mandatory when reading (as some writers don't set them)...
 	if (magic != DDS_MAGIC || hsize != 124) {
-		ERR_FAIL_V_MSG(RES(), "Invalid or unsupported DDS texture file '" + p_path + "'.");
+		ERR_FAIL_V_MSG(Ref<Resource>(), "Invalid or unsupported DDS texture file '" + p_path + "'.");
 	}
 
 	/* uint32_t format_size = */ f->get_32();
@@ -204,14 +204,14 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		dds_format = DDS_BGR565;
 	} else {
 		printf("unrecognized fourcc %x format_flags: %x - rgbbits %i - red_mask %x green mask %x blue mask %x alpha mask %x\n", format_fourcc, format_flags, format_rgb_bits, format_red_mask, format_green_mask, format_blue_mask, format_alpha_mask);
-		ERR_FAIL_V_MSG(RES(), "Unrecognized or unsupported color layout in DDS '" + p_path + "'.");
+		ERR_FAIL_V_MSG(Ref<Resource>(), "Unrecognized or unsupported color layout in DDS '" + p_path + "'.");
 	}
 
 	if (!(flags & DDSD_MIPMAPCOUNT)) {
 		mipmaps = 1;
 	}
 
-	PoolVector<uint8_t> src_data;
+	Vector<uint8_t> src_data;
 
 	const DDSFormatInfo &info = dds_format_info[dds_format];
 	uint32_t w = width;
@@ -221,28 +221,28 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		//compressed bc
 
 		uint32_t size = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
-		ERR_FAIL_COND_V(size != pitch, RES());
-		ERR_FAIL_COND_V(!(flags & DDSD_LINEARSIZE), RES());
+		ERR_FAIL_COND_V(size != pitch, Ref<Resource>());
+		ERR_FAIL_COND_V(!(flags & DDSD_LINEARSIZE), Ref<Resource>());
 
 		for (uint32_t i = 1; i < mipmaps; i++) {
-			w = MAX(1, w >> 1);
-			h = MAX(1, h >> 1);
+			w = MAX(1u, w >> 1);
+			h = MAX(1u, h >> 1);
 			uint32_t bsize = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
 			//printf("%i x %i - block: %i\n",w,h,bsize);
 			size += bsize;
 		}
 
 		src_data.resize(size);
-		PoolVector<uint8_t>::Write wb = src_data.write();
-		f->get_buffer(wb.ptr(), size);
+		uint8_t *wb = src_data.ptrw();
+		f->get_buffer(wb, size);
 
 	} else if (info.palette) {
 		//indexed
-		ERR_FAIL_COND_V(!(flags & DDSD_PITCH), RES());
-		ERR_FAIL_COND_V(format_rgb_bits != 8, RES());
+		ERR_FAIL_COND_V(!(flags & DDSD_PITCH), Ref<Resource>());
+		ERR_FAIL_COND_V(format_rgb_bits != 8, Ref<Resource>());
 
 		uint32_t size = pitch * height;
-		ERR_FAIL_COND_V(size != width * height * info.block_size, RES());
+		ERR_FAIL_COND_V(size != width * height * info.block_size, Ref<Resource>());
 
 		uint8_t palette[256 * 4];
 		f->get_buffer(palette, 256 * 4);
@@ -264,8 +264,8 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		}
 
 		src_data.resize(size + 256 * colsize);
-		PoolVector<uint8_t>::Write wb = src_data.write();
-		f->get_buffer(wb.ptr(), size);
+		uint8_t *wb = src_data.ptrw();
+		f->get_buffer(wb, size);
 
 		for (int i = 0; i < 256; i++) {
 			int dst_ofs = size + i * colsize;
@@ -295,8 +295,8 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		}
 
 		src_data.resize(size);
-		PoolVector<uint8_t>::Write wb = src_data.write();
-		f->get_buffer(wb.ptr(), size);
+		uint8_t *wb = src_data.ptrw();
+		f->get_buffer(wb, size);
 
 		switch (dds_format) {
 			case DDS_BGR5A1: {
@@ -373,7 +373,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 				int colcount = size/4;
 
 				for(int i=0;i<colcount;i++) {
-
 					uint8_t r = wb[i*4+1];
 					uint8_t g = wb[i*4+2];
 					uint8_t b = wb[i*4+3];
@@ -392,7 +391,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 				int colcount = size/3;
 
 				for(int i=0;i<colcount;i++) {
-
 					SWAP( wb[i*3+0],wb[i*3+2] );
 				}*/
 			} break;
@@ -411,9 +409,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	}
 
 	Ref<Image> img = memnew(Image(width, height, mipmaps - 1, info.format, src_data));
-
-	Ref<ImageTexture> texture = memnew(ImageTexture);
-	texture->create_from_image(img);
+	Ref<ImageTexture> texture = ImageTexture::create_from_image(img);
 
 	if (r_error) {
 		*r_error = OK;
@@ -427,7 +423,7 @@ void ResourceFormatDDS::get_recognized_extensions(List<String> *p_extensions) co
 }
 
 bool ResourceFormatDDS::handles_type(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Texture");
+	return ClassDB::is_parent_class(p_type, "Texture2D");
 }
 
 String ResourceFormatDDS::get_resource_type(const String &p_path) const {

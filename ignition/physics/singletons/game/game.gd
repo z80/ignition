@@ -2,7 +2,7 @@
 extends Node
 
 
-export(bool) var all_available = true
+@export var all_available: bool = true
 
 
 var _block_descs: Array      = []

@@ -1,9 +1,9 @@
 
 #include "numerical_motion.h"
 
-#include "core/variant.h"
-#include "core/dictionary.h"
-#include "core/print_string.h"
+#include "core/variant/variant.h"
+#include "core/variant/dictionary.h"
+#include "core/string/print_string.h"
 
 namespace Ign
 {

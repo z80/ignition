@@ -30,22 +30,18 @@
 
 #include "file_access_unix.h"
 
-#if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
+#if defined(UNIX_ENABLED)
 
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <errno.h>
-
 #if defined(UNIX_ENABLED)
 #include <unistd.h>
-#endif
-
-#ifndef ANDROID_ENABLED
-#include <sys/statvfs.h>
 #endif
 
 #ifdef MSVC
@@ -56,12 +52,6 @@
 #define S_ISREG(m) ((m)&S_IFREG)
 #endif
 
-#ifndef NO_FCNTL
-#include <fcntl.h>
-#else
-#include <sys/ioctl.h>
-#endif
-
 void FileAccessUnix::check_errors() const {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
@@ -70,15 +60,12 @@ void FileAccessUnix::check_errors() const {
 	}
 }
 
-Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
-	if (f) {
-		fclose(f);
-	}
-	f = nullptr;
+Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
+	_close();
 
 	path_src = p_path;
 	path = fix_path(p_path);
-	//printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
+	//printf("opening %s, %i\n", path.utf8().get_data(), Memory::get_static_mem_usage());
 
 	ERR_FAIL_COND_V_MSG(f, ERR_ALREADY_IN_USE, "File is already in use.");
 	const char *mode_string;
@@ -99,7 +86,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	   backend (unix-compatible mostly) supports utf8 encoding */
 
 	//printf("opening %s as %s\n", p_path.utf8().get_data(), path.utf8().get_data());
-	struct stat st;
+	struct stat st = {};
 	int err = stat(path.utf8().get_data(), &st);
 	if (!err) {
 		switch (st.st_mode & S_IFMT) {
@@ -111,7 +98,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 		}
 	}
 
-	if (is_backup_save_enabled() && (p_mode_flags & WRITE) && !(p_mode_flags & READ)) {
+	if (is_backup_save_enabled() && (p_mode_flags == WRITE)) {
 		save_path = path;
 		path = path + ".tmp";
 	}
@@ -134,13 +121,8 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	int fd = fileno(f);
 
 	if (fd != -1) {
-#if defined(NO_FCNTL)
-		unsigned long par = 0;
-		ioctl(fd, FIOCLEX, &par);
-#else
 		int opts = fcntl(fd, F_GETFD);
 		fcntl(fd, F_SETFD, opts | FD_CLOEXEC);
-#endif
 	}
 
 	last_error = OK;
@@ -148,7 +130,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessUnix::close() {
+void FileAccessUnix::_close() {
 	if (!f) {
 		return;
 	}
@@ -160,7 +142,7 @@ void FileAccessUnix::close() {
 		close_notification_func(path, flags);
 	}
 
-	if (save_path != "") {
+	if (!save_path.is_empty()) {
 		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {
@@ -212,7 +194,7 @@ uint64_t FileAccessUnix::get_position() const {
 	return pos;
 }
 
-uint64_t FileAccessUnix::get_len() const {
+uint64_t FileAccessUnix::get_length() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
 	int64_t pos = ftello(f);
@@ -246,7 +228,7 @@ uint64_t FileAccessUnix::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	uint64_t read = fread(p_dst, 1, p_length, f);
 	check_errors();
 	return read;
-};
+}
 
 Error FileAccessUnix::get_error() const {
 	return last_error;
@@ -270,7 +252,7 @@ void FileAccessUnix::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 
 bool FileAccessUnix::file_exists(const String &p_path) {
 	int err;
-	struct stat st;
+	struct stat st = {};
 	String filename = fix_path(p_path);
 
 	// Does the name exist at all?
@@ -285,8 +267,9 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 		return false;
 	}
 #else
-	if (_access(filename.utf8().get_data(), 4) == -1)
+	if (_access(filename.utf8().get_data(), 4) == -1) {
 		return false;
+	}
 #endif
 
 	// See if this is a regular file
@@ -301,7 +284,7 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 
 uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat flags;
+	struct stat flags = {};
 	int err = stat(file.utf8().get_data(), &flags);
 
 	if (!err) {
@@ -309,19 +292,19 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	} else {
 		print_verbose("Failed to get modified time for: " + p_file + "");
 		return 0;
-	};
+	}
 }
 
 uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat flags;
+	struct stat flags = {};
 	int err = stat(file.utf8().get_data(), &flags);
 
 	if (!err) {
 		return flags.st_mode & 0x7FF; //only permissions
 	} else {
 		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
-	};
+	}
 }
 
 Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
@@ -335,16 +318,14 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_per
 	return FAILED;
 }
 
+void FileAccessUnix::close() {
+	_close();
+}
+
 CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
-FileAccessUnix::FileAccessUnix() :
-		f(nullptr),
-		flags(0),
-		last_error(OK) {
-}
-
 FileAccessUnix::~FileAccessUnix() {
-	close();
+	_close();
 }
 
-#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+#endif // UNIX_ENABLED

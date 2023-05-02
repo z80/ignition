@@ -30,8 +30,19 @@
 
 #include "register_types.h"
 
-// Dummy module as libogg is needed by other modules (vorbis, theora, opus, ...)
+#include "ogg_packet_sequence.h"
 
-void register_ogg_types() {}
+void initialize_ogg_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 
-void unregister_ogg_types() {}
+	GDREGISTER_CLASS(OggPacketSequence);
+	GDREGISTER_CLASS(OggPacketSequencePlayback);
+}
+
+void uninitialize_ogg_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

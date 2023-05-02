@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfirmationDialog" inherits="AcceptDialog" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ConfirmationDialog" inherits="AcceptDialog" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Dialog for confirmation of actions.
 	</brief_description>
 	<description>
 		Dialog for confirmation of actions. This dialog inherits from [AcceptDialog], but has by default an OK and Cancel button (in host OS order).
 		To get cancel action, you can use:
-		[codeblock]
-		get_cancel().connect("pressed", self, "cancelled")
-		[/codeblock].
+		[codeblocks]
+		[gdscript]
+		get_cancel_button().pressed.connect(self.canceled)
+		[/gdscript]
+		[csharp]
+		GetCancelButton().Pressed += Canceled;
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_cancel">
+		<method name="get_cancel_button">
 			<return type="Button" />
 			<description>
 				Returns the cancel button.
@@ -22,9 +27,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" overrides="Control" default="Vector2( 200, 70 )" />
-		<member name="window_title" type="String" setter="set_title" getter="get_title" overrides="WindowDialog" default="&quot;Please Confirm...&quot;" />
+		<member name="cancel_button_text" type="String" setter="set_cancel_button_text" getter="get_cancel_button_text" default="&quot;Cancel&quot;">
+			The text displayed by the cancel button (see [method get_cancel_button]).
+		</member>
+		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" overrides="Window" default="Vector2i(200, 70)" />
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" overrides="Window" default="Vector2i(200, 100)" />
+		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Please Confirm...&quot;" />
 	</members>
-	<constants>
-	</constants>
 </class>

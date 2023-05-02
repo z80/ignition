@@ -68,7 +68,7 @@ const OctreeMeshNode & OctreeMeshNode::operator=( const OctreeMeshNode & inst )
 bool OctreeMeshNode::hasChildren() const
 {
     // Filled can't have children.
-    if ( !ptInds.empty() )
+    if ( !ptInds.is_empty() )
         return false;
 
     for ( int i=0; i<8; i++ )

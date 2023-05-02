@@ -32,9 +32,15 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/io/image_loader.h"
+#include "editor/editor_file_dialog.h"
+#include "editor/editor_node.h"
 #include "scene/2d/cpu_particles_2d.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
-#include "scene/resources/particles_material.h"
+#include "scene/gui/spin_box.h"
+#include "scene/resources/particle_process_material.h"
 
 void CPUParticles2DEditorPlugin::edit(Object *p_object) {
 	particles = Object::cast_to<CPUParticles2D>(p_object);
@@ -54,17 +60,17 @@ void CPUParticles2DEditorPlugin::make_visible(bool p_visible) {
 
 void CPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 	source_emission_file = p_file;
-	emission_mask->popup_centered_minsize();
+	emission_mask->popup_centered();
 }
 
 void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	switch (p_idx) {
 		case MENU_LOAD_EMISSION_MASK: {
-			file->popup_centered_ratio();
+			file->popup_file_dialog();
 
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
-			emission_mask->popup_centered_minsize();
+			emission_mask->popup_centered();
 		} break;
 		case MENU_RESTART: {
 			particles->restart();
@@ -74,7 +80,7 @@ void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 
 void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	Ref<Image> img;
-	img.instance();
+	img.instantiate();
 	Error err = ImageLoader::load_image(source_emission_file, img);
 	ERR_FAIL_COND_MSG(err != OK, "Error loading image '" + source_emission_file + "'.");
 
@@ -83,7 +89,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 	img->convert(Image::FORMAT_RGBA8);
 	ERR_FAIL_COND(img->get_format() != Image::FORMAT_RGBA8);
-	Size2i s = Size2(img->get_width(), img->get_height());
+	Size2i s = img->get_size();
 	ERR_FAIL_COND(s.width == 0 || s.height == 0);
 
 	Vector<Point2> valid_positions;
@@ -107,8 +113,8 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	int vpc = 0;
 
 	{
-		PoolVector<uint8_t> data = img->get_data();
-		PoolVector<uint8_t>::Read r = data.read();
+		Vector<uint8_t> img_data = img->get_data();
+		const uint8_t *r = img_data.ptr();
 
 		for (int i = 0; i < s.width; i++) {
 			for (int j = 0; j < s.height; j++) {
@@ -183,9 +189,9 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	ERR_FAIL_COND_MSG(valid_positions.size() == 0, "No pixels with transparency > 128 in image...");
 
 	if (capture_colors) {
-		PoolColorArray pca;
+		PackedColorArray pca;
 		pca.resize(vpc);
-		PoolColorArray::Write pcaw = pca.write();
+		Color *pcaw = pca.ptrw();
 		for (int i = 0; i < vpc; i += 1) {
 			Color color;
 			color.r = valid_colors[i * 4 + 0] / 255.0f;
@@ -199,9 +205,9 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 	if (valid_normals.size()) {
 		particles->set_emission_shape(CPUParticles2D::EMISSION_SHAPE_DIRECTED_POINTS);
-		PoolVector2Array norms;
+		PackedVector2Array norms;
 		norms.resize(valid_normals.size());
-		PoolVector2Array::Write normsw = norms.write();
+		Vector2 *normsw = norms.ptrw();
 		for (int i = 0; i < valid_normals.size(); i += 1) {
 			normsw[i] = valid_normals[i];
 		}
@@ -211,9 +217,9 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 
 	{
-		PoolVector2Array points;
+		PackedVector2Array points;
 		points.resize(valid_positions.size());
-		PoolVector2Array::Write pointsw = points.write();
+		Vector2 *pointsw = points.ptrw();
 		for (int i = 0; i < valid_positions.size(); i += 1) {
 			pointsw[i] = valid_positions[i];
 		}
@@ -222,23 +228,20 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 }
 
 void CPUParticles2DEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		menu->get_popup()->connect("id_pressed", this, "_menu_callback");
-		menu->set_icon(menu->get_popup()->get_icon("Particles2D", "EditorIcons"));
-		file->connect("file_selected", this, "_file_selected");
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
+			menu->set_icon(epoints->get_theme_icon(SNAME("CPUParticles2D"), SNAME("EditorIcons")));
+			file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
+		} break;
 	}
 }
 
 void CPUParticles2DEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_menu_callback"), &CPUParticles2DEditorPlugin::_menu_callback);
-	ClassDB::bind_method(D_METHOD("_file_selected"), &CPUParticles2DEditorPlugin::_file_selected);
-	ClassDB::bind_method(D_METHOD("_generate_emission_mask"), &CPUParticles2DEditorPlugin::_generate_emission_mask);
 }
 
-CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
+CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin() {
 	particles = nullptr;
-	editor = p_node;
-	undo_redo = editor->get_undo_redo();
 
 	toolbar = memnew(HBoxContainer);
 	add_control_to_container(CONTAINER_CANVAS_EDITOR_MENU, toolbar);
@@ -247,21 +250,19 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 	toolbar->add_child(memnew(VSeparator));
 
 	menu = memnew(MenuButton);
-	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
-	menu->get_popup()->add_separator();
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
-	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);
-	menu->set_text(TTR("Particles"));
+	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
+	menu->set_text(TTR("CPUParticles2D"));
 	menu->set_switch_on_hover(true);
 	toolbar->add_child(menu);
 
 	file = memnew(EditorFileDialog);
 	List<String> ext;
 	ImageLoader::get_recognized_extensions(&ext);
-	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
-		file->add_filter("*." + E->get() + "; " + E->get().to_upper());
+	for (const String &E : ext) {
+		file->add_filter("*." + E, E.to_upper());
 	}
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);
 
 	epoints = memnew(SpinBox);
@@ -286,7 +287,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 
 	toolbar->add_child(emission_mask);
 
-	emission_mask->connect("confirmed", this, "_generate_emission_mask");
+	emission_mask->connect("confirmed", callable_mp(this, &CPUParticles2DEditorPlugin::_generate_emission_mask));
 }
 
 CPUParticles2DEditorPlugin::~CPUParticles2DEditorPlugin() {

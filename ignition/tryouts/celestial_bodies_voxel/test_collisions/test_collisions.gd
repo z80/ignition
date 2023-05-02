@@ -9,7 +9,7 @@ extends "res://physics/ref_frames/root/ref_frame_root.gd"
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	._ready()
+	super._ready()
 	UserInput.gui_control_bool( "gui_group_1", true, true, false )
 	
 #	var cam: Node = get_node( "Planet/Rotation/RefFramePhysics/Character/PlayerCamera" )

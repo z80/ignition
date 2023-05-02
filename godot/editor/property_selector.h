@@ -31,34 +31,34 @@
 #ifndef PROPERTY_SELECTOR_H
 #define PROPERTY_SELECTOR_H
 
-#include "editor/property_editor.h"
-#include "editor_help.h"
-#include "scene/gui/rich_text_label.h"
+#include "scene/gui/dialogs.h"
+
+class EditorHelpBit;
+class LineEdit;
+class Tree;
 
 class PropertySelector : public ConfirmationDialog {
 	GDCLASS(PropertySelector, ConfirmationDialog);
 
-	LineEdit *search_box;
-	Tree *search_options;
+	LineEdit *search_box = nullptr;
+	Tree *search_options = nullptr;
 
-	void _update_search();
-
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-
-	void _confirmed();
 	void _text_changed(const String &p_newtext);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _update_search();
+	void _confirmed();
+	void _item_selected();
+	void _hide_requested();
 
-	EditorHelpBit *help_bit;
+	EditorHelpBit *help_bit = nullptr;
 
-	bool properties;
+	bool properties = false;
 	String selected;
 	Variant::Type type;
 	String base_type;
 	ObjectID script;
-	Object *instance;
-	bool virtuals_only;
-
-	void _item_selected();
+	Object *instance = nullptr;
+	bool virtuals_only = false;
 
 	Vector<Variant::Type> type_filter;
 

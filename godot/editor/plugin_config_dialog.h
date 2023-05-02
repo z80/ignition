@@ -36,25 +36,34 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/text_edit.h"
+#include "scene/gui/texture_rect.h"
 
 class PluginConfigDialog : public ConfirmationDialog {
 	GDCLASS(PluginConfigDialog, ConfirmationDialog);
 
-	LineEdit *name_edit;
-	LineEdit *subfolder_edit;
-	TextEdit *desc_edit;
-	LineEdit *author_edit;
-	LineEdit *version_edit;
-	OptionButton *script_option_edit;
-	LineEdit *script_edit;
-	CheckBox *active_edit;
+	LineEdit *name_edit = nullptr;
+	LineEdit *subfolder_edit = nullptr;
+	TextEdit *desc_edit = nullptr;
+	LineEdit *author_edit = nullptr;
+	LineEdit *version_edit = nullptr;
+	OptionButton *script_option_edit = nullptr;
+	LineEdit *script_edit = nullptr;
+	CheckBox *active_edit = nullptr;
 
-	bool _edit_mode;
+	TextureRect *name_validation = nullptr;
+	TextureRect *subfolder_validation = nullptr;
+	TextureRect *script_validation = nullptr;
+
+	bool _edit_mode = false;
 
 	void _clear_fields();
 	void _on_confirmed();
-	void _on_cancelled();
+	void _on_canceled();
+	void _on_language_changed(const int p_language);
 	void _on_required_text_changed(const String &p_text);
+	String _get_subfolder();
+
+	static String _to_absolute_plugin_path(const String &p_plugin_name);
 
 protected:
 	virtual void _notification(int p_what);

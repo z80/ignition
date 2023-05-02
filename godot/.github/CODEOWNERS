@@ -14,7 +14,9 @@ SCsub                               @godotengine/buildsystem
 
 /core/                              @godotengine/core
 /core/crypto/                       @godotengine/network
-/core/input*.*                      @godotengine/input
+/core/debugger/                     @godotengine/debugger
+/core/extension/                    @godotengine/gdextension
+/core/input/                        @godotengine/input
 
 # Doc
 
@@ -35,10 +37,9 @@ doc_classes/*                       @godotengine/documentation
 
 ## Rendering
 /drivers/dummy/                     @godotengine/rendering
-/drivers/gl_context/                @godotengine/rendering
-/drivers/gles2/                     @godotengine/rendering
 /drivers/gles3/                     @godotengine/rendering
-/drivers/gles_common/               @godotengine/rendering
+/drivers/spirv-reflect/             @godotengine/rendering
+/drivers/vulkan/                    @godotengine/rendering
 
 ## OS
 /drivers/unix/                      @godotengine/_platforms
@@ -53,15 +54,16 @@ doc_classes/*                       @godotengine/documentation
 /editor/icons/                      @godotengine/usability
 /editor/import/                     @godotengine/import
 /editor/plugins/*2d_*.*             @godotengine/2d-editor
+/editor/plugins/*3d_*.*             @godotengine/3d-editor
 /editor/plugins/script_*.*          @godotengine/script-editor
 /editor/plugins/*shader*.*          @godotengine/shaders
 /editor/code_editor.*               @godotengine/script-editor
 /editor/*dock*.*                    @godotengine/docks
+/editor/*shader*.*                  @godotengine/shaders
 
 # Main
 
 /main/                              @godotengine/core
-/main/tests/                        @godotengine/tests
 
 # Misc
 
@@ -73,7 +75,6 @@ doc_classes/*                       @godotengine/documentation
 /modules/minimp3/                   @godotengine/audio
 /modules/ogg/                       @godotengine/audio
 /modules/opus/                      @godotengine/audio
-/modules/stb_vorbis/                @godotengine/audio
 /modules/theora/                    @godotengine/audio
 /modules/vorbis/                    @godotengine/audio
 /modules/webm/                      @godotengine/audio
@@ -105,46 +106,42 @@ doc_classes/*                       @godotengine/documentation
 ## Rendering
 /modules/denoise/                   @godotengine/rendering
 /modules/glslang/                   @godotengine/rendering
-/modules/lightmapper_cpu/           @godotengine/rendering
+/modules/lightmapper_rd/            @godotengine/rendering
 /modules/meshoptimizer/             @godotengine/rendering
-/modules/raycast/                   @godotengine/rendering
 /modules/vhacd/                     @godotengine/rendering
 /modules/xatlas_unwrap/             @godotengine/rendering
 
 ## Scripting
-/modules/gdnative/                  @godotengine/gdnative
 /modules/gdscript/                  @godotengine/gdscript
 /modules/jsonrpc/                   @godotengine/gdscript
-/modules/mono/                      @godotengine/mono
-/modules/visual_script/             @godotengine/visualscript
+/modules/mono/                      @godotengine/dotnet
 
 ## Text
 /modules/freetype/                  @godotengine/buildsystem
-/modules/gdnative/text/             @godotengine/gui-nodes
 /modules/text_server_adv/           @godotengine/gui-nodes
 /modules/text_server_fb/            @godotengine/gui-nodes
 
 ## XR
 /modules/camera/                    @godotengine/xr
-/modules/gdnative/arvr/             @godotengine/xr
+/modules/gdextension/xr/            @godotengine/xr
 /modules/mobile_vr/                 @godotengine/xr
 /modules/webxr/                     @godotengine/xr
 
 ## Misc
 /modules/bullet/                    @godotengine/physics
 /modules/csg/                       @godotengine/3d-nodes
+/modules/gdnavigation/              @godotengine/navigation
 /modules/gridmap/                   @godotengine/3d-nodes
 /modules/opensimplex/               @godotengine/3d-nodes
-/modules/recast/                    @godotengine/navigation
 /modules/regex/                     @godotengine/core
 
 # Platform
 
 /platform/android/                  @godotengine/android
-/platform/iphone/                   @godotengine/ios
+/platform/ios/                      @godotengine/ios
 /platform/javascript/               @godotengine/html5
-/platform/x11/                      @godotengine/linux-bsd
-/platform/osx/                      @godotengine/macos
+/platform/linuxbsd/                 @godotengine/linux-bsd
+/platform/macos/                    @godotengine/macos
 /platform/uwp/                      @godotengine/uwp
 /platform/windows/                  @godotengine/windows
 
@@ -159,15 +156,24 @@ doc_classes/*                       @godotengine/documentation
 /scene/main/                        @godotengine/core
 /scene/resources/default_theme/     @godotengine/gui-nodes
 /scene/resources/font.*             @godotengine/gui-nodes
+/scene/resources/text_line.*        @godotengine/gui-nodes
+/scene/resources/text_paragraph.*   @godotengine/gui-nodes
 /scene/resources/visual_shader*.*   @godotengine/shaders
 
 # Servers
 
-/servers/arvr*                      @godotengine/xr
 /servers/audio*                     @godotengine/audio
 /servers/camera*                    @godotengine/xr
+/servers/display_server.*           @godotengine/_platforms
+/servers/navigation_server*.*       @godotengine/navigation
 /servers/physics*                   @godotengine/physics
-/servers/visual*                    @godotengine/rendering
+/servers/rendering*                 @godotengine/rendering
+/servers/text_server.*              @godotengine/gui-nodes
+/servers/xr*                        @godotengine/xr
+
+# Tests
+
+/tests/                             @godotengine/tests
 
 # Thirdparty
 

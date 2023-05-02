@@ -30,25 +30,21 @@
 
 #include "audio_driver_xaudio2.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/os.h"
-#include "core/project_settings.h"
-
-const char *AudioDriverXAudio2::get_name() const {
-	return "XAudio2";
-}
 
 Error AudioDriverXAudio2::init() {
 	active.clear();
 	exit_thread.clear();
 	pcm_open = false;
-	samples_in = NULL;
+	samples_in = nullptr;
 
-	mix_rate = GLOBAL_GET("audio/mix_rate");
+	mix_rate = GLOBAL_GET("audio/driver/mix_rate");
 	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_GET("audio/output_latency");
+	int latency = GLOBAL_GET("audio/driver/output_latency");
 	buffer_size = closest_power_of_2(latency * mix_rate / 1000);
 
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
@@ -83,7 +79,7 @@ Error AudioDriverXAudio2::init() {
 }
 
 void AudioDriverXAudio2::thread_func(void *p_udata) {
-	AudioDriverXAudio2 *ad = (AudioDriverXAudio2 *)p_udata;
+	AudioDriverXAudio2 *ad = static_cast<AudioDriverXAudio2 *>(p_udata);
 
 	while (!ad->exit_thread.is_set()) {
 		if (!ad->active.is_set()) {
@@ -147,14 +143,12 @@ float AudioDriverXAudio2::get_latency() {
 void AudioDriverXAudio2::lock() {
 	mutex.lock();
 }
+
 void AudioDriverXAudio2::unlock() {
 	mutex.unlock();
 }
 
 void AudioDriverXAudio2::finish() {
-	if (!thread.is_started())
-		return;
-
 	exit_thread.set();
 	thread.wait_to_finish();
 
@@ -175,14 +169,9 @@ void AudioDriverXAudio2::finish() {
 	mastering_voice->DestroyVoice();
 }
 
-AudioDriverXAudio2::AudioDriverXAudio2() :
-		current_buffer(0) {
-	wave_format = { 0 };
+AudioDriverXAudio2::AudioDriverXAudio2() {
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
 		xaudio_buffer[i] = { 0 };
 		samples_out[i] = 0;
 	}
-}
-
-AudioDriverXAudio2::~AudioDriverXAudio2() {
 }

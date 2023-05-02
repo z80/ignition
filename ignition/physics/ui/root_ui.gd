@@ -12,8 +12,8 @@ func _ready():
 
 
 func _on_help_pressed():
-	var Wiki = preload( "res://wiki_handler/wiki_window.tscn" )
-	var wiki: Control = Wiki.instance()
+	var Wiki: PackedScene = preload( "res://wiki_handler/wiki_window.tscn" )
+	var wiki: Control = Wiki.instantiate()
 	add_child( wiki )
 
 
@@ -23,6 +23,6 @@ func _input(event):
 		#print( "pressed: ", pressed )
 		if not key_pressed:
 			return
-		var key_code: int = event.scancode
+		var key_code: int = event.keycode
 		if key_code == KEY_F1:
 			_on_help_pressed()

@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "denoise_wrapper.h"
-#include "core/os/memory.h"
 #include "thirdparty/oidn/include/OpenImageDenoise/oidn.h"
 #include <stdio.h>
 
@@ -45,6 +44,7 @@ bool oidn_denoise(void *deviceptr, float *p_floats, int p_width, int p_height) {
 	oidnSetSharedFilterImage(filter, "color", (void *)p_floats, OIDN_FORMAT_FLOAT3, p_width, p_height, 0, 0, 0);
 	oidnSetSharedFilterImage(filter, "output", (void *)p_floats, OIDN_FORMAT_FLOAT3, p_width, p_height, 0, 0, 0);
 	oidnSetFilter1b(filter, "hdr", true);
+	//oidnSetFilter1f(filter, "hdrScale", 1.0f);
 	oidnCommitFilter(filter);
 	oidnExecuteFilter(filter);
 

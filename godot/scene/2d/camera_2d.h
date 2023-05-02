@@ -32,7 +32,6 @@
 #define CAMERA_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/main/viewport.h"
 
 class Camera2D : public Node2D {
 	GDCLASS(Camera2D, Node2D);
@@ -43,7 +42,7 @@ public:
 		ANCHOR_MODE_DRAG_CENTER
 	};
 
-	enum Camera2DProcessMode {
+	enum Camera2DProcessCallback {
 		CAMERA2D_PROCESS_PHYSICS,
 		CAMERA2D_PROCESS_IDLE
 	};
@@ -51,53 +50,65 @@ public:
 protected:
 	Point2 camera_pos;
 	Point2 smoothed_camera_pos;
-	bool first;
+	bool first = true;
+	bool just_exited_tree = false;
 
 	ObjectID custom_viewport_id; // to check validity
-	Viewport *custom_viewport;
-	Viewport *viewport;
+	Viewport *custom_viewport = nullptr;
+	Viewport *viewport = nullptr;
 
 	StringName group_name;
 	StringName canvas_group_name;
 	RID canvas;
 	Vector2 offset;
-	Vector2 zoom;
-	AnchorMode anchor_mode;
-	bool rotating;
-	bool current;
-	float smoothing;
-	bool smoothing_enabled;
-	bool smoothing_active; // smoothing can be enabled but not active in the editor
+	Vector2 zoom = Vector2(1, 1);
+	Vector2 zoom_scale = Vector2(1, 1);
+	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
+	bool ignore_rotation = true;
+	bool enabled = true;
+	real_t position_smoothing_speed = 5.0;
+	bool position_smoothing_enabled = false;
+
+	real_t camera_angle = 0.0;
+	real_t rotation_smoothing_speed = 5.0;
+	bool rotation_smoothing_enabled = false;
+
 	int limit[4];
-	bool limit_smoothing_enabled;
-	float drag_margin[4];
+	bool limit_smoothing_enabled = false;
 
-	bool h_drag_enabled;
-	bool v_drag_enabled;
-	float h_ofs;
-	float v_ofs;
-
-	bool h_offset_changed;
-	bool v_offset_changed;
+	real_t drag_margin[4];
+	bool drag_horizontal_enabled = false;
+	bool drag_vertical_enabled = false;
+	real_t drag_horizontal_offset = 0.0;
+	real_t drag_vertical_offset = 0.0;
+	bool drag_horizontal_offset_changed = false;
+	bool drag_vertical_offset_changed = false;
 
 	Point2 camera_screen_center;
-	void _update_process_mode();
+	void _update_process_callback();
 	void _update_scroll();
-	void _setup_viewport();
 
 	void _make_current(Object *p_which);
-	void _set_current(bool p_current);
+	void _reset_just_exited() { just_exited_tree = false; }
 
-	bool screen_drawing_enabled;
-	bool limit_drawing_enabled;
-	bool margin_drawing_enabled;
+	void _set_old_smoothing(real_t p_enable);
 
-	Camera2DProcessMode process_mode;
+	void _update_process_internal_for_smoothing();
+
+	bool screen_drawing_enabled = true;
+	bool limit_drawing_enabled = false;
+	bool margin_drawing_enabled = false;
+
+	Camera2DProcessCallback process_callback = CAMERA2D_PROCESS_IDLE;
+
+	Size2 _get_camera_screen_size() const;
 
 protected:
 	virtual Transform2D get_camera_transform();
+
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_offset(const Vector2 &p_offset);
@@ -106,38 +117,47 @@ public:
 	void set_anchor_mode(AnchorMode p_anchor_mode);
 	AnchorMode get_anchor_mode() const;
 
-	void set_rotating(bool p_rotating);
-	bool is_rotating() const;
+	void set_ignore_rotation(bool p_ignore);
+	bool is_ignoring_rotation() const;
 
-	void set_limit(Margin p_margin, int p_limit);
-	int get_limit(Margin p_margin) const;
+	void set_limit(Side p_side, int p_limit);
+	int get_limit(Side p_side) const;
 
 	void set_limit_smoothing_enabled(bool enable);
 	bool is_limit_smoothing_enabled() const;
 
-	void set_h_drag_enabled(bool p_enabled);
-	bool is_h_drag_enabled() const;
+	void set_drag_horizontal_enabled(bool p_enabled);
+	bool is_drag_horizontal_enabled() const;
 
-	void set_v_drag_enabled(bool p_enabled);
-	bool is_v_drag_enabled() const;
+	void set_drag_vertical_enabled(bool p_enabled);
+	bool is_drag_vertical_enabled() const;
 
-	void set_drag_margin(Margin p_margin, float p_drag_margin);
-	float get_drag_margin(Margin p_margin) const;
+	void set_drag_margin(Side p_side, real_t p_drag_margin);
+	real_t get_drag_margin(Side p_side) const;
 
-	void set_v_offset(float p_offset);
-	float get_v_offset() const;
+	void set_drag_horizontal_offset(real_t p_offset);
+	real_t get_drag_horizontal_offset() const;
 
-	void set_h_offset(float p_offset);
-	float get_h_offset() const;
+	void set_drag_vertical_offset(real_t p_offset);
+	real_t get_drag_vertical_offset() const;
 
-	void set_enable_follow_smoothing(bool p_enabled);
-	bool is_follow_smoothing_enabled() const;
+	void set_position_smoothing_enabled(bool p_enabled);
+	bool is_position_smoothing_enabled() const;
 
-	void set_follow_smoothing(float p_speed);
-	float get_follow_smoothing() const;
+	void set_position_smoothing_speed(real_t p_speed);
+	real_t get_position_smoothing_speed() const;
 
-	void set_process_mode(Camera2DProcessMode p_mode);
-	Camera2DProcessMode get_process_mode() const;
+	void set_rotation_smoothing_speed(real_t p_speed);
+	real_t get_rotation_smoothing_speed() const;
+
+	void set_rotation_smoothing_enabled(bool p_enabled);
+	bool is_rotation_smoothing_enabled() const;
+
+	void set_process_callback(Camera2DProcessCallback p_mode);
+	Camera2DProcessCallback get_process_callback() const;
+
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
 
 	void make_current();
 	void clear_current();
@@ -169,6 +189,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(Camera2D::AnchorMode);
-VARIANT_ENUM_CAST(Camera2D::Camera2DProcessMode);
+VARIANT_ENUM_CAST(Camera2D::Camera2DProcessCallback);
 
 #endif // CAMERA_2D_H

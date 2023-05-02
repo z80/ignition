@@ -32,7 +32,7 @@ func _get_file_list_node():
 
 func _get_selected_file_name():
 	var l: ItemList = _get_file_list_node()
-	var items: PoolIntArray = l.get_selected_items()
+	var items: PackedInt32Array = l.get_selected_items()
 	if items.size() < 1:
 		return ""
 	var index: int = items[0]
@@ -48,10 +48,8 @@ func _on_Load_pressed():
 	
 	var root: Node = RootScene.ref_frame_root
 	
-	var file = File.new()
-	var err: int = file.open( fname, File.READ )
-	if err != OK:
-		return
+	var file: FileAccess = FileAccess.open( fname, FileAccess.READ )
+	assert( file != null, "Failed to open file for reading!" )
 	
 	var data: Dictionary = file.get_var( true )
 	file.close()

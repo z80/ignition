@@ -10,20 +10,20 @@ var is_parent: bool = false
 # This one attacheds to the surface.
 # When it happens, some default transform is computed. 
 # This transform is this one.
-export(Transform) var base_transform = Transform.IDENTITY
+@export var base_transform: Transform3D = Transform3D.IDENTITY
 # And this transform is the result of "base_transform" plus rotation_angles.
-export(Transform) var transform = Transform.IDENTITY
+@export var transform: Transform3D = Transform3D.IDENTITY
 # If this one is attached to other part 
 # need to remember the rotation angle.
-export(float) var yaw: float = 0.0 setget _set_yaw, _get_yaw
-export(float) var pitch: float = 0.0 setget _set_pitch, _get_pitch
-export(float) var roll: float = 0.0 setget _set_roll, _get_roll
+@export var yaw: float   = 0.0: get = _get_yaw, set = _set_yaw
+@export var pitch: float = 0.0: get = _get_pitch, set = _set_pitch
+@export var roll: float  = 0.0: get = _get_roll, set = _set_roll
 
-var _joint: Generic6DOFJoint = null
+var _joint: Generic6DOFJoint3D = null
 
 
 
-func init( _own_part: RefFrameNode, base_t: Transform, it_is_parent: bool ):
+func init( _own_part: RefFrameNode, base_t: Transform3D, it_is_parent: bool ):
 	base_transform = base_t
 	is_parent      = it_is_parent
 
@@ -84,40 +84,40 @@ func process():
 func get_part_transform():
 	var part: RefFrameNode = get_part()
 	var se3: Se3Ref = part.get_se3()
-	var t: Transform = se3.transform
+	var t: Transform3D = se3.transform
 	return t
 
 
 func get_angles_transform():
 	# + PI because need to rotate 180 degrees around X to 
 	# make coupling nodes face ieach other.
-	var yaw_q: Quat   = Quat( Vector3.RIGHT, yaw + PI )
-	var pitch_q: Quat = Quat( Vector3.UP, yaw )
-	var roll_q: Quat  = Quat( Vector3.BACK, yaw )
-	var q: Quat = yaw_q * pitch_q * roll_q
-	var t: Transform = Transform( Basis(q), Vector3.ZERO )
+	var yaw_q: Quaternion   = Quaternion( Vector3.RIGHT, yaw + PI )
+	var pitch_q: Quaternion = Quaternion( Vector3.UP, yaw )
+	var roll_q: Quaternion  = Quaternion( Vector3.BACK, yaw )
+	var q: Quaternion = yaw_q * pitch_q * roll_q
+	var t: Transform3D = Transform3D( Basis(q), Vector3.ZERO )
 	return t
 
 
 func world_transform():
-	var part_t: Transform = get_part_transform()
-	var base_t: Transform = base_transform
-	var ang_t: Transform  = get_angles_transform()
-	var t: Transform = part_t * base_t * ang_t
+	var part_t: Transform3D = get_part_transform()
+	var base_t: Transform3D = base_transform
+	var ang_t: Transform3D  = get_angles_transform()
+	var t: Transform3D = part_t * base_t * ang_t
 	return t
 
 
 
 func _compute_part_rel_to_parent_part():
-	var t_cnr: Transform = base_transform
-	var inv_t_cnr: Transform = t_cnr.inverse()
-	var t_pnr: Transform
+	var t_cnr: Transform3D = base_transform
+	var inv_t_cnr: Transform3D = t_cnr.inverse()
+	var t_pnr: Transform3D
 	if attachment_b != null:
 		t_pnr = attachment_b.base_transform
 	else:
-		t_pnr = Transform.IDENTITY
-	var t_a: Transform = get_angles_transform()
-	var ret: Transform = t_pnr * t_a * inv_t_cnr
+		t_pnr = Transform3D.IDENTITY
+	var t_a: Transform3D = get_angles_transform()
+	var ret: Transform3D = t_pnr * t_a * inv_t_cnr
 	return ret
 
 
@@ -127,12 +127,12 @@ func _position_rel_to_parent():
 	if is_parent:
 		return false
 	
-	var t_rel: Transform = _compute_part_rel_to_parent_part()
+	var t_rel: Transform3D = _compute_part_rel_to_parent_part()
 	var parent_part: RefFrameNode = attachment_b.get_part()
 	if not is_instance_valid(parent_part):
 		return
-	var t_parent: Transform = parent_part.get_se3().transform
-	var t: Transform = t_parent * t_rel
+	var t_parent: Transform3D = parent_part.get_se3().transform
+	var t: Transform3D = t_parent * t_rel
 	var part: RefFrameNode = get_part()
 	part.transform = t
 
@@ -146,24 +146,27 @@ func activate():
 	var part_a: RefFrameNode = self.get_part()
 	var part_b: RefFrameNode = attachment_b.get_part()
 	
-	var body_a: RigidBody = part_a._physical
-	var body_b: RigidBody = part_b._physical
+	var body_a: RigidBody3D = part_a._physical
+	var body_b: RigidBody3D = part_b._physical
 	
 	assert( is_instance_valid(body_a) )
 	assert( is_instance_valid(body_b) )
 	
-	_joint = Generic6DOFJoint.new()
+	_joint = Generic6DOFJoint3D.new()
 	var physics_env = body_a.get_parent()
 	physics_env.add_child( _joint )
 	
-	var joint_t: Transform = world_transform()
+	var joint_t: Transform3D = world_transform()
 	_joint.transform = joint_t
-	_joint.set( "nodes/node_a", body_a.get_path() )
-	_joint.set( "nodes/node_b", body_b.get_path() )
+	_joint.set( "node_a", body_a.get_path() )
+	_joint.set( "node_b", body_b.get_path() )
 	#_joint.precision = 100
-	_joint.set( "linear_limit_x/softness", 0.00001 )
-	_joint.set( "linear_limit_y/softness", 0.00001 )
-	_joint.set( "linear_limit_z/softness", 0.00001 )
+#	_joint.set( "linear_limit_x/softness", 0.50 )
+#	_joint.set( "linear_limit_y/softness", 0.50 )
+#	_joint.set( "linear_limit_z/softness", 0.50 )
+#	_joint.set( "angular_limit_x/softness", 0.50 )
+#	_joint.set( "angular_limit_y/softness", 0.50 )
+#	_joint.set( "angular_limit_z/softness", 0.50 )
 
 
 

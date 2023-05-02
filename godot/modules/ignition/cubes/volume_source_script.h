@@ -3,7 +3,7 @@
 #define __VOLUME_SOURCE_SCRIPT_H_
 
 #include "volume_source.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
 
 namespace Ign
@@ -34,7 +34,7 @@ public:
 
 
 public:
-	Reference * reference;
+	RefCounted * reference;
 };
 
 

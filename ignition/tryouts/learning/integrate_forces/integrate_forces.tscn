@@ -5,43 +5,43 @@
 [ext_resource path="res://tryouts/learning/integrate_forces/Cube.gd" type="Script" id=3]
 [ext_resource path="res://physics/axes_visualization.tscn" type="PackedScene" id=4]
 
-[sub_resource type="BoxShape" id=1]
-extents = Vector3( 10.928, 0.117194, 7.75817 )
+[sub_resource type="BoxShape3D" id=1]
+size = Vector3( 10.928, 0.117194, 7.75817 )
 
-[sub_resource type="CubeMesh" id=2]
+[sub_resource type="BoxMesh" id=2]
 
-[sub_resource type="BoxShape" id=3]
+[sub_resource type="BoxShape3D" id=3]
 
-[sub_resource type="CubeMesh" id=4]
+[sub_resource type="BoxMesh" id=4]
 
-[node name="Spatial" type="Spatial"]
+[node name="Node3D" type="Node3D"]
 script = ExtResource( 2 )
 
-[node name="Plane" type="RigidBody" parent="."]
+[node name="Plane" type="RigidBody3D" parent="."]
 mode = 1
 
-[node name="CollisionShape" type="CollisionShape" parent="Plane"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Plane"]
 shape = SubResource( 1 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Plane"]
-transform = Transform( 10.9229, 0, 0, 0, 0.243658, 0, 0, 0, 7.32222, 0, 0, 0 )
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Plane"]
+transform = Transform3D( 10.9229, 0, 0, 0, 0.243658, 0, 0, 0, 7.32222, 0, 0, 0 )
 mesh = SubResource( 2 )
 material/0 = null
 
-[node name="Cube" type="RigidBody" parent="."]
-transform = Transform( 0.908571, 0.388054, -0.154634, -0.256848, 0.810898, 0.525808, 0.329434, -0.438017, 0.83643, 0, 8.42869, 0 )
+[node name="Cube" type="RigidBody3D" parent="."]
+transform = Transform3D( 0.908571, 0.388054, -0.154634, -0.256848, 0.810898, 0.525808, 0.329434, -0.438017, 0.83643, 0, 8.42869, 0 )
 script = ExtResource( 3 )
 
 [node name="Rf" parent="Cube" instance=ExtResource( 4 )]
 
-[node name="CollisionShape" type="CollisionShape" parent="Cube"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Cube"]
 shape = SubResource( 3 )
 
-[node name="MeshInstance" type="MeshInstance" parent="Cube"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Cube"]
 mesh = SubResource( 4 )
 material/0 = null
 
-[node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.942601, 0.333922, 0, -0.333922, 0.942601, 0, 12.6987, 16.7131 )
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 0.942601, 0.333922, 0, -0.333922, 0.942601, 0, 12.6987, 16.7131 )
 script = ExtResource( 1 )
 max_speed = Vector3( 5, 5, 5 )

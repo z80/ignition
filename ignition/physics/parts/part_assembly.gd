@@ -16,18 +16,17 @@ var sub_bodies: Array = []
 var motion: CelestialMotionRef = null
 var orbit_visualizer: Node = null
 var closest_celestial_body: RefFrameNode = null
-export(Color) var orbit_color = Color( 0.0, 0.7, 0.0, 1.0 )
-export(bool) var show_orbit = false setget _set_show_orbit, _get_show_orbit
+@export var orbit_color: Color = Color( 0.0, 0.7, 0.0, 1.0 )
+@export var show_orbit: bool = false: get = _get_show_orbit, set = _set_show_orbit
 
 
-func get_class():
-	return "PartAssembly"
+#func get_class():
+#	return "PartAssembly"
 
 
 
-func queue_free():
-	self.name = self.name + "_to_be_deleted"
-	.queue_free()
+#func queue_free():
+#	super.queue_free()
 
 
 
@@ -84,12 +83,12 @@ func add_sub_body( body: RefFrameNode ):
 func remove_sub_body( body: RefFrameNode ):
 	var index: int = sub_bodies.find( body )
 	if index >= 0:
-		sub_bodies.remove( index )
+		sub_bodies.remove_at( index )
 		body.set_assembly( null )
 
 
 func is_assembly():
-	var empty: bool = sub_bodies.empty()
+	var empty: bool = sub_bodies.is_empty()
 	var ret: bool = not empty
 	return ret
 
@@ -112,11 +111,7 @@ func has_player_control():
 
 
 
-func change_parent( p: Node = null ):
-	#var t_before: Transform = self.transform
-	#var se3: Se3Ref = self.relative_to( p )
-	.change_parent( p )
-	
+func _change_parent( p: Node, recursive_call: bool ):
 	# First need to remove all physical joints.
 	# Physical joints are being removed within 
 	# remove_physical() call.
@@ -124,7 +119,7 @@ func change_parent( p: Node = null ):
 	#var t_after: Transform = self.transform
 	for b in sub_bodies:
 		#t_before = b.transform
-		b.change_parent_inner( p )
+		b.change_parent( p, true )
 		#t_after = b.transform
 	
 	# The thing is it is necessary to be sure that rigid bodies 
@@ -141,7 +136,7 @@ func change_parent( p: Node = null ):
 
 
 func distance_max( other: RefFrameNode ):
-	if other.sub_bodies.empty():
+	if other.sub_bodies.is_empty():
 		var d: float = distance( other )
 		return d
 	
@@ -156,7 +151,7 @@ func distance_max( other: RefFrameNode ):
 
 
 func distance_min( other: RefFrameNode ):
-	if other.sub_bodies.empty():
+	if other.sub_bodies.is_empty():
 		var d: float = distance( other )
 		return d
 	
@@ -241,9 +236,9 @@ func _create_orbit_visualizer():
 	motion = CelestialMotionRef.new()
 	
 	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
-	orbit_visualizer = Vis.instance()
+	orbit_visualizer = Vis.instantiate()
 	
-	var layer: Spatial = RootScene.get_visual_layer_space()
+	var layer: Node3D = RootScene.get_visual_layer_space()
 	layer.add_child( orbit_visualizer )
 	
 	orbit_visualizer.color     = orbit_color
@@ -301,6 +296,7 @@ func _update_celestial_motion():
 
 
 func on_delete():
+	self.name = self.name + "_to_be_deleted"
 	var bodies: Array = sub_bodies.duplicate()
 	for b in bodies:
 		if is_instance_valid( b ):

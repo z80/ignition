@@ -2,7 +2,7 @@
 #ifndef __HEIGHT_SOURCE_REF_H_
 #define __HEIGHT_SOURCE_REF_H_
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
 
 namespace Ign
@@ -10,10 +10,10 @@ namespace Ign
 
 class HeightSource;
 
-class HeightSourceRef: public Reference
+class HeightSourceRef: public RefCounted
 {
-	GDCLASS( HeightSourceRef, Reference );
-	OBJ_CATEGORY("Ignition");
+	GDCLASS( HeightSourceRef, RefCounted );
+	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();

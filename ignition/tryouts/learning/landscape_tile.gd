@@ -1,4 +1,4 @@
-extends MeshInstance
+extends MeshInstance3D
 
 var index_x: int = 0
 var index_z: int = 0
@@ -38,11 +38,11 @@ func _construct():
 			ind += 1
 	
 	var verts_qty: int = res_minus_one*res_minus_one * 6
-	var vertices = PoolVector3Array()
-	var normals  = PoolVector3Array()
-	var tangents = PoolRealArray()
-	var colors   = PoolColorArray()
-	var uvs      = PoolVector2Array()
+	var vertices = PackedVector3Array()
+	var normals  = PackedVector3Array()
+	var tangents = PackedFloat32Array()
+	var colors   = PackedColorArray()
+	var uvs      = PackedVector2Array()
 	vertices.resize( verts_qty )
 	normals.resize( verts_qty )
 	tangents.resize( verts_qty*4 )
@@ -181,8 +181,8 @@ func _construct():
 	self.mesh = arr_mesh
 	
 	# Create collision.
-	var editor_sh = $RigidBody/CollisionShape
-	var sh: Shape = editor_sh.shape
+	var editor_sh = $RigidBody3D/CollisionShape3D
+	var sh: Shape3D = editor_sh.shape
 	sh.set_faces( vertices )
 	
 	# Create water.

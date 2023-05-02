@@ -1,5 +1,5 @@
 
-extends RigidBody
+extends RigidBody3D
 
 #var transform: Transform setget set_transform, get_transform
 #var linear_velocity: Vector3 setget set_linear_velocity, get_linear_velocity
@@ -7,7 +7,7 @@ extends RigidBody
 #var collision_layer: int setget set_collision_layer, get_collision_layer
 
 
-func set_transform( t: Transform ):
+func set_transform( t: Transform3D ):
 	self.transform = t
 	
 func get_transform():
@@ -39,11 +39,11 @@ func get_collision_layer():
 
 
 
-func set_vertices( vertices: PoolVector3Array ):
-	var concave_sh = ConcavePolygonShape.new()
+func set_vertices( vertices: PackedVector3Array ):
+	var concave_sh = ConcavePolygonShape3D.new()
 	concave_sh.set_faces( vertices )
 	
 	# Create collision.
-	var collision_shape = get_node( "CollisionShape" )
+	var collision_shape = get_node( "CollisionShape3D" )
 	collision_shape.shape = concave_sh
 

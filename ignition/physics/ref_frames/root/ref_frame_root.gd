@@ -1,14 +1,14 @@
 
 extends RefFrameRoot
 
-export(PackedScene) var RefFramePhysicsScene = null
+@export var RefFramePhysicsScene: PackedScene = null
 
 # All visualization meshes/or other types are with respect to the ref frame 
 # where controlled object is.
 # Ref frame is selected when player clicks the icon.
-var player_select: Node = null setget _set_player_select, _get_player_select
+var player_select: Node = null: get = _get_player_select, set = _set_player_select
 # Ref frame gets focus when explicitly pressed "c" (center) on a selected ref. frame.
-var player_control: Node = null setget _set_player_control, _get_player_control
+var player_control: Node = null: get = _get_player_control, set = _set_player_control
 # Camera. It is supposed to be the only one.
 var player_camera: RefFrameNode = null
 # Scaler for large distances.
@@ -256,7 +256,7 @@ func update_camera( delta: float ):
 	# Apply sun.
 	var group: String = Constants.SUN_GROUP_NAME
 	var all_suns: Array = get_tree().get_nodes_in_group( group )
-	if not all_suns.empty():
+	if not all_suns.is_empty():
 		var sun: RefFrameNode = all_suns[0] as RefFrameNode
 		c.apply_sun( p_rf, sun )
 	
@@ -265,7 +265,7 @@ func update_camera( delta: float ):
 
 
 func create_ref_frame_physics():
-	var rf: RefFramePhysics = RefFramePhysicsScene.instance()
+	var rf: RefFramePhysics = RefFramePhysicsScene.instantiate()
 	rf.name = "RefFramePhysics"
 	return rf
 
@@ -351,8 +351,7 @@ static func _find_camera( node: Node ):
 	return null
 
 
-func serialize():
-	var data: Dictionary = {}
+func _serialize( data: Dictionary ):
 	if player_select != null:
 		data["select"] = player_select.get_path()
 	else:
@@ -366,7 +365,8 @@ func serialize():
 
 
 
-func deserialize( data: Dictionary ):
+func _deserialize( data: Dictionary ):
+	super( data )
 	var select_path: String = data["select"]
 	player_select = get_node( select_path )
 	var control_path: String = data["control"]

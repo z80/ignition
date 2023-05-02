@@ -32,7 +32,7 @@ struct RotationPair
 class RefFrameNonInertialNode: public RefFrameMotionNode
 {
 	GDCLASS(RefFrameNonInertialNode, RefFrameMotionNode);
-	OBJ_CATEGORY("Ignition");
+	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
@@ -54,13 +54,13 @@ public:
 	virtual Dictionary serialize() override;
 	virtual bool deserialize( const Dictionary & data ) override;
 
-	virtual void _ign_pre_process( real_t delta ) override;
-	virtual void _ign_process( real_t delta ) override;
-	virtual void _ign_post_process( real_t delta ) override;
+	virtual void ign_pre_process( real_t delta ) override;
+	virtual void ign_process( real_t delta ) override;
+	virtual void ign_post_process( real_t delta ) override;
 
-	virtual void _ign_physics_pre_process( real_t delta ) override;
-	virtual void _ign_physics_process( real_t delta ) override;
-	virtual void _ign_physics_post_process( real_t delta ) override;
+	virtual void ign_physics_pre_process( real_t delta ) override;
+	virtual void ign_physics_process( real_t delta ) override;
+	virtual void ign_physics_post_process( real_t delta ) override;
 
 public:
 	bool physics_integration;

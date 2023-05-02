@@ -16,21 +16,21 @@ material = ExtResource( 2 )
 radius = 5.0
 height = 10.0
 
-[node name="LandscapeTile" type="MeshInstance"]
+[node name="LandscapeTile" type="MeshInstance3D"]
 material_override = ExtResource( 4 )
 script = ExtResource( 1 )
 
-[node name="WaterMesh" type="MeshInstance" parent="."]
+[node name="WaterMesh" type="MeshInstance3D" parent="."]
 material_override = ExtResource( 3 )
 
-[node name="Plane" type="MeshInstance" parent="."]
-transform = Transform( -1, 3.25841e-07, 0, -3.25841e-07, -1, 0, 0, 0, 1, 0, 18.1104, 0 )
+[node name="Plane" type="MeshInstance3D" parent="."]
+transform = Transform3D( -1, 3.25841e-07, 0, -3.25841e-07, -1, 0, 0, 0, 1, 0, 18.1104, 0 )
 visible = false
 mesh = SubResource( 1 )
 material/0 = null
 
-[node name="Sphere" type="MeshInstance" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.4447, 0 )
+[node name="Sphere" type="MeshInstance3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12.4447, 0 )
 visible = false
 mesh = SubResource( 2 )
 material/0 = null

@@ -2,14 +2,14 @@
 #ifndef __REF_FRAME_TREE_H_
 #define __REF_FRAME_TREE_H_
 
-#include "core/reference.h"
-#include "core/vector.h"
+#include "core/object/ref_counted.h"
+#include "core/templates/vector.h"
 
 class RefFrame;
 
-class RefFrameTree: public Reference
+class RefFrameTree: public RefCounted
 {
-	GDCLASS(RefFrameTree, Reference);
+	GDCLASS(RefFrameTree, RefCounted);
 	OBJ_CATEGORY("Ignition");
 protected:
 	static void _bind_methods();
@@ -20,8 +20,8 @@ public:
 
 	// On delete NULL all own pointers in all RefFrame objects.
 	void clear();
-	void push_back( Ref<Reference> ref_frame );
-	void remove( Ref<Reference> ref_frame );
+	void push_back( Ref<RefCounted> ref_frame );
+	void remove( Ref<RefCounted> ref_frame );
 
 	RefFrame * frame( int index );
 

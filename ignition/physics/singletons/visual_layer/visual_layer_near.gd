@@ -1,39 +1,31 @@
 
-extends Spatial
+extends Node3D
 
-export(Basis) var sun_direction = Basis.IDENTITY setget _set_sun_direction, _get_sun_direction
+@export var sun_direction: Basis = Basis.IDENTITY: get = _get_sun_direction, set = _set_sun_direction
 
 # This is actual root for adding visual content.
-var root: Spatial = null
+var root: Node3D = null
 
-var _light: DirectionalLight = null
-
-
-func get_light():
-	var light: DirectionalLight = _get_light()
-	return light
-
-
-
-func _get_light():
-	if _light == null:
-		_light = get_node( "SunLight" )
-	return _light
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	root = get_node( "Root" )
+	_get_root()
+
+
+func _get_root():
+	if root == null:
+		root = get_node( "Root" )
+	
+	return root
 
 
 func _set_sun_direction( b: Basis ):
-	_get_light()
-	_light.transform.basis = b
+	root.sun_direction = b
 
 
 func _get_sun_direction():
-	_get_light()
-	var ret: Basis = _light.transform.basis
+	var ret: Basis = root.sun_direction
 	return ret
 
 

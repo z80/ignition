@@ -33,13 +33,13 @@
 
 #include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/container.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
 class VersionControlEditorPlugin : public EditorPlugin {
@@ -67,76 +67,80 @@ private:
 
 	List<StringName> available_plugins;
 
-	PopupMenu *version_control_actions;
+	PopupMenu *version_control_actions = nullptr;
+	ConfirmationDialog *metadata_dialog = nullptr;
+	OptionButton *metadata_selection = nullptr;
+	AcceptDialog *set_up_dialog = nullptr;
+	CheckButton *toggle_vcs_choice = nullptr;
+	OptionButton *set_up_choice = nullptr;
+	VBoxContainer *set_up_vbc = nullptr;
+	VBoxContainer *set_up_settings_vbc = nullptr;
+	LineEdit *set_up_username = nullptr;
+	LineEdit *set_up_password = nullptr;
+	LineEdit *set_up_ssh_public_key_path = nullptr;
+	LineEdit *set_up_ssh_private_key_path = nullptr;
+	LineEdit *set_up_ssh_passphrase = nullptr;
+	FileDialog *set_up_ssh_public_key_file_dialog = nullptr;
+	FileDialog *set_up_ssh_private_key_file_dialog = nullptr;
+	Label *set_up_warning_text = nullptr;
 
-	AcceptDialog *set_up_dialog;
-	OptionButton *set_up_choice;
-	Button *set_up_init_button;
-	VBoxContainer *set_up_vbc;
-	VBoxContainer *set_up_settings_vbc;
-	LineEdit *set_up_username;
-	LineEdit *set_up_password;
-	LineEdit *set_up_ssh_public_key_path;
-	LineEdit *set_up_ssh_private_key_path;
-	LineEdit *set_up_ssh_passphrase;
-	FileDialog *set_up_ssh_public_key_file_dialog;
-	FileDialog *set_up_ssh_private_key_file_dialog;
-	Label *set_up_warning_text;
+	AcceptDialog *discard_all_confirm = nullptr;
 
-	OptionButton *commit_list_size_button;
+	OptionButton *commit_list_size_button = nullptr;
 
-	AcceptDialog *branch_create_confirm;
-	LineEdit *branch_create_name_input;
-	Button *branch_create_ok;
+	AcceptDialog *branch_create_confirm = nullptr;
+	LineEdit *branch_create_name_input = nullptr;
+	Button *branch_create_ok = nullptr;
 
-	AcceptDialog *remote_create_confirm;
-	LineEdit *remote_create_name_input;
-	LineEdit *remote_create_url_input;
-	Button *remote_create_ok;
+	AcceptDialog *remote_create_confirm = nullptr;
+	LineEdit *remote_create_name_input = nullptr;
+	LineEdit *remote_create_url_input = nullptr;
+	Button *remote_create_ok = nullptr;
 
 	HashMap<EditorVCSInterface::ChangeType, String> change_type_to_strings;
 	HashMap<EditorVCSInterface::ChangeType, Color> change_type_to_color;
 	HashMap<EditorVCSInterface::ChangeType, Ref<Texture>> change_type_to_icon;
 
-	VBoxContainer *version_commit_dock;
-	Tree *staged_files;
-	Tree *unstaged_files;
-	Tree *commit_list;
+	VBoxContainer *version_commit_dock = nullptr;
+	Tree *staged_files = nullptr;
+	Tree *unstaged_files = nullptr;
+	Tree *commit_list = nullptr;
 
-	OptionButton *branch_select;
-	Button *branch_remove_button;
-	AcceptDialog *branch_remove_confirm;
+	OptionButton *branch_select = nullptr;
+	Button *branch_remove_button = nullptr;
+	AcceptDialog *branch_remove_confirm = nullptr;
 
-	ToolButton *fetch_button;
-	ToolButton *pull_button;
-	ToolButton *push_button;
-	OptionButton *remote_select;
-	Button *remote_remove_button;
-	AcceptDialog *remote_remove_confirm;
-	MenuButton *extra_options;
-	PopupMenu *extra_options_remove_branch_list;
-	PopupMenu *extra_options_remove_remote_list;
+	Button *fetch_button = nullptr;
+	Button *pull_button = nullptr;
+	Button *push_button = nullptr;
+	OptionButton *remote_select = nullptr;
+	Button *remote_remove_button = nullptr;
+	AcceptDialog *remote_remove_confirm = nullptr;
+	MenuButton *extra_options = nullptr;
+	PopupMenu *extra_options_remove_branch_list = nullptr;
+	PopupMenu *extra_options_remove_remote_list = nullptr;
 
 	String branch_to_remove;
 	String remote_to_remove;
 
-	ToolButton *stage_all_button;
-	ToolButton *unstage_all_button;
-	ToolButton *discard_all_button;
-	ToolButton *refresh_button;
-	TextEdit *commit_message;
-	Button *commit_button;
+	Button *stage_all_button = nullptr;
+	Button *unstage_all_button = nullptr;
+	Button *discard_all_button = nullptr;
+	Button *refresh_button = nullptr;
+	TextEdit *commit_message = nullptr;
+	Button *commit_button = nullptr;
 
-	VBoxContainer *version_control_dock;
-	ToolButton *version_control_dock_button;
-	Label *diff_title;
-	RichTextLabel *diff;
-	OptionButton *diff_view_type_select;
+	VBoxContainer *version_control_dock = nullptr;
+	Button *version_control_dock_button = nullptr;
+	Label *diff_title = nullptr;
+	RichTextLabel *diff = nullptr;
+	OptionButton *diff_view_type_select = nullptr;
 	bool show_commit_diff_header = false;
 	List<EditorVCSInterface::DiffFile> diff_content;
 
 	void _notification(int p_what);
 	void _initialize_vcs();
+	void _set_vcs_ui_state(bool p_enabled);
 	void _set_credentials();
 	void _ssh_public_key_selected(String p_path);
 	void _ssh_private_key_selected(String p_path);
@@ -146,17 +150,18 @@ private:
 	void _update_opened_tabs();
 	void _update_extra_options();
 
-	bool _load_plugin(String p_path);
-	void _set_up();
+	bool _load_plugin(String p_name);
 
 	void _pull();
 	void _push();
 	void _force_push();
 	void _fetch();
 	void _commit();
+	void _confirm_discard_all();
 	void _discard_all();
 	void _refresh_stage_area();
 	void _refresh_branch_list();
+	void _set_commit_list_size(int p_index);
 	void _refresh_commit_list();
 	void _refresh_remote_list();
 	void _display_diff(int p_idx);
@@ -179,14 +184,16 @@ private:
 	void _display_diff_split_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _display_diff_unified_view(List<EditorVCSInterface::DiffLine> &p_diff_content);
 	void _discard_file(String p_file_path, EditorVCSInterface::ChangeType p_change);
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
+	void _cell_button_pressed(Object *p_item, int p_column, int p_id, int p_mouse_button_index);
 	void _add_new_item(Tree *p_tree, String p_file_path, EditorVCSInterface::ChangeType p_change);
 	void _update_commit_button();
 	void _commit_message_gui_input(const Ref<InputEvent> &p_event);
 	void _extra_option_selected(int p_index);
 	bool _is_staging_area_empty();
 	String _get_date_string_from(int64_t p_unix_timestamp, int64_t p_offset_minutes) const;
-	void _set_commit_list_size(int p_index);
+	void _create_vcs_metadata_files();
+	void _popup_file_dialog(Variant p_file_dialog_variant);
+	void _toggle_vcs_integration(bool p_toggled);
 
 	friend class EditorVCSInterface;
 
@@ -196,14 +203,10 @@ protected:
 public:
 	static VersionControlEditorPlugin *get_singleton();
 
+	void popup_vcs_metadata_dialog();
 	void popup_vcs_set_up_dialog(const Control *p_gui_base);
-	void set_version_control_tool_button(ToolButton *p_button) { version_control_dock_button = p_button; }
 
 	PopupMenu *get_version_control_actions_panel() const { return version_control_actions; }
-	VBoxContainer *get_version_commit_dock() const { return version_commit_dock; }
-	VBoxContainer *get_version_control_dock() const { return version_control_dock; }
-
-	List<StringName> get_available_vcs_names() const { return available_plugins; }
 
 	void register_editor();
 	void fetch_available_vcs_plugin_names();

@@ -31,7 +31,7 @@
 #ifndef EDITOR_DIR_DIALOG_H
 #define EDITOR_DIR_DIALOG_H
 
-#include "core/os/dir_access.h"
+#include "core/io/dir_access.h"
 #include "editor/editor_file_system.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -39,25 +39,26 @@
 class EditorDirDialog : public ConfirmationDialog {
 	GDCLASS(EditorDirDialog, ConfirmationDialog);
 
-	ConfirmationDialog *makedialog;
-	LineEdit *makedirname;
-	AcceptDialog *mkdirerr;
+	ConfirmationDialog *makedialog = nullptr;
+	LineEdit *makedirname = nullptr;
+	AcceptDialog *mkdirerr = nullptr;
 
-	Button *makedir;
-	Set<String> opened_paths;
+	Button *makedir = nullptr;
+	HashSet<String> opened_paths;
 
-	Tree *tree;
-	bool updating;
+	Tree *tree = nullptr;
+	bool updating = false;
 
 	void _item_collapsed(Object *p_item);
+	void _item_activated();
 	void _update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path = String());
 
 	void _make_dir();
 	void _make_dir_confirm();
 
-	void ok_pressed();
+	void ok_pressed() override;
 
-	bool must_reload;
+	bool must_reload = false;
 
 protected:
 	void _notification(int p_what);

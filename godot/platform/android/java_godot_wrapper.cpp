@@ -33,7 +33,7 @@
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
 // we can't cache it.
 // For Godot we call most access methods from our thread and we thus get a valid JNIEnv
-// from ThreadAndroid. For one or two we expect to pass the environment
+// from get_jni_env(). For one or two we expect to pass the environment
 
 // TODO we could probably create a base class for this...
 
@@ -58,12 +58,9 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	}
 
 	// get some Godot method pointers...
-	_on_video_init = p_env->GetMethodID(godot_class, "onVideoInit", "()V");
-	_create_offscreen_gl = p_env->GetMethodID(godot_class, "createOffscreenGL", "()Z");
-	_destroy_offscreen_gl = p_env->GetMethodID(godot_class, "destroyOffscreenGL", "()V");
-	_set_offscreen_gl_current = p_env->GetMethodID(godot_class, "setOffscreenGLCurrent", "(Z)V");
+	_on_video_init = p_env->GetMethodID(godot_class, "onVideoInit", "()Z");
 	_restart = p_env->GetMethodID(godot_class, "restart", "()V");
-	_finish = p_env->GetMethodID(godot_class, "forceQuit", "()V");
+	_finish = p_env->GetMethodID(godot_class, "forceQuit", "(I)Z");
 	_set_keep_screen_on = p_env->GetMethodID(godot_class, "setKeepScreenOn", "(Z)V");
 	_alert = p_env->GetMethodID(godot_class, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_get_GLES_version_code = p_env->GetMethodID(godot_class, "getGLESVersionCode", "()I");
@@ -80,14 +77,24 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
-	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)V");
+	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
+	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
 
 	// get some Activity method pointers...
 	_get_class_loader = p_env->GetMethodID(activity_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
-	// nothing to do here for now
+	if (godot_view) {
+		delete godot_view;
+	}
+
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+	env->DeleteGlobalRef(godot_instance);
+	env->DeleteGlobalRef(godot_class);
+	env->DeleteGlobalRef(activity);
+	env->DeleteGlobalRef(activity_class);
 }
 
 jobject GodotJavaWrapper::get_activity() {
@@ -117,38 +124,30 @@ jobject GodotJavaWrapper::get_class_loader() {
 	}
 }
 
-void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
+GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
+	if (godot_view != nullptr) {
+		return godot_view;
+	}
+	if (_get_render_view) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, nullptr);
+		jobject godot_render_view = env->CallObjectMethod(godot_instance, _get_render_view);
+		if (!env->IsSameObject(godot_render_view, nullptr)) {
+			godot_view = new GodotJavaViewWrapper(godot_render_view);
+		}
+	}
+	return godot_view;
+}
+
+bool GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 	if (_on_video_init) {
 		if (p_env == nullptr) {
 			p_env = get_jni_env();
 		}
-		ERR_FAIL_NULL(p_env);
-		p_env->CallVoidMethod(godot_instance, _on_video_init);
+		ERR_FAIL_NULL_V(p_env, false);
+		return p_env->CallBooleanMethod(godot_instance, _on_video_init);
 	}
-}
-
-bool GodotJavaWrapper::create_offscreen_gl(JNIEnv *p_env) {
-	if (_create_offscreen_gl) {
-		return p_env->CallBooleanMethod(godot_instance, _create_offscreen_gl);
-	} else {
-		return false;
-	}
-}
-
-void GodotJavaWrapper::destroy_offscreen_gl(JNIEnv *p_env) {
-	if (_destroy_offscreen_gl) {
-		p_env->CallVoidMethod(godot_instance, _destroy_offscreen_gl);
-	}
-}
-
-void GodotJavaWrapper::set_offscreen_gl_current(JNIEnv *p_env, bool p_current) {
-	if (_set_offscreen_gl_current) {
-		if (p_env == nullptr) {
-			p_env = get_jni_env();
-		}
-		ERR_FAIL_NULL(p_env);
-		p_env->CallVoidMethod(godot_instance, _set_offscreen_gl_current, p_current);
-	}
+	return false;
 }
 
 void GodotJavaWrapper::on_godot_setup_completed(JNIEnv *p_env) {
@@ -156,7 +155,6 @@ void GodotJavaWrapper::on_godot_setup_completed(JNIEnv *p_env) {
 		if (p_env == nullptr) {
 			p_env = get_jni_env();
 		}
-		ERR_FAIL_NULL(p_env);
 		p_env->CallVoidMethod(godot_instance, _on_godot_setup_completed);
 	}
 }
@@ -181,14 +179,15 @@ void GodotJavaWrapper::restart(JNIEnv *p_env) {
 	}
 }
 
-void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
+bool GodotJavaWrapper::force_quit(JNIEnv *p_env, int p_instance_id) {
 	if (_finish) {
 		if (p_env == nullptr) {
 			p_env = get_jni_env();
 		}
-		ERR_FAIL_NULL(p_env);
-		p_env->CallVoidMethod(godot_instance, _finish);
+		ERR_FAIL_NULL_V(p_env, false);
+		return p_env->CallBooleanMethod(godot_instance, _finish, p_instance_id);
 	}
+	return false;
 }
 
 void GodotJavaWrapper::set_keep_screen_on(bool p_enabled) {
@@ -347,14 +346,16 @@ void GodotJavaWrapper::vibrate(int p_duration_ms) {
 	}
 }
 
-void GodotJavaWrapper::create_new_godot_instance(List<String> args) {
+int GodotJavaWrapper::create_new_godot_instance(List<String> args) {
 	if (_create_new_godot_instance) {
 		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
+		ERR_FAIL_NULL_V(env, 0);
 		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
 		for (int i = 0; i < args.size(); i++) {
 			env->SetObjectArrayElement(jargs, i, env->NewStringUTF(args[i].utf8().get_data()));
 		}
-		env->CallVoidMethod(godot_instance, _create_new_godot_instance, jargs);
+		return env->CallIntMethod(godot_instance, _create_new_godot_instance, jargs);
+	} else {
+		return 0;
 	}
 }

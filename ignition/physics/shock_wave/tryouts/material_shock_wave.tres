@@ -8,8 +8,8 @@ uniform float speed  = 1.0;
 uniform vec2  texture_scale = vec2( 2.0, 0.2 );
 
 
-uniform vec4 color_bright: hint_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
-uniform vec4 color_dark:   hint_color = vec4( 0.3529, 0.3529, 0.3529, 1.0 );
+uniform vec4 color_bright: source_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
+uniform vec4 color_dark:   source_color = vec4( 0.3529, 0.3529, 0.3529, 1.0 );
 
 varying float time;
 varying vec3 point3d;

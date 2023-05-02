@@ -8,36 +8,36 @@
 
 //#include <iostream>
 
-static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces );
-static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces );
+static void faces_from_surface( const Transform3D & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces );
+static void parse_mesh_arrays( const Transform3D & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces );
 
 
 void OccupancyGrid::_bind_methods()
 {
-    ClassDB::bind_method( D_METHOD("d_init", "int"), &OccupancyGrid::d_init, Variant::NIL );
-    ClassDB::bind_method( D_METHOD("d_add", "int"),  &OccupancyGrid::d_add, Variant::NIL );
-    ClassDB::bind_method( D_METHOD("d_result"),      &OccupancyGrid::d_result, Variant::INT );
+    ClassDB::bind_method( D_METHOD("d_init", "int"), &OccupancyGrid::d_init );
+    ClassDB::bind_method( D_METHOD("d_add", "int"),  &OccupancyGrid::d_add );
+    ClassDB::bind_method( D_METHOD("d_result"),      &OccupancyGrid::d_result );
 
-    ClassDB::bind_method( D_METHOD("set_node_size", "real_t"), &OccupancyGrid::set_node_size, Variant::NIL );
-    ClassDB::bind_method( D_METHOD("get_node_size"), &OccupancyGrid::node_size, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("clear"), &OccupancyGrid::clear, Variant::NIL );
-    ClassDB::bind_method( D_METHOD("append", "transform", "mesh"), &OccupancyGrid::append, Variant::NIL );
-    ClassDB::bind_method( D_METHOD("subdivide"), &OccupancyGrid::subdivide, Variant::NIL );
+    ClassDB::bind_method( D_METHOD("set_node_size", "real_t"), &OccupancyGrid::set_node_size );
+    ClassDB::bind_method( D_METHOD("get_node_size"), &OccupancyGrid::node_size );
+    ClassDB::bind_method( D_METHOD("clear"), &OccupancyGrid::clear );
+    ClassDB::bind_method( D_METHOD("append", "transform", "mesh"), &OccupancyGrid::append );
+    ClassDB::bind_method( D_METHOD("subdivide"), &OccupancyGrid::subdivide );
 
-	ClassDB::bind_method( D_METHOD("occupied", "at"), &OccupancyGrid::occupied, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("intersects", "g"), &OccupancyGrid::intersects, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("touches", "g"), &OccupancyGrid::touches, Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("touch_point", "g"), &OccupancyGrid::touch_point, Variant::VECTOR3 );
-	ClassDB::bind_method( D_METHOD("intersects_ray", "p_from", "p_to"), &OccupancyGrid::intersects_ray, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("occupied", "at"), &OccupancyGrid::occupied );
+	ClassDB::bind_method( D_METHOD("intersects", "g"), &OccupancyGrid::intersects );
+	ClassDB::bind_method( D_METHOD("touches", "g"), &OccupancyGrid::touches );
+	ClassDB::bind_method( D_METHOD("touch_point", "g"), &OccupancyGrid::touch_point );
+	ClassDB::bind_method( D_METHOD("intersects_ray", "p_from", "p_to"), &OccupancyGrid::intersects_ray );
 
-	ClassDB::bind_method( D_METHOD("set_position", "at"), &OccupancyGrid::set_position, Variant::NIL );
-	ClassDB::bind_method( D_METHOD("get_position" ), &OccupancyGrid::get_position, Variant::VECTOR3 );
+	ClassDB::bind_method( D_METHOD("set_position", "at"), &OccupancyGrid::set_position );
+	ClassDB::bind_method( D_METHOD("get_position" ), &OccupancyGrid::get_position );
 
-    ClassDB::bind_method( D_METHOD("lines"), &OccupancyGrid::lines, Variant::POOL_VECTOR3_ARRAY );
+    ClassDB::bind_method( D_METHOD("lines"), &OccupancyGrid::lines );
 }
 
 OccupancyGrid::OccupancyGrid()
-	: Reference()
+	: RefCounted()
 {
     // Initialize counters and parameters.
     this->max_depth_  = -1;
@@ -111,7 +111,7 @@ void OccupancyGrid::clear()
 	faces_.clear();
 }
 
-void OccupancyGrid::append( const Transform & t, const Ref<Mesh> mesh )
+void OccupancyGrid::append( const Transform3D & t, const Ref<Mesh> mesh )
 {
 	const int qty = mesh->get_surface_count();
 	for ( int i=0; i<qty; i++ )
@@ -474,7 +474,7 @@ void OccupancyGrid::set_node_position( GridNode & n, const Vector3 from, const V
 	}
 }
 
-PoolVector<Vector3> OccupancyGrid::lines()
+Vector<Vector3> OccupancyGrid::lines()
 {
 	Vector<Vector3> ls;
 	const int qty = nodes_.size();
@@ -528,10 +528,10 @@ PoolVector<Vector3> OccupancyGrid::lines()
 		ls.push_back( vs[7] );
 	}
 
-	PoolVector<Vector3> res;
+	Vector<Vector3> res;
 	const int sz = ls.size();
 	res.resize( sz );
-	PoolVector<Vector3>::Write w = res.write();
+	Vector<Vector3>::Write w = res.write();
 	for ( int i=0; i<sz; i++ )
 	{
 		const Vector3 & v = ls.ptr()[i];
@@ -570,7 +570,7 @@ void OccupancyGrid::updateNode( const GridNode & node )
 }
 
 
-static void faces_from_surface( const Transform & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces )
+static void faces_from_surface( const Transform3D & t, const Mesh & mesh, int surface_idx, Vector<Face3> & faces )
 {
 	// Don't add faces if doesn't consist of triangles.
 	if (mesh.surface_get_primitive_type(surface_idx) != Mesh::PRIMITIVE_TRIANGLES)
@@ -586,7 +586,7 @@ static void faces_from_surface( const Transform & t, const Mesh & mesh, int surf
 	}
 }
 
-static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces )
+static void parse_mesh_arrays( const Transform3D & t, const Mesh & mesh, int surface_idx, bool is_index_array, Vector<Face3> & faces )
 {
 	const int vert_count = is_index_array ? mesh.surface_get_array_index_len( surface_idx ) :
 		                                    mesh.surface_get_array_len( surface_idx );
@@ -600,11 +600,11 @@ static void parse_mesh_arrays( const Transform & t, const Mesh & mesh, int surfa
 	Array arrays = mesh.surface_get_arrays( surface_idx );
 	//FaceFiller filler(faces, arrays);
 
-	PoolVector<int> indices = arrays[Mesh::ARRAY_INDEX];
-	PoolVector<int>::Read indices_reader = indices.read();
+	Vector<int> indices = arrays[Mesh::ARRAY_INDEX];
+	Vector<int>::Read indices_reader = indices.read();
 
-	PoolVector<Vector3> vertices = arrays[Mesh::ARRAY_VERTEX];
-	PoolVector<Vector3>::Read vertices_reader = vertices.read();
+	Vector<Vector3> vertices = arrays[Mesh::ARRAY_VERTEX];
+	Vector<Vector3>::Read vertices_reader = vertices.read();
 
 	if ( is_index_array )
 	{

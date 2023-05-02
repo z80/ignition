@@ -2,13 +2,13 @@
 extends RefFrameNonInertialNode
 class_name RefFrame
 
-var _axes: Spatial = null
+var _axes: Node3D = null
 
 
 
 
-func get_class():
-	return "RefFrame"
+#func get_class():
+#	return "RefFrame"
 
 
 func process_children():
@@ -49,7 +49,7 @@ func _create_axes():
 		return false
 	
 	var Axes = preload( "res://physics/axes_visualization.tscn" )
-	_axes = Axes.instance()
+	_axes = Axes.instantiate()
 	root.add_child( _axes )
 	
 	return true
@@ -139,16 +139,14 @@ func on_delete():
 
 
 
-func serialize():
-	var data: Dictionary = .serialize()
-	return data
+func _serialize( data: Dictionary ):
+	pass
 
 
 
 
-func deserialize( data: Dictionary ):
-	var ret: bool = .deserialize( data )
-	return ret
+func _deserialize( data: Dictionary ):
+	return true
 
 
 

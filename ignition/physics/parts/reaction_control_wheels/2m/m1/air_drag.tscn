@@ -2,6 +2,6 @@
 
 [ext_resource path="res://physics/parts/reaction_control_wheels/2m/m1/assets/air_mesh/air_mesh_Cylinder021.mesh" type="ArrayMesh" id=1]
 
-[node name="AirDrag" type="MeshInstance"]
+[node name="AirDrag" type="MeshInstance3D"]
 mesh = ExtResource( 1 )
 material/0 = null

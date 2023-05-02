@@ -1,172 +1,124 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=8 format=3 uid="uid://wdbvan216tfr"]
 
-[ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts_theme.tres" type="Theme" id=1]
-[ext_resource path="res://physics/bodies/construction/panel_parts/item_button.tscn" type="PackedScene" id=2]
-[ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts.gd" type="Script" id=3]
-[ext_resource path="res://physics/bodies/construction/panel_parts/icon_confirm.png" type="Texture" id=4]
-[ext_resource path="res://physics/bodies/construction/panel_parts/icon_parts.png" type="Texture" id=5]
-[ext_resource path="res://physics/bodies/construction/panel_parts/icon_frames.png" type="Texture" id=6]
+[ext_resource type="Theme" uid="uid://d1vuard34cie7" path="res://physics/bodies/construction/panel_parts/panel_parts_theme.tres" id="1"]
+[ext_resource type="PackedScene" path="res://physics/bodies/construction/panel_parts/item_button.tscn" id="2"]
+[ext_resource type="Script" path="res://physics/bodies/construction/panel_parts/panel_parts.gd" id="3"]
+[ext_resource type="Texture2D" uid="uid://b6c5wxxjb143c" path="res://physics/bodies/construction/panel_parts/icon_confirm.png" id="4"]
+[ext_resource type="Texture2D" uid="uid://cpo738sc8wn6p" path="res://physics/bodies/construction/panel_parts/icon_parts.png" id="5"]
+[ext_resource type="Texture2D" uid="uid://8irj80jhfkfx" path="res://physics/bodies/construction/panel_parts/icon_frames.png" id="6"]
 
-[sub_resource type="StyleBoxFlat" id=1]
-bg_color = Color( 0.0627451, 0.0627451, 0.0627451, 0.282353 )
+[sub_resource type="StyleBoxFlat" id="1"]
+bg_color = Color(0.0627451, 0.0627451, 0.0627451, 0.282353)
 
 [node name="PanelParts" type="Control"]
+layout_mode = 3
 anchor_right = 0.001
 anchor_bottom = 1.0
-margin_left = 1.0
-margin_right = 255.976
-script = ExtResource( 3 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+offset_left = 1.0
+offset_right = 255.976
+script = ExtResource("3")
 
 [node name="Panel" type="Panel" parent="."]
+layout_mode = 0
 anchor_right = 1.25
 anchor_bottom = 1.0
-theme = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+theme = ExtResource("1")
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer2"]
-margin_right = 320.0
-margin_bottom = 586.0
+layout_mode = 2
 size_flags_vertical = 3
-theme = ExtResource( 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+theme = ExtResource("1")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer2/HBoxContainer"]
-margin_right = 76.0
-margin_bottom = 586.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
+layout_mode = 2
 
-[node name="Frames" parent="Panel/VBoxContainer2/HBoxContainer/VBoxContainer" instance=ExtResource( 2 )]
-margin_right = 76.0
-margin_bottom = 72.0
-icon = ExtResource( 6 )
+[node name="Frames" parent="Panel/VBoxContainer2/HBoxContainer/VBoxContainer" instance=ExtResource("2")]
+layout_mode = 2
+icon = ExtResource("6")
 description = "Frames. Frames are used for access."
 
-[node name="Parts" parent="Panel/VBoxContainer2/HBoxContainer/VBoxContainer" instance=ExtResource( 2 )]
-margin_top = 76.0
-margin_right = 76.0
-margin_bottom = 148.0
-icon = ExtResource( 5 )
+[node name="Parts" parent="Panel/VBoxContainer2/HBoxContainer/VBoxContainer" instance=ExtResource("2")]
+layout_mode = 2
+icon = ExtResource("5")
 description = "Movable parts."
 
 [node name="PanelSplit" type="Panel" parent="Panel/VBoxContainer2/HBoxContainer"]
-margin_left = 80.0
-margin_right = 86.0
-margin_bottom = 586.0
-rect_min_size = Vector2( 6, 0 )
-custom_styles/panel = SubResource( 1 )
+custom_minimum_size = Vector2(6, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("1")
 
 [node name="ContainerFrames" type="GridContainer" parent="Panel/VBoxContainer2/HBoxContainer"]
 visible = false
-margin_left = 90.0
-margin_right = 278.0
-margin_bottom = 586.0
+layout_mode = 2
 columns = 3
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="Parts2" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
+[node name="Parts2" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
-[node name="Parts3" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
-margin_left = 64.0
-margin_right = 124.0
+[node name="Parts3" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
-[node name="Parts4" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
-margin_left = 128.0
-margin_right = 188.0
+[node name="Parts4" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
-[node name="Parts5" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
-margin_top = 64.0
-margin_bottom = 124.0
+[node name="Parts5" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
-[node name="Parts6" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
-margin_left = 64.0
-margin_top = 64.0
-margin_right = 124.0
-margin_bottom = 124.0
+[node name="Parts6" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
-[node name="Parts7" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource( 2 )]
-margin_left = 128.0
-margin_top = 64.0
-margin_right = 188.0
-margin_bottom = 124.0
+[node name="Parts7" parent="Panel/VBoxContainer2/HBoxContainer/ContainerFrames" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
 [node name="ContainerParts" type="GridContainer" parent="Panel/VBoxContainer2/HBoxContainer"]
 visible = false
-margin_left = 90.0
-margin_right = 278.0
-margin_bottom = 586.0
+layout_mode = 2
 columns = 3
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="Parts2" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
+[node name="Parts2" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
-[node name="Parts3" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
-margin_left = 64.0
-margin_right = 124.0
+[node name="Parts3" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
-[node name="Parts4" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
-margin_left = 128.0
-margin_right = 188.0
+[node name="Parts4" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
-[node name="Parts5" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
-margin_top = 64.0
-margin_bottom = 124.0
+[node name="Parts5" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
-[node name="Parts6" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource( 2 )]
-margin_left = 64.0
-margin_top = 64.0
-margin_right = 124.0
-margin_bottom = 124.0
+[node name="Parts6" parent="Panel/VBoxContainer2/HBoxContainer/ContainerParts" instance=ExtResource("2")]
+layout_mode = 2
 description = "Movable parts."
 
 [node name="PanelSplit2" type="Panel" parent="Panel/VBoxContainer2"]
-margin_top = 590.0
-margin_right = 320.0
-margin_bottom = 596.0
-rect_min_size = Vector2( 256, 6 )
-custom_styles/panel = SubResource( 1 )
+custom_minimum_size = Vector2(256, 6)
+layout_mode = 2
+theme_override_styles/panel = SubResource("1")
 
 [node name="HBoxControls" type="HBoxContainer" parent="Panel/VBoxContainer2"]
-margin_top = 600.0
-margin_right = 320.0
-margin_bottom = 600.0
+layout_mode = 2
 alignment = 2
 
-[node name="Confirm" parent="Panel/VBoxContainer2/HBoxControls" instance=ExtResource( 2 )]
+[node name="Confirm" parent="Panel/VBoxContainer2/HBoxControls" instance=ExtResource("2")]
 visible = false
-margin_left = 186.0
-margin_right = 262.0
-margin_bottom = 72.0
-icon = ExtResource( 4 )
+layout_mode = 2
+icon = ExtResource("4")
 description = "Confirm new part pose. It only works for a valid pose. It should not be too far form other parts and shouldn't occupy the same volume with any other part."
 
 [connection signal="pressed" from="Panel/VBoxContainer2/HBoxContainer/VBoxContainer/Frames" to="." method="_on_Frames_pressed"]

@@ -31,137 +31,81 @@
 #ifndef SHADER_EDITOR_PLUGIN_H
 #define SHADER_EDITOR_PLUGIN_H
 
-#include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
-#include "scene/gui/margin_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/main/timer.h"
-#include "scene/resources/shader.h"
-#include "servers/visual/shader_language.h"
 
-class ShaderTextEditor : public CodeTextEditor {
-	GDCLASS(ShaderTextEditor, CodeTextEditor);
-
-	Ref<Shader> shader;
-
-	void _check_shader_mode();
-
-protected:
-	static void _bind_methods();
-	virtual void _load_theme_settings();
-
-	virtual void _code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options);
-
-public:
-	virtual void _validate_script();
-
-	void reload_text();
-
-	Ref<Shader> get_edited_shader() const;
-	void set_edited_shader(const Ref<Shader> &p_shader);
-	ShaderTextEditor();
-};
-
-class ShaderEditor : public MarginContainer {
-	GDCLASS(ShaderEditor, MarginContainer);
-
-	enum {
-
-		EDIT_UNDO,
-		EDIT_REDO,
-		EDIT_CUT,
-		EDIT_COPY,
-		EDIT_PASTE,
-		EDIT_SELECT_ALL,
-		EDIT_MOVE_LINE_UP,
-		EDIT_MOVE_LINE_DOWN,
-		EDIT_INDENT_LEFT,
-		EDIT_INDENT_RIGHT,
-		EDIT_DELETE_LINE,
-		EDIT_DUPLICATE_SELECTION,
-		EDIT_TOGGLE_COMMENT,
-		EDIT_COMPLETE,
-		SEARCH_FIND,
-		SEARCH_FIND_NEXT,
-		SEARCH_FIND_PREV,
-		SEARCH_REPLACE,
-		SEARCH_GOTO_LINE,
-		BOOKMARK_TOGGLE,
-		BOOKMARK_GOTO_NEXT,
-		BOOKMARK_GOTO_PREV,
-		BOOKMARK_REMOVE_ALL,
-		HELP_DOCS,
-	};
-
-	MenuButton *edit_menu;
-	MenuButton *search_menu;
-	PopupMenu *bookmarks_menu;
-	MenuButton *help_menu;
-	PopupMenu *context_menu;
-	uint64_t idle;
-
-	GotoLineDialog *goto_line_dialog;
-	ConfirmationDialog *erase_tab_confirm;
-	ConfirmationDialog *disk_changed;
-
-	ShaderTextEditor *shader_editor;
-
-	void _menu_option(int p_option);
-	void _params_changed();
-	mutable Ref<Shader> shader;
-
-	void _editor_settings_changed();
-
-	void _check_for_external_edit();
-	void _reload_shader_from_disk();
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-	void _make_context_menu(bool p_selection, Vector2 p_position);
-	void _text_edit_gui_input(const Ref<InputEvent> &ev);
-
-	void _update_bookmark_list();
-	void _bookmark_item_pressed(int p_idx);
-
-public:
-	void apply_shaders();
-
-	void ensure_select_current();
-	void edit(const Ref<Shader> &p_shader);
-
-	void goto_line_selection(int p_line, int p_begin, int p_end);
-
-	virtual Size2 get_minimum_size() const { return Size2(0, 200); }
-	void save_external_data(const String &p_str = "");
-
-	ShaderEditor(EditorNode *p_node);
-};
+class HSplitContainer;
+class ItemList;
+class MenuButton;
+class ShaderCreateDialog;
+class TabContainer;
+class TextShaderEditor;
+class VisualShaderEditor;
 
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
-	bool _2d;
-	ShaderEditor *shader_editor;
-	EditorNode *editor;
-	Button *button;
+	struct EditedShader {
+		Ref<Shader> shader;
+		Ref<ShaderInclude> shader_inc;
+		TextShaderEditor *shader_editor = nullptr;
+		VisualShaderEditor *visual_shader_editor = nullptr;
+	};
+
+	LocalVector<EditedShader> edited_shaders;
+
+	// Always valid operations come first in the enum, file-specific ones
+	// should go after FILE_SAVE which is used to build the menu accordingly.
+	enum {
+		FILE_NEW,
+		FILE_NEW_INCLUDE,
+		FILE_OPEN,
+		FILE_OPEN_INCLUDE,
+		FILE_SAVE,
+		FILE_SAVE_AS,
+		FILE_INSPECT,
+		FILE_CLOSE,
+		FILE_MAX
+	};
+
+	HSplitContainer *main_split = nullptr;
+	ItemList *shader_list = nullptr;
+	TabContainer *shader_tabs = nullptr;
+
+	Button *button = nullptr;
+	MenuButton *file_menu = nullptr;
+
+	ShaderCreateDialog *shader_create_dialog = nullptr;
+
+	void _update_shader_list();
+	void _shader_selected(int p_index);
+	void _shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
+	void _menu_item_pressed(int p_index);
+	void _resource_saved(Object *obj);
+	void _close_shader(int p_index);
+
+	void _shader_created(Ref<Shader> p_shader);
+	void _shader_include_created(Ref<ShaderInclude> p_shader_inc);
+	void _update_shader_list_status();
+	void _move_shader_tab(int p_from, int p_to);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
-	virtual String get_name() const { return "Shader"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-	virtual void selected_notify();
+	virtual String get_name() const override { return "Shader"; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+	virtual void selected_notify() override;
 
-	ShaderEditor *get_shader_editor() const { return shader_editor; }
+	TextShaderEditor *get_shader_editor(const Ref<Shader> &p_for_shader);
+	VisualShaderEditor *get_visual_shader_editor(const Ref<Shader> &p_for_shader);
 
-	virtual void save_external_data();
-	virtual void apply_changes();
+	virtual void save_external_data() override;
+	virtual void apply_changes() override;
 
-	ShaderEditorPlugin(EditorNode *p_node);
+	ShaderEditorPlugin();
 	~ShaderEditorPlugin();
 };
 

@@ -2,22 +2,22 @@
 
 [ext_resource path="res://physics/parts/frames/frame_light/visual_raw.tscn" type="PackedScene" id=1]
 
-[sub_resource type="CylinderShape" id=1]
+[sub_resource type="CylinderShape3D" id=1]
 height = 0.626436
 radius = 0.311308
 
-[sub_resource type="CylinderShape" id=2]
+[sub_resource type="CylinderShape3D" id=2]
 height = 1.2947
 radius = 0.655586
 
-[node name="FrameLight" type="RigidBody"]
+[node name="FrameLight" type="RigidBody3D"]
 mode = 1
 
-[node name="CollisionShape" type="CollisionShape" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.773293, 0 )
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.773293, 0 )
 shape = SubResource( 1 )
 
-[node name="CollisionShape2" type="CollisionShape" parent="."]
+[node name="CollisionShape2" type="CollisionShape3D" parent="."]
 shape = SubResource( 2 )
 
 [node name="FrameLightVisual" parent="." instance=ExtResource( 1 )]

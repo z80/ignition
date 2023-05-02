@@ -2,20 +2,20 @@
 extends Part
 class_name ReactionControlWheels
 
-export(float) var max_torque       = 50.0
-export(float) var angualr_velocity = 1.0
-export(float) var angular_gain     = 1000.0
+@export var max_torque: float       = 50.0
+@export var angualr_velocity: float = 1.0
+@export var angular_gain: float     = 1000.0
 
 var _user_input: Dictionary = {}
 var _w_normalized: Vector3 = Vector3.ZERO
 var _torque: Vector3       = Vector3.ZERO
 
 var _control_applied: bool = false
-export(String) var sound: String = ""
+@export var sound: String = ""
 
 
 func init():
-	.init()
+	super.init()
 	
 	var PartControlGroups = load( "res://physics/parts/part_control_groups.gd" )
 	control_group = PartControlGroups.ControlGroup._1
@@ -80,12 +80,12 @@ func apply_control( dt: float ):
 	_torque       = Vector3.ZERO
 	
 	# Adjustment q.
-	var t: Transform = self.transform
-	var q: Quat      = t.basis
+	var t: Transform3D = self.transform
+	var q: Quaternion      = t.basis
 	
 	var wanted_w = w
 	#if not rotation_abolute:
-	wanted_w = q.xform( wanted_w )
+	wanted_w = q * (wanted_w)
 	wanted_w *= angualr_velocity
 	var current_w: Vector3 = self.w()
 	var dw = wanted_w - current_w
@@ -96,7 +96,7 @@ func apply_control( dt: float ):
 		torque = torque * (max_torque / L)
 	
 	_torque = torque
-	_physical.add_torque( _torque )
+	_physical.apply_torque( _torque )
 
 
 

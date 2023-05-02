@@ -5,8 +5,8 @@
 #include "vector3d.h"
 #include "quaterniond.h"
 #include "matrix3d.h"
-#include "core/dictionary.h"
-#include "core/variant.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 
 
 namespace Ign

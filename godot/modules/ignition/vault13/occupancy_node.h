@@ -22,7 +22,7 @@ public:
 	real_t node_size() const;
 	void rebuild();
 	// For visualization.
-	PoolVector<Vector3> lines();
+	Vector<Vector3> lines();
 
 	// Check if certain point is occupied.
 	bool occupied( const Vector3 & at ) const;

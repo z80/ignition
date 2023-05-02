@@ -31,25 +31,23 @@
 #ifndef PATH_2D_EDITOR_PLUGIN_H
 #define PATH_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/path_2d.h"
-#include "scene/gui/tool_button.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/separator.h"
 
 class CanvasItemEditor;
+class MenuButton;
 
 class Path2DEditor : public HBoxContainer {
 	GDCLASS(Path2DEditor, HBoxContainer);
 
-	UndoRedo *undo_redo;
+	CanvasItemEditor *canvas_item_editor = nullptr;
+	Panel *panel = nullptr;
+	Path2D *node = nullptr;
 
-	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
-	Panel *panel;
-	Path2D *node;
-
-	HBoxContainer *base_hb;
-	Separator *sep;
+	HBoxContainer *base_hb = nullptr;
+	Separator *sep = nullptr;
 
 	enum Mode {
 		MODE_CREATE,
@@ -60,12 +58,12 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	Mode mode;
-	ToolButton *curve_create;
-	ToolButton *curve_edit;
-	ToolButton *curve_edit_curve;
-	ToolButton *curve_del;
-	ToolButton *curve_close;
-	MenuButton *handle_menu;
+	Button *curve_create = nullptr;
+	Button *curve_edit = nullptr;
+	Button *curve_edit_curve = nullptr;
+	Button *curve_del = nullptr;
+	Button *curve_close = nullptr;
+	MenuButton *handle_menu = nullptr;
 
 	bool mirror_handle_angle;
 	bool mirror_handle_length;
@@ -77,7 +75,6 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	enum Action {
-
 		ACTION_NONE,
 		ACTION_MOVING_POINT,
 		ACTION_MOVING_IN,
@@ -85,11 +82,11 @@ class Path2DEditor : public HBoxContainer {
 	};
 
 	Action action;
-	int action_point;
+	int action_point = 0;
 	Point2 moving_from;
 	Point2 moving_screen_from;
-	float orig_in_length;
-	float orig_out_length;
+	float orig_in_length = 0.0f;
+	float orig_out_length = 0.0f;
 	Vector2 edge_point;
 
 	void _mode_selected(int p_mode);
@@ -107,26 +104,25 @@ public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void edit(Node *p_path2d);
-	Path2DEditor(EditorNode *p_editor);
+	Path2DEditor();
 };
 
 class Path2DEditorPlugin : public EditorPlugin {
 	GDCLASS(Path2DEditorPlugin, EditorPlugin);
 
-	Path2DEditor *path2d_editor;
-	EditorNode *editor;
+	Path2DEditor *path2d_editor = nullptr;
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return path2d_editor->forward_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { path2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return path2d_editor->forward_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { path2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	virtual String get_name() const { return "Path2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Path2D"; }
+	bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
-	Path2DEditorPlugin(EditorNode *p_node);
+	Path2DEditorPlugin();
 	~Path2DEditorPlugin();
 };
 

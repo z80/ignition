@@ -2,7 +2,7 @@
 #ifndef __IIR2_H_
 #define __IIR2_H_
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
 
 namespace Iir2
@@ -88,9 +88,9 @@ private:
 };
 
 
-class Iir2sRef: public Reference
+class Iir2sRef: public RefCounted
 {
-	GDCLASS(Iir2sRef, Reference);
+	GDCLASS(Iir2sRef, RefCounted);
 protected:
 	static void _bind_methods();
 

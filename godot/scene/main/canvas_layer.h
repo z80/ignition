@@ -32,31 +32,30 @@
 #define CANVAS_LAYER_H
 
 #include "scene/main/node.h"
-#include "scene/resources/world_2d.h"
 
 class Viewport;
 class CanvasLayer : public Node {
 	GDCLASS(CanvasLayer, Node);
 
-	bool locrotscale_dirty;
+	bool locrotscale_dirty = false;
 	Vector2 ofs;
-	Size2 scale;
-	real_t rot;
-	int layer;
+	Size2 scale = Vector2(1, 1);
+	real_t rot = 0.0;
+	int layer = 1;
 	Transform2D transform;
 	RID canvas;
 
 	ObjectID custom_viewport_id; // to check validity
-	Viewport *custom_viewport;
+	Viewport *custom_viewport = nullptr;
 
 	RID viewport;
-	Viewport *vp;
+	Viewport *vp = nullptr;
 
-	int sort_index;
-	bool visible;
+	int sort_index = 0;
+	bool visible = true;
 
-	bool follow_viewport;
-	float follow_viewport_scale;
+	bool follow_viewport = false;
+	float follow_viewport_scale = 1.0;
 
 	void _update_xform();
 	void _update_locrotscale();
@@ -65,6 +64,7 @@ class CanvasLayer : public Node {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_layer(int p_xform);
@@ -77,15 +77,13 @@ public:
 
 	void set_transform(const Transform2D &p_xform);
 	Transform2D get_transform() const;
+	Transform2D get_final_transform() const;
 
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
 	void set_rotation(real_t p_radians);
 	real_t get_rotation() const;
-
-	void set_rotation_degrees(real_t p_degrees);
-	real_t get_rotation_degrees() const;
 
 	void set_scale(const Size2 &p_scale);
 	Size2 get_scale() const;
@@ -107,10 +105,6 @@ public:
 	float get_follow_viewport_scale() const;
 
 	RID get_canvas() const;
-
-#ifdef TOOLS_ENABLED
-	StringName get_property_store_alias(const StringName &p_property) const;
-#endif
 
 	CanvasLayer();
 	~CanvasLayer();

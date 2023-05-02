@@ -1,8 +1,8 @@
 
 static func pick_basis( up: Vector3 ):
-	var e: Array = [ Vector3(1.0, 0.0, 0.0), 
-					 Vector3(0.0, 1.0, 0.0), 
-					 Vector3(0.0, 0.0, 1.0) ]
+	var e: Array = [ Vector3(1.0, 0.0, 0.0), \
+					Vector3(0.0, 1.0, 0.0), \
+					Vector3(0.0, 0.0, 1.0) ]
 	var max_dot: float = -1.0
 	var max_dot_index: int = -1
 	for i in range( 3 ):
@@ -27,9 +27,9 @@ static func pick_basis( up: Vector3 ):
 
 
 static func pick_forward_basis( v: Vector3 ) -> Basis:
-	var e: Array = [ Vector3(1.0, 0.0, 0.0), 
-					 Vector3(0.0, 1.0, 0.0), 
-					 Vector3(0.0, 0.0, 1.0) ]
+	var e: Array = [ Vector3(1.0, 0.0, 0.0), \
+					Vector3(0.0, 1.0, 0.0), \
+					Vector3(0.0, 0.0, 1.0) ]
 	var max_dot: float = -1.0
 	var max_dot_index: int = -1
 	for i in range( 3 ):

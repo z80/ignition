@@ -1,6 +1,6 @@
-[gd_resource type="ShaderMaterial" load_steps=8 format=2]
+[gd_resource type="ShaderMaterial" load_steps=8 format=3 uid="uid://bi70tumvhgcd6"]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="Shader" id="1"]
 code = "shader_type spatial;
 render_mode unshaded;
 
@@ -14,8 +14,8 @@ uniform sampler2D noise;
 uniform sampler2D displacement_x;
 uniform sampler2D displacement_z;
 
-uniform vec4 color_bright: hint_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
-uniform vec4 color_dark:   hint_color = vec4( 0.3529, 0.3529, 0.3529, 1.0 );
+uniform vec4 color_bright: source_color = vec4( 0.6471, 0.8039, 1.0, 1.0 );
+uniform vec4 color_dark:   source_color = vec4( 0.3529, 0.3529, 0.3529, 1.0 );
 
 varying float time;
 varying vec3 point3d;
@@ -98,43 +98,41 @@ void fragment() {
 }
 "
 
-[sub_resource type="OpenSimplexNoise" id=2]
+[sub_resource type="FastNoiseLite" id="2"]
 seed = 1
-period = 15.0
 
-[sub_resource type="NoiseTexture" id=3]
+[sub_resource type="NoiseTexture2D" id="3"]
 width = 128
 height = 128
 seamless = true
-noise = SubResource( 2 )
+noise = SubResource("2")
 
-[sub_resource type="OpenSimplexNoise" id=4]
+[sub_resource type="FastNoiseLite" id="4"]
 seed = 2
-period = 15.0
 
-[sub_resource type="NoiseTexture" id=5]
+[sub_resource type="NoiseTexture2D" id="5"]
 width = 128
 height = 128
 seamless = true
-noise = SubResource( 4 )
+noise = SubResource("4")
 
-[sub_resource type="OpenSimplexNoise" id=6]
-period = 15.0
+[sub_resource type="FastNoiseLite" id="6"]
 
-[sub_resource type="NoiseTexture" id=7]
+[sub_resource type="NoiseTexture2D" id="7"]
 width = 128
 height = 128
 seamless = true
-noise = SubResource( 6 )
+noise = SubResource("6")
 
 [resource]
-shader = SubResource( 1 )
-shader_param/pressure = 0.5
-shader_param/power = 0.8
-shader_param/exhaust_speed = 150.0
-shader_param/texture_scale = 0.2
-shader_param/color_bright = Color( 0.6471, 0.8039, 1, 1 )
-shader_param/color_dark = Color( 0.3529, 0.3529, 0.3529, 1 )
-shader_param/noise = SubResource( 7 )
-shader_param/displacement_x = SubResource( 3 )
-shader_param/displacement_z = SubResource( 5 )
+render_priority = 0
+shader = SubResource("1")
+shader_parameter/pressure = 0.5
+shader_parameter/power = 0.8
+shader_parameter/exhaust_speed = 150.0
+shader_parameter/texture_scale = 0.2
+shader_parameter/color_bright = Color(0.6471, 0.8039, 1, 1)
+shader_parameter/color_dark = Color(0.3529, 0.3529, 0.3529, 1)
+shader_parameter/noise = SubResource("7")
+shader_parameter/displacement_x = SubResource("3")
+shader_parameter/displacement_z = SubResource("5")

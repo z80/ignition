@@ -93,7 +93,7 @@ atmosphere_color_night = Color( 0.988235, 0.764706, 0, 1 )
 displacement = -2.0
 orbit_color = Color( 0.592157, 0.878431, 0, 1 )
 
-[node name="Camera" parent="." instance=ExtResource( 3 )]
+[node name="Camera3D" parent="." instance=ExtResource( 3 )]
 
 [node name="RootUi" parent="." instance=ExtResource( 5 )]
-margin_right = 0.0
+offset_right = 0.0

@@ -10,7 +10,7 @@ func _ready():
 	call_deferred( "_create_collision_surfaces" )
 
 
-func _child_jumped( child_ref_frame: RefFrameNode ):
+func _child_jumped( child_ref_frame ):
 	var phys: RefFramePhysics = child_ref_frame as RefFramePhysics
 	if phys == null:
 		return
@@ -30,7 +30,7 @@ func _child_jumped( child_ref_frame: RefFrameNode ):
 
 
 
-func _child_entered( child_ref_frame: RefFrameNode ):
+func _child_entered( child_ref_frame ):
 	var ref_frame_physics: RefFramePhysics = child_ref_frame as RefFramePhysics
 	if ref_frame_physics == null:
 		return
@@ -45,7 +45,7 @@ func _child_entered( child_ref_frame: RefFrameNode ):
 
 
 
-func _child_left( child_ref_frame: RefFrameNode ):
+func _child_left( child_ref_frame ):
 	var ref_frame_physics: RefFramePhysics = child_ref_frame as RefFramePhysics
 	if (ref_frame_physics == null) or (not is_instance_valid(ref_frame_physics)):
 		return

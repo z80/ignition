@@ -1,0 +1,50 @@
+[gd_scene load_steps=7 format=3 uid="uid://bkbkom4wi3et4"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_kut6r"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_bak2p"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_pymko"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_qklpj"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_8sxyu"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_o5e3o"]
+size = Vector2(20, 20)
+
+[node name="debug_joints" type="Node3D"]
+
+[node name="RigidBody3D" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
+shape = SubResource("CylinderShape3D_kut6r")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D"]
+mesh = SubResource("CylinderMesh_bak2p")
+
+[node name="RigidBody3D2" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.1, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D2"]
+shape = SubResource("CylinderShape3D_pymko")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D2"]
+mesh = SubResource("CylinderMesh_qklpj")
+
+[node name="Generic6DOFJoint3D" type="Generic6DOFJoint3D" parent="."]
+node_a = NodePath("../RigidBody3D")
+node_b = NodePath("../RigidBody3D2")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("WorldBoundaryShape3D_8sxyu")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+mesh = SubResource("PlaneMesh_o5e3o")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6.05164)

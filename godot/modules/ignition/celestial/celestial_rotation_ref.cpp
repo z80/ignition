@@ -13,7 +13,7 @@ void CelestialRotationRef::_bind_methods()
 }
 
 CelestialRotationRef::CelestialRotationRef()
-        : Reference()
+        : RefCounted()
 {
 }
 

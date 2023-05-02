@@ -32,12 +32,13 @@
 #define AREA_BULLET_H
 
 #include "collision_object_bullet.h"
-#include "core/vector.h"
-#include "servers/physics_server.h"
+#include "core/templates/vector.h"
+#include "servers/physics_server_3d.h"
 #include "space_bullet.h"
 
 /**
 	@author AndreaCatania
+	FatherTed
 */
 
 class btGhostObject;
@@ -49,7 +50,7 @@ public:
 		StringName event_callback_method;
 
 		InOutEventCallback() :
-				event_callback_id(0) {}
+				event_callback_id((uint64_t)0) {}
 	};
 
 	enum OverlapState {
@@ -85,7 +86,7 @@ private:
 	int _find_overlapping_shape(CollisionObjectBullet *p_other_object, uint32_t p_other_shape_id, uint32_t p_our_shape_id);
 	bool monitorable;
 
-	PhysicsServer::AreaSpaceOverrideMode spOv_mode;
+	PhysicsServer3D::AreaSpaceOverrideMode spOv_mode;
 	bool spOv_gravityPoint;
 	real_t spOv_gravityPointDistanceScale;
 	real_t spOv_gravityPointAttenuation;
@@ -110,8 +111,8 @@ public:
 
 	bool is_monitoring() const;
 
-	_FORCE_INLINE_ void set_spOv_mode(PhysicsServer::AreaSpaceOverrideMode p_mode) { spOv_mode = p_mode; }
-	_FORCE_INLINE_ PhysicsServer::AreaSpaceOverrideMode get_spOv_mode() { return spOv_mode; }
+	_FORCE_INLINE_ void set_spOv_mode(PhysicsServer3D::AreaSpaceOverrideMode p_mode) { spOv_mode = p_mode; }
+	_FORCE_INLINE_ PhysicsServer3D::AreaSpaceOverrideMode get_spOv_mode() { return spOv_mode; }
 
 	_FORCE_INLINE_ void set_spOv_gravityPoint(bool p_isGP) { spOv_gravityPoint = p_isGP; }
 	_FORCE_INLINE_ bool is_spOv_gravityPoint() { return spOv_gravityPoint; }
@@ -142,7 +143,7 @@ public:
 	virtual void set_space(SpaceBullet *p_space);
 
 	virtual void dispatch_callbacks();
-	void call_event(const OverlappingShapeData &p_overlapping_shape, PhysicsServer::AreaBodyStatus p_status);
+	void call_event(const OverlappingShapeData &p_overlapping_shape, PhysicsServer3D::AreaBodyStatus p_status);
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start() {}
@@ -155,8 +156,8 @@ public:
 	void remove_object_overlaps(CollisionObjectBullet *p_object);
 	void clear_overlaps();
 
-	void set_param(PhysicsServer::AreaParameter p_param, const Variant &p_value);
-	Variant get_param(PhysicsServer::AreaParameter p_param) const;
+	void set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value);
+	Variant get_param(PhysicsServer3D::AreaParameter p_param) const;
 
 	void set_event_callback(Type p_callbackObjectType, ObjectID p_id, const StringName &p_method);
 	bool has_event_callback(Type p_callbackObjectType);

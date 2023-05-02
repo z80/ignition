@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://dlcs6q37bues8"]
+
+[ext_resource type="Script" path="res://convex_shape/convex_shape.gd" id="1_irpgk"]
+[ext_resource type="ArrayMesh" uid="uid://384nmo5bfgcn" path="res://convex_shape/assets/plane.tres" id="2_cqoon"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_4k36r"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_l6sd3"]
+
+[node name="convex_shape" type="Node3D"]
+script = ExtResource("1_irpgk")
+mesh = ExtResource("2_cqoon")
+shape_path = NodePath("StaticBody3D/CollisionShape3D")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+
+[node name="RigidBody3D" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.11099, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
+shape = SubResource("SphereShape3D_4k36r")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D"]
+mesh = SubResource("SphereMesh_l6sd3")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.798705, 4.36594)

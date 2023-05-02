@@ -4,9 +4,9 @@
 
 [sub_resource type="SphereMesh" id=1]
 
-[node name="Spatial" type="RefFrameNode"]
+[node name="Node3D" type="RefFrameNode"]
 script = ExtResource( 1 )
 
-[node name="Sphere" type="MeshInstance" parent="."]
+[node name="Sphere" type="MeshInstance3D" parent="."]
 mesh = SubResource( 1 )
 material/0 = null

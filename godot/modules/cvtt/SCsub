@@ -10,7 +10,18 @@ env_cvtt = env_modules.Clone()
 thirdparty_obj = []
 
 thirdparty_dir = "#thirdparty/cvtt/"
-thirdparty_sources = ["ConvectionKernels.cpp"]
+thirdparty_sources = [
+    "ConvectionKernels_API.cpp",
+    "ConvectionKernels_ETC.cpp",
+    "ConvectionKernels_BC67.cpp",
+    "ConvectionKernels_IndexSelector.cpp",
+    "ConvectionKernels_BC6H_IO.cpp",
+    "ConvectionKernels_S3TC.cpp",
+    "ConvectionKernels_BC7_PrioData.cpp",
+    "ConvectionKernels_SingleFile.cpp",
+    "ConvectionKernels_BCCommon.cpp",
+    "ConvectionKernels_Util.cpp",
+]
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 

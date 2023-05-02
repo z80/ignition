@@ -6,7 +6,7 @@
 #include "vector3d.h"
 #include "data_types.h"
 //#include "Urho3D/Math/Quaternion.h"
-#include "core/math/quat.h"
+#include "core/math/quaternion.h"
 #include "core/math/vector3.h"
 
 
@@ -34,7 +34,7 @@ public:
         z_(quat.z_)
     {
     }
-    Quaterniond(const Quat & quat ) noexcept
+    Quaterniond(const Quaternion & quat ) noexcept
        :w_(quat.w),
         x_(quat.x),
         y_(quat.y),
@@ -51,9 +51,9 @@ public:
     {
     }
 
-    Quat quaternion() const
+    Quaternion quaternion() const
     {
-        return Quat( x_, y_, z_, w_ );
+        return Quaternion( x_, y_, z_, w_ );
     }
 
     /// Construct from a Float array.

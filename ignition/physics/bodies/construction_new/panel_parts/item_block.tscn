@@ -4,9 +4,9 @@
 [ext_resource path="res://physics/bodies/construction/panel_parts/panel_parts_theme.tres" type="Theme" id=2]
 
 [node name="ItemButton" type="TextureButton"]
-margin_right = 60.0
-margin_bottom = 60.0
-rect_min_size = Vector2( 60, 60 )
+offset_right = 60.0
+offset_bottom = 60.0
+custom_minimum_size = Vector2( 60, 60 )
 theme = ExtResource( 2 )
 shortcut_in_tooltip = false
 script = ExtResource( 1 )

@@ -52,15 +52,27 @@ public class GodotEditText extends EditText {
 	private final static int HANDLER_OPEN_IME_KEYBOARD = 2;
 	private final static int HANDLER_CLOSE_IME_KEYBOARD = 3;
 
+	// Enum must be kept up-to-date with DisplayServer::VirtualKeyboardType
+	public enum VirtualKeyboardType {
+		KEYBOARD_TYPE_DEFAULT,
+		KEYBOARD_TYPE_MULTILINE,
+		KEYBOARD_TYPE_NUMBER,
+		KEYBOARD_TYPE_NUMBER_DECIMAL,
+		KEYBOARD_TYPE_PHONE,
+		KEYBOARD_TYPE_EMAIL_ADDRESS,
+		KEYBOARD_TYPE_PASSWORD,
+		KEYBOARD_TYPE_URL
+	}
+
 	// ===========================================================
 	// Fields
 	// ===========================================================
-	private GodotView mView;
+	private GodotRenderView mRenderView;
 	private GodotTextInputWrapper mInputWrapper;
 	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
 	private int mMaxInputLength = Integer.MAX_VALUE;
-	private boolean mMultiline = false;
+	private VirtualKeyboardType mKeyboardType = VirtualKeyboardType.KEYBOARD_TYPE_DEFAULT;
 
 	private static class EditHandler extends Handler {
 		private final WeakReference<GodotEditText> mEdit;
@@ -82,26 +94,26 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	public GodotEditText(final Context context) {
 		super(context);
-		this.initView();
+		initView();
 	}
 
 	public GodotEditText(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
-		this.initView();
+		initView();
 	}
 
 	public GodotEditText(final Context context, final AttributeSet attrs, final int defStyle) {
 		super(context, attrs, defStyle);
-		this.initView();
+		initView();
 	}
 
 	protected void initView() {
-		this.setPadding(0, 0, 0, 0);
-		this.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
+		setPadding(0, 0, 0, 0);
+		setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_DONE);
 	}
 
-	public boolean isMultiline() {
-		return mMultiline;
+	public VirtualKeyboardType getKeyboardType() {
+		return mKeyboardType;
 	}
 
 	private void handleMessage(final Message msg) {
@@ -115,21 +127,46 @@ public class GodotEditText extends EditText {
 					edit.setText("");
 					edit.append(text);
 					if (msg.arg2 != -1) {
-						edit.setSelection(msg.arg1, msg.arg2);
+						int selectionStart = Math.min(msg.arg1, edit.length());
+						int selectionEnd = Math.min(msg.arg2, edit.length());
+						edit.setSelection(selectionStart, selectionEnd);
 						edit.mInputWrapper.setSelection(true);
 					} else {
 						edit.mInputWrapper.setSelection(false);
 					}
 
 					int inputType = InputType.TYPE_CLASS_TEXT;
-					if (edit.isMultiline()) {
-						inputType |= InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+					switch (edit.getKeyboardType()) {
+						case KEYBOARD_TYPE_DEFAULT:
+							inputType = InputType.TYPE_CLASS_TEXT;
+							break;
+						case KEYBOARD_TYPE_MULTILINE:
+							inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+							break;
+						case KEYBOARD_TYPE_NUMBER:
+							inputType = InputType.TYPE_CLASS_NUMBER;
+							break;
+						case KEYBOARD_TYPE_NUMBER_DECIMAL:
+							inputType = InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED;
+							break;
+						case KEYBOARD_TYPE_PHONE:
+							inputType = InputType.TYPE_CLASS_PHONE;
+							break;
+						case KEYBOARD_TYPE_EMAIL_ADDRESS:
+							inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+							break;
+						case KEYBOARD_TYPE_PASSWORD:
+							inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD;
+							break;
+						case KEYBOARD_TYPE_URL:
+							inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI;
+							break;
 					}
 					edit.setInputType(inputType);
 
 					edit.mInputWrapper.setOriginText(text);
 					edit.addTextChangedListener(edit.mInputWrapper);
-					final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+					final InputMethodManager imm = (InputMethodManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 					imm.showSoftInput(edit, 0);
 				}
 			} break;
@@ -138,9 +175,9 @@ public class GodotEditText extends EditText {
 				GodotEditText edit = (GodotEditText)msg.obj;
 
 				edit.removeTextChangedListener(mInputWrapper);
-				final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+				final InputMethodManager imm = (InputMethodManager)mRenderView.getView().getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 				imm.hideSoftInputFromWindow(edit.getWindowToken(), 0);
-				edit.mView.requestFocus();
+				edit.mRenderView.getView().requestFocus();
 			} break;
 		}
 	}
@@ -154,12 +191,12 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Getter & Setter
 	// ===========================================================
-	public void setView(final GodotView view) {
-		this.mView = view;
+	public void setView(final GodotRenderView view) {
+		mRenderView = view;
 		if (mInputWrapper == null)
-			mInputWrapper = new GodotTextInputWrapper(mView, this);
-		this.setOnEditorActionListener(mInputWrapper);
-		view.requestFocus();
+			mInputWrapper = new GodotTextInputWrapper(mRenderView, this);
+		setOnEditorActionListener(mInputWrapper);
+		view.getView().requestFocus();
 	}
 
 	// ===========================================================
@@ -168,8 +205,12 @@ public class GodotEditText extends EditText {
 	@Override
 	public boolean onKeyDown(final int keyCode, final KeyEvent keyEvent) {
 		/* Let SurfaceView get focus if back key is input. */
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			mRenderView.getView().requestFocus();
+		}
+
 		// pass event to godot in special cases
-		if (needHandlingInGodot(keyCode, keyEvent) && mView.getInputHandler().onKeyDown(keyCode, keyEvent)) {
+		if (needHandlingInGodot(keyCode, keyEvent) && mRenderView.getInputHandler().onKeyDown(keyCode, keyEvent)) {
 			return true;
 		} else {
 			return super.onKeyDown(keyCode, keyEvent);
@@ -178,7 +219,7 @@ public class GodotEditText extends EditText {
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent keyEvent) {
-		if (needHandlingInGodot(keyCode, keyEvent) && mView.getInputHandler().onKeyUp(keyCode, keyEvent)) {
+		if (needHandlingInGodot(keyCode, keyEvent) && mRenderView.getInputHandler().onKeyUp(keyCode, keyEvent)) {
 			return true;
 		} else {
 			return super.onKeyUp(keyCode, keyEvent);
@@ -197,7 +238,7 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Methods
 	// ===========================================================
-	public void showKeyboard(String p_existing_text, boolean p_multiline, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+	public void showKeyboard(String p_existing_text, VirtualKeyboardType p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 		int maxInputLength = (p_max_input_length <= 0) ? Integer.MAX_VALUE : p_max_input_length;
 		if (p_cursor_start == -1) { // cursor position not given
 			this.mOriginText = p_existing_text;
@@ -210,7 +251,7 @@ public class GodotEditText extends EditText {
 			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_end);
 		}
 
-		this.mMultiline = p_multiline;
+		this.mKeyboardType = p_type;
 
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;

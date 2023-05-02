@@ -39,62 +39,67 @@ class EditorSpinSlider : public Range {
 	GDCLASS(EditorSpinSlider, Range);
 
 	String label;
-	int updown_offset;
-	bool hover_updown;
-	bool mouse_hover;
+	String suffix;
+	int updown_offset = -1;
+	bool hover_updown = false;
+	bool mouse_hover = false;
 
-	TextureRect *grabber;
-	int grabber_range;
+	TextureRect *grabber = nullptr;
+	int grabber_range = 1;
 
-	bool mouse_over_spin;
-	bool mouse_over_grabber;
-	bool mousewheel_over_grabber;
+	bool mouse_over_spin = false;
+	bool mouse_over_grabber = false;
+	bool mousewheel_over_grabber = false;
 
-	bool grabbing_grabber;
-	int grabbing_from;
-	float grabbing_ratio;
+	bool grabbing_grabber = false;
+	int grabbing_from = 0;
+	float grabbing_ratio = 0.0f;
 
-	bool grabbing_spinner_attempt;
-	bool grabbing_spinner;
+	bool grabbing_spinner_attempt = false;
+	bool grabbing_spinner = false;
 
-	bool read_only;
-	float grabbing_spinner_dist_cache;
+	bool read_only = false;
+	float grabbing_spinner_dist_cache = 0.0f;
 	Vector2 grabbing_spinner_mouse_pos;
-	double pre_grab_value;
+	double pre_grab_value = 0.0;
 
-	LineEdit *value_input;
-	bool value_input_just_closed;
-	bool value_input_dirty;
+	Control *value_input_popup = nullptr;
+	LineEdit *value_input = nullptr;
+	uint64_t value_input_closed_frame = 0;
+	bool value_input_dirty = false;
+
+	bool hide_slider = false;
+	bool flat = false;
 
 	void _grabber_gui_input(const Ref<InputEvent> &p_event);
 	void _value_input_closed();
-	void _value_input_entered(const String &);
+	void _value_input_submitted(const String &);
 	void _value_focus_exited();
 	void _value_input_gui_input(const Ref<InputEvent> &p_event);
-	bool hide_slider;
-	bool flat;
-
-	bool use_custom_label_color;
-	Color custom_label_color;
 
 	void _evaluate_input_text();
 
+	void _update_value_input_stylebox();
+	void _ensure_input_popup();
 	void _draw_spin_slider();
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(const Ref<InputEvent> &p_event);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods();
 	void _grabber_mouse_entered();
 	void _grabber_mouse_exited();
 	void _focus_entered();
 
 public:
-	String get_tooltip(const Point2 &p_pos) const;
+	String get_tooltip(const Point2 &p_pos) const override;
 
 	String get_text_value() const;
 	void set_label(const String &p_label);
 	String get_label() const;
+
+	void set_suffix(const String &p_suffix);
+	String get_suffix() const;
 
 	void set_hide_slider(bool p_hide);
 	bool is_hiding_slider() const;
@@ -105,12 +110,12 @@ public:
 	void set_flat(bool p_enable);
 	bool is_flat() const;
 
-	void set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color);
+	bool is_grabbing() const;
 
 	void setup_and_show() { _focus_entered(); }
-	LineEdit *get_line_edit() { return value_input; }
+	LineEdit *get_line_edit();
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	EditorSpinSlider();
 };
 

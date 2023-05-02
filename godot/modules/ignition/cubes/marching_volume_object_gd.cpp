@@ -7,20 +7,20 @@ namespace Ign
 void MarchingVolumeObjectGd::_bind_methods()
 {
     ClassDB::bind_method( D_METHOD("set_se3", "se3"), &MarchingVolumeObjectGd::set_se3 );
-    ClassDB::bind_method( D_METHOD("get_se3"),        &MarchingVolumeObjectGd::get_se3, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("get_se3"),        &MarchingVolumeObjectGd::get_se3 );
 
-    ClassDB::bind_method( D_METHOD("at"),             &MarchingVolumeObjectGd::at,      Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD("at"),             &MarchingVolumeObjectGd::at );
 
     ClassDB::bind_method( D_METHOD("set_bounding_radius", "r"), &MarchingVolumeObjectGd::set_bounding_radius );
-    ClassDB::bind_method( D_METHOD("get_bounding_radius"),      &MarchingVolumeObjectGd::get_bounding_radius, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("get_bounding_radius"),      &MarchingVolumeObjectGd::get_bounding_radius );
 
-	ADD_GROUP( "Ignition", "" );
+    ADD_GROUP( "Ignition", "" );
     ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "se3" ), "set_se3", "get_se3" );
-    ADD_PROPERTY( PropertyInfo( Variant::REAL, "bounding_radius" ), "set_bounding_radius", "get_bounding_radius" );
+    ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "bounding_radius" ), "set_bounding_radius", "get_bounding_radius" );
 }
 
 MarchingVolumeObjectGd::MarchingVolumeObjectGd()
-	: Reference()
+	: RefCounted()
 {
     object = nullptr;
 }
@@ -40,7 +40,7 @@ void MarchingVolumeObjectGd::set_se3( const Ref<Se3Ref> & se3 )
 Ref<Se3Ref> MarchingVolumeObjectGd::get_se3() const
 {
 	Ref<Se3Ref> ret;
-    ret.instance();
+    ret.instantiate();
 
 	if ( object == nullptr )
 		return ret;

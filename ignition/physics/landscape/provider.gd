@@ -5,19 +5,19 @@ var LandscapeVisual
 var LandscapePhysical
 
 func initialize():
-	.initialize()
+	super.initialize()
 	LandscapeVisual   = preload( "res://physics/landscape/landscape_visual.tscn")
 	LandscapePhysical = preload( "res://physics/landscape/landscape_physical.tscn")
 
 
 func init_force_source():
-	.init_force_source()
+	super.init_force_source()
 	force_source = ForceSourceGravityDown.new()
 
 
 # Need to override this one and create a visual shape internally.
 func create_visual():
-	var v = LandscapeVisual.instance()
+	var v = LandscapeVisual.instantiate()
 	if v != null:
 		self.add_child( v )
 	return v
@@ -25,13 +25,13 @@ func create_visual():
 
 # Need to override this one and make it draw/move visual.
 func update_visual( rf ):
-	var t: Transform = rf.t_root()
+	var t: Transform3D = rf.t_root()
 	_visual.update( t )
 
 # Creating physical object(s) and assign collision bit.
 # Make it relative to provided ref. frame.
 func create_physical( bit, rf ):
-	var ph = LandscapePhysical.instance()
+	var ph = LandscapePhysical.instantiate()
 	if ph != null:
 		ph.set_collision_bit( bit )
 		add_child( ph )
@@ -41,7 +41,7 @@ func create_physical( bit, rf ):
 # And if it did beyond of collision object boundaries might need to 
 # re-generate physics object appropriately.
 func update_physical( physical, rf ):
-	var t: Transform = rf.t_root()
+	var t: Transform3D = rf.t_root()
 	physical.update( t )
 
 # Ref. frame is no longer physical or completely removed.

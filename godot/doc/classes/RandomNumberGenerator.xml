@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RandomNumberGenerator" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RandomNumberGenerator" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A class for generating pseudo-random numbers.
 	</brief_description>
 	<description>
-		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses [url=http://www.pcg-random.org/]PCG32[/url].
+		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses [url=https://www.pcg-random.org/]PCG32[/url].
 		[b]Note:[/b] The underlying algorithm is an implementation detail. As a result, it should not be depended upon for reproducible random streams across Godot versions.
 		To generate a random float number (within a given range) based on a time-dependant seed:
 		[codeblock]
 		var rng = RandomNumberGenerator.new()
 		func _ready():
-		    rng.randomize()
 		    var my_random_number = rng.randf_range(-10.0, 10.0)
 		[/codeblock]
-		[b]Note:[/b] The default values of [member seed] and [member state] properties are pseudo-random, and changes when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
+		[b]Note:[/b] The default values of [member seed] and [member state] properties are pseudo-random, and change when calling [method randomize]. The [code]0[/code] value documented here is a placeholder, and not the actual default seed.
 	</description>
 	<tutorials>
 		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
@@ -22,43 +21,43 @@
 		<method name="randf">
 			<return type="float" />
 			<description>
-				Generates a pseudo-random float between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				Returns a pseudo-random float between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randf_range">
 			<return type="float" />
-			<argument index="0" name="from" type="float" />
-			<argument index="1" name="to" type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
 			<description>
-				Generates a pseudo-random float between [code]from[/code] and [code]to[/code] (inclusive).
+				Returns a pseudo-random float between [param from] and [param to] (inclusive).
 			</description>
 		</method>
 		<method name="randfn">
 			<return type="float" />
-			<argument index="0" name="mean" type="float" default="0.0" />
-			<argument index="1" name="deviation" type="float" default="1.0" />
+			<param index="0" name="mean" type="float" default="0.0" />
+			<param index="1" name="deviation" type="float" default="1.0" />
 			<description>
-				Generates a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url] pseudo-random number, using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code]. This is also called Gaussian distribution.
+				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url] pseudo-random number, using Box-Muller transform with the specified [param mean] and a standard [param deviation]. This is also called Gaussian distribution.
 			</description>
 		</method>
 		<method name="randi">
 			<return type="int" />
 			<description>
-				Generates a pseudo-random 32-bit unsigned integer between [code]0[/code] and [code]4294967295[/code] (inclusive).
+				Returns a pseudo-random 32-bit unsigned integer between [code]0[/code] and [code]4294967295[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randi_range">
 			<return type="int" />
-			<argument index="0" name="from" type="int" />
-			<argument index="1" name="to" type="int" />
+			<param index="0" name="from" type="int" />
+			<param index="1" name="to" type="int" />
 			<description>
-				Generates a pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code] (inclusive).
+				Returns a pseudo-random 32-bit signed integer between [param from] and [param to] (inclusive).
 			</description>
 		</method>
 		<method name="randomize">
 			<return type="void" />
 			<description>
-				Setups a time-based seed to generator.
+				Setups a time-based seed to for this [RandomNumberGenerator] instance. Unlike the [@GlobalScope] random number generation functions, different [RandomNumberGenerator] instances can use different seeds.
 			</description>
 		</method>
 	</methods>
@@ -72,7 +71,6 @@
 			rng.seed = hash("Godot")
 			rng.state = 100 # Restore to some previously saved state.
 			[/codeblock]
-			[b]Warning:[/b] the getter of this property returns the previous [member state], and not the initial seed value, which is going to be fixed in Godot 4.0.
 		</member>
 		<member name="state" type="int" setter="set_state" getter="get_state" default="0">
 			The current state of the random number generator. Save and restore this property to restore the generator to a previous state:
@@ -87,6 +85,4 @@
 			[b]Note:[/b] Do not set state to arbitrary values, since the random number generator requires the state to have certain qualities to behave properly. It should only be set to values that came from the state property itself. To initialize the random number generator with arbitrary input, use [member seed] instead.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

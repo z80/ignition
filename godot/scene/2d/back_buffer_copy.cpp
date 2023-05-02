@@ -33,13 +33,13 @@
 void BackBufferCopy::_update_copy_mode() {
 	switch (copy_mode) {
 		case COPY_MODE_DISABLED: {
-			VS::get_singleton()->canvas_item_set_copy_to_backbuffer(get_canvas_item(), false, Rect2());
+			RS::get_singleton()->canvas_item_set_copy_to_backbuffer(get_canvas_item(), false, Rect2());
 		} break;
 		case COPY_MODE_RECT: {
-			VS::get_singleton()->canvas_item_set_copy_to_backbuffer(get_canvas_item(), true, rect);
+			RS::get_singleton()->canvas_item_set_copy_to_backbuffer(get_canvas_item(), true, rect);
 		} break;
 		case COPY_MODE_VIEWPORT: {
-			VS::get_singleton()->canvas_item_set_copy_to_backbuffer(get_canvas_item(), true, Rect2());
+			RS::get_singleton()->canvas_item_set_copy_to_backbuffer(get_canvas_item(), true, Rect2());
 
 		} break;
 	}
@@ -62,6 +62,7 @@ Rect2 BackBufferCopy::get_anchorable_rect() const {
 void BackBufferCopy::set_rect(const Rect2 &p_rect) {
 	rect = p_rect;
 	_update_copy_mode();
+	item_rect_changed();
 }
 
 Rect2 BackBufferCopy::get_rect() const {
@@ -71,7 +72,7 @@ Rect2 BackBufferCopy::get_rect() const {
 void BackBufferCopy::set_copy_mode(CopyMode p_mode) {
 	copy_mode = p_mode;
 	_update_copy_mode();
-	_change_notify();
+	notify_property_list_changed();
 }
 
 BackBufferCopy::CopyMode BackBufferCopy::get_copy_mode() const {
@@ -80,7 +81,7 @@ BackBufferCopy::CopyMode BackBufferCopy::get_copy_mode() const {
 
 void BackBufferCopy::_validate_property(PropertyInfo &p_property) const {
 	if (copy_mode != COPY_MODE_RECT && p_property.name == "rect") {
-		p_property.usage = PROPERTY_USAGE_NOEDITOR;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -92,7 +93,7 @@ void BackBufferCopy::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_copy_mode"), &BackBufferCopy::get_copy_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "copy_mode", PROPERTY_HINT_ENUM, "Disabled,Rect,Viewport"), "set_copy_mode", "get_copy_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect"), "set_rect", "get_rect");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "rect", PROPERTY_HINT_NONE, "suffix:px"), "set_rect", "get_rect");
 
 	BIND_ENUM_CONSTANT(COPY_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(COPY_MODE_RECT);
@@ -100,9 +101,9 @@ void BackBufferCopy::_bind_methods() {
 }
 
 BackBufferCopy::BackBufferCopy() {
-	rect = Rect2(-100, -100, 200, 200);
-	copy_mode = COPY_MODE_RECT;
 	_update_copy_mode();
+	set_hide_clip_children(true);
 }
+
 BackBufferCopy::~BackBufferCopy() {
 }

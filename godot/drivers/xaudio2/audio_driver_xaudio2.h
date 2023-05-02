@@ -33,7 +33,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
-#include "core/safe_refcount.h"
+#include "core/templates/safe_refcount.h"
 #include "servers/audio_server.h"
 
 #include <mmsystem.h>
@@ -50,7 +50,7 @@ class AudioDriverXAudio2 : public AudioDriver {
 	struct XAudio2DriverVoiceCallback : public IXAudio2VoiceCallback {
 		HANDLE buffer_end_event;
 		XAudio2DriverVoiceCallback() :
-				buffer_end_event(CreateEvent(NULL, FALSE, FALSE, NULL)) {}
+				buffer_end_event(CreateEvent(nullptr, FALSE, FALSE, nullptr)) {}
 		void STDMETHODCALLTYPE OnBufferEnd(void *pBufferContext) {
 			SetEvent(buffer_end_event);
 		}
@@ -67,43 +67,46 @@ class AudioDriverXAudio2 : public AudioDriver {
 	Thread thread;
 	Mutex mutex;
 
-	int32_t *samples_in;
+	int32_t *samples_in = nullptr;
 	int16_t *samples_out[AUDIO_BUFFERS];
 
 	static void thread_func(void *p_udata);
-	int buffer_size;
+	int buffer_size = 0;
 
-	unsigned int mix_rate;
-	SpeakerMode speaker_mode;
+	unsigned int mix_rate = 0;
+	SpeakerMode speaker_mode = SpeakerMode::SPEAKER_MODE_STEREO;
 
-	int channels;
+	int channels = 0;
 
 	SafeFlag active;
 	SafeFlag exit_thread;
-	bool pcm_open;
+	bool pcm_open = false;
 
-	WAVEFORMATEX wave_format;
+	WAVEFORMATEX wave_format = { 0 };
 	Microsoft::WRL::ComPtr<IXAudio2> xaudio;
-	int current_buffer;
-	IXAudio2MasteringVoice *mastering_voice;
+	int current_buffer = 0;
+	IXAudio2MasteringVoice *mastering_voice = nullptr;
 	XAUDIO2_BUFFER xaudio_buffer[AUDIO_BUFFERS];
-	IXAudio2SourceVoice *source_voice;
+	IXAudio2SourceVoice *source_voice = nullptr;
 	XAudio2DriverVoiceCallback voice_callback;
 
 public:
-	const char *get_name() const;
+	virtual const char *get_name() const override {
+		return "XAudio2";
+	}
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual float get_latency();
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
+	virtual float get_latency() override;
+
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
 	AudioDriverXAudio2();
-	~AudioDriverXAudio2();
+	~AudioDriverXAudio2() {}
 };
 
 #endif // AUDIO_DRIVER_XAUDIO2_H

@@ -3,7 +3,7 @@ extends Character
 
 
 func init():
-	.init()
+	super.init()
 
 
 

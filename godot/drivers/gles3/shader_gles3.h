@@ -31,50 +31,30 @@
 #ifndef SHADER_GLES3_H
 #define SHADER_GLES3_H
 
-#include "core/hash_map.h"
-#include "core/local_vector.h"
-#include "core/map.h"
-#include "core/math/camera_matrix.h"
-#include "core/safe_refcount.h"
-#include "core/self_list.h"
-#include "core/variant.h"
+#include "core/math/projection.h"
+#include "core/os/mutex.h"
+#include "core/string/string_builder.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/rb_map.h"
+#include "core/templates/rid_owner.h"
+#include "core/variant/variant.h"
+#include "servers/rendering_server.h"
 
+#ifdef GLES3_ENABLED
+
+// This must come first to avoid windows.h mess
 #include "platform_config.h"
-#ifndef GLES3_INCLUDE_H
+#ifndef OPENGL_INCLUDE_H
 #include <GLES3/gl3.h>
 #else
-#include GLES3_INCLUDE_H
+#include OPENGL_INCLUDE_H
 #endif
 
 #include <stdio.h>
 
-template <class K>
-class ThreadedCallableQueue;
-class ShaderCacheGLES3;
-
 class ShaderGLES3 {
 protected:
-	struct Enum {
-		uint64_t mask;
-		uint64_t shift;
-		const char *defines[16];
-	};
-
-	struct EnumValue {
-		uint64_t set_mask;
-		uint64_t clear_mask;
-	};
-
-	struct AttributePair {
-		const char *name;
-		int index;
-	};
-
-	struct UniformPair {
-		const char *name;
-		Variant::Type type_hint;
-	};
-
 	struct TexUnitPair {
 		const char *name;
 		int index;
@@ -85,362 +65,199 @@ protected:
 		int index;
 	};
 
+	struct Specialization {
+		const char *name;
+		bool default_value = false;
+	};
+
 	struct Feedback {
 		const char *name;
-		int conditional;
-	};
-
-	virtual int get_ubershader_flags_uniform() const { return -1; }
-
-private:
-	//@TODO Optimize to a fixed set of shader pools and use a LRU
-	int uniform_count;
-	int texunit_pair_count;
-	int conditional_count;
-	int ubo_count;
-	int feedback_count;
-	int vertex_code_start;
-	int fragment_code_start;
-	int attribute_pair_count;
-
-public:
-	enum AsyncMode {
-		ASYNC_MODE_VISIBLE,
-		ASYNC_MODE_HIDDEN,
+		uint64_t specialization;
 	};
 
 private:
-	struct CustomCode {
-		String vertex;
-		String vertex_globals;
-		String fragment;
-		String fragment_globals;
-		String light;
-		String uniforms;
-		AsyncMode async_mode;
-		uint32_t version;
-		Vector<StringName> texture_uniforms;
-		Vector<CharString> custom_defines;
-		Set<uint32_t> versions;
-	};
+	//versions
+	CharString general_defines;
 
-public:
-	static ShaderCacheGLES3 *shader_cache;
-	static ThreadedCallableQueue<GLuint> *cache_write_queue;
-
-	static ThreadedCallableQueue<GLuint> *compile_queue; // Non-null if using queued asynchronous compilation (via secondary context)
-	static bool parallel_compile_supported; // True if using natively supported asyncrhonous compilation
-
-	static bool async_hidden_forbidden;
-	static uint32_t *compiles_started_this_frame;
-	static uint32_t *max_frame_compiles_in_progress;
-	static uint32_t max_simultaneous_compiles;
-	static uint32_t active_compiles_count;
-#ifdef DEBUG_ENABLED
-	static bool log_active_async_compiles_count;
-#endif
-	static uint64_t current_frame;
-
-	static void advance_async_shaders_compilation();
-
-private:
-	union VersionKey {
-		static const uint32_t UBERSHADER_FLAG = ((uint32_t)1) << 31;
-		struct {
-			uint32_t version;
-			uint32_t code_version;
-		};
-		uint64_t key;
-		bool operator==(const VersionKey &p_key) const { return key == p_key.key; }
-		bool operator<(const VersionKey &p_key) const { return key < p_key.key; }
-		VersionKey() {}
-		VersionKey(uint64_t p_key) :
-				key(p_key) {}
-		_FORCE_INLINE_ bool is_subject_to_caching() const { return (version & UBERSHADER_FLAG); }
-	};
-
+	// A version is a high-level construct which is a combination of built-in and user-defined shader code, Each user-created Shader makes one version
+	// Variants use #ifdefs to toggle behavior on and off to change behavior of the shader
+	// All variants are compiled each time a new version is created
+	// Specializations use #ifdefs to toggle behavior on and off for performance, on supporting hardware, they will compile a version with everything enabled, and then compile more copies to improve performance
+	// Use specializations to enable and disabled advanced features, use variants to toggle behavior when different data may be used (e.g. using a samplerArray vs a sampler, or doing a depth prepass vs a color pass)
 	struct Version {
-		VersionKey version_key;
+		Vector<StringName> texture_uniforms;
+		CharString uniforms;
+		CharString vertex_globals;
+		CharString fragment_globals;
+		HashMap<StringName, CharString> code_sections;
+		Vector<CharString> custom_defines;
 
-		// Set by the render thread upfront; the compile thread (for queued async.) reads them
-		struct Ids {
-			GLuint main;
-			GLuint vert;
-			GLuint frag;
-		} ids;
-
-		ShaderGLES3 *shader;
-		uint32_t code_version;
-
-		AsyncMode async_mode;
-		GLint *uniform_location;
-		Vector<GLint> texture_uniform_locations;
-		bool uniforms_ready;
-		uint64_t last_frame_processed;
-
-		enum CompileStatus {
-			COMPILE_STATUS_PENDING,
-			COMPILE_STATUS_SOURCE_PROVIDED,
-			COMPILE_STATUS_COMPILING_VERTEX,
-			COMPILE_STATUS_COMPILING_FRAGMENT,
-			COMPILE_STATUS_COMPILING_VERTEX_AND_FRAGMENT,
-			COMPILE_STATUS_PROCESSING_AT_QUEUE,
-			COMPILE_STATUS_BINARY_READY,
-			COMPILE_STATUS_BINARY_READY_FROM_CACHE,
-			COMPILE_STATUS_LINKING,
-			COMPILE_STATUS_ERROR,
-			COMPILE_STATUS_RESTART_NEEDED,
-			COMPILE_STATUS_OK,
+		struct Specialization {
+			GLuint id;
+			GLuint vert_id;
+			GLuint frag_id;
+			LocalVector<GLint> uniform_location;
+			LocalVector<GLint> texture_uniform_locations;
+			HashMap<StringName, GLint> custom_uniform_locations;
+			bool build_queued = false;
+			bool ok = false;
+			Specialization() {
+				id = 0;
+				vert_id = 0;
+				frag_id = 0;
+			}
 		};
-		CompileStatus compile_status;
-		SelfList<Version> compiling_list;
 
-		struct ProgramBinary {
-			String cache_hash;
-			enum Source {
-				SOURCE_NONE,
-				SOURCE_LOCAL, // Binary data will only be available if cache enabled
-				SOURCE_QUEUE,
-				SOURCE_CACHE,
-			} source;
-			// Shared with the compile thread (for queued async.); otherwise render thread only
-			GLenum format;
-			PoolByteArray data;
-			SafeNumeric<int> result_from_queue;
-		} program_binary;
-
-		Version() :
-				version_key(0),
-				ids(),
-				shader(nullptr),
-				code_version(0),
-				async_mode(ASYNC_MODE_VISIBLE),
-				uniform_location(nullptr),
-				uniforms_ready(false),
-				last_frame_processed(UINT64_MAX),
-				compile_status(COMPILE_STATUS_PENDING),
-				compiling_list(this),
-				program_binary() {}
-	};
-	static SelfList<Version>::List versions_compiling;
-
-	Version *version;
-
-	struct VersionKeyHash {
-		static _FORCE_INLINE_ uint32_t hash(const VersionKey &p_key) { return HashMapHasherDefault::hash(p_key.key); };
+		LocalVector<OAHashMap<uint64_t, Specialization>> variants;
 	};
 
-	//this should use a way more cachefriendly version..
-	HashMap<VersionKey, Version, VersionKeyHash> version_map;
+	Mutex variant_set_mutex;
 
-	HashMap<uint32_t, CustomCode> custom_code_map;
-	uint32_t last_custom_code;
+	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
 
-	VersionKey conditional_version;
-	VersionKey new_conditional_version;
+	void _clear_version(Version *p_version);
+	void _initialize_version(Version *p_version);
 
-	virtual String get_shader_name() const = 0;
+	RID_Owner<Version, true> version_owner;
 
-	const char **conditional_defines;
-	const char **uniform_names;
-	const AttributePair *attribute_pairs;
-	const TexUnitPair *texunit_pairs;
-	const UBOPair *ubo_pairs;
+	struct StageTemplate {
+		struct Chunk {
+			enum Type {
+				TYPE_MATERIAL_UNIFORMS,
+				TYPE_VERTEX_GLOBALS,
+				TYPE_FRAGMENT_GLOBALS,
+				TYPE_CODE,
+				TYPE_TEXT
+			};
+
+			Type type;
+			StringName code;
+			CharString text;
+		};
+		LocalVector<Chunk> chunks;
+	};
+
+	String name;
+
+	String base_sha256;
+
+	static String shader_cache_dir;
+	static bool shader_cache_cleanup_on_start;
+	static bool shader_cache_save_compressed;
+	static bool shader_cache_save_compressed_zstd;
+	static bool shader_cache_save_debug;
+	bool shader_cache_dir_valid = false;
+
+	GLint max_image_units = 0;
+
+	enum StageType {
+		STAGE_TYPE_VERTEX,
+		STAGE_TYPE_FRAGMENT,
+		STAGE_TYPE_MAX,
+	};
+
+	StageTemplate stage_templates[STAGE_TYPE_MAX];
+
+	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, StageType p_stage_type, uint64_t p_specialization);
+
+	void _add_stage(const char *p_code, StageType p_stage_type);
+
+	String _version_get_sha1(Version *p_version) const;
+	bool _load_from_cache(Version *p_version);
+	void _save_to_cache(Version *p_version);
+
+	const char **uniform_names = nullptr;
+	int uniform_count = 0;
+	const UBOPair *ubo_pairs = nullptr;
+	int ubo_count = 0;
 	const Feedback *feedbacks;
-	const char *vertex_code;
-	const char *fragment_code;
-	CharString fragment_code0;
-	CharString fragment_code1;
-	CharString fragment_code2;
-	CharString fragment_code3;
-	CharString fragment_code4;
+	int feedback_count = 0;
+	const TexUnitPair *texunit_pairs = nullptr;
+	int texunit_pair_count = 0;
+	int specialization_count = 0;
+	const Specialization *specializations = nullptr;
+	uint64_t specialization_default_mask = 0;
+	const char **variant_defines = nullptr;
+	int variant_count = 0;
 
-	CharString vertex_code0;
-	CharString vertex_code1;
-	CharString vertex_code2;
-	CharString vertex_code3;
-
-	Vector<CharString> custom_defines;
-
-	int base_material_tex_index;
-
-	Version *get_current_version(bool &r_async_forbidden);
-	// These will run on the shader compile thread if using que compile queue approach to async.
-	void _set_source(Version::Ids p_ids, const LocalVector<const char *> &p_vertex_strings, const LocalVector<const char *> &p_fragment_strings) const;
-	bool _complete_compile(Version::Ids p_ids, bool p_retrievable) const;
-	bool _complete_link(Version::Ids p_ids, GLenum *r_program_format = nullptr, PoolByteArray *r_program_binary = nullptr) const;
-	// ---
-	static void _log_active_compiles();
-	static bool _process_program_state(Version *p_version, bool p_async_forbidden);
-	void _setup_uniforms(CustomCode *p_cc) const;
-	void _dispose_program(Version *p_version);
-
-	static ShaderGLES3 *active;
-
-	int max_image_units;
-
-	_FORCE_INLINE_ void _set_uniform_variant(GLint p_uniform, const Variant &p_value) {
-		if (p_uniform < 0) {
-			return; // do none
-		}
-		switch (p_value.get_type()) {
-			case Variant::BOOL:
-			case Variant::INT: {
-				int val = p_value;
-				glUniform1i(p_uniform, val);
-			} break;
-			case Variant::REAL: {
-				real_t val = p_value;
-				glUniform1f(p_uniform, val);
-			} break;
-			case Variant::COLOR: {
-				Color val = p_value;
-				glUniform4f(p_uniform, val.r, val.g, val.b, val.a);
-			} break;
-			case Variant::VECTOR2: {
-				Vector2 val = p_value;
-				glUniform2f(p_uniform, val.x, val.y);
-			} break;
-			case Variant::VECTOR3: {
-				Vector3 val = p_value;
-				glUniform3f(p_uniform, val.x, val.y, val.z);
-			} break;
-			case Variant::PLANE: {
-				Plane val = p_value;
-				glUniform4f(p_uniform, val.normal.x, val.normal.y, val.normal.z, val.d);
-			} break;
-			case Variant::QUAT: {
-				Quat val = p_value;
-				glUniform4f(p_uniform, val.x, val.y, val.z, val.w);
-			} break;
-
-			case Variant::TRANSFORM2D: {
-				Transform2D tr = p_value;
-				GLfloat matrix[16] = { /* build a 16x16 matrix */
-					tr.elements[0][0],
-					tr.elements[0][1],
-					0,
-					0,
-					tr.elements[1][0],
-					tr.elements[1][1],
-					0,
-					0,
-					0,
-					0,
-					1,
-					0,
-					tr.elements[2][0],
-					tr.elements[2][1],
-					0,
-					1
-				};
-
-				glUniformMatrix4fv(p_uniform, 1, false, matrix);
-
-			} break;
-			case Variant::BASIS:
-			case Variant::TRANSFORM: {
-				Transform tr = p_value;
-				GLfloat matrix[16] = { /* build a 16x16 matrix */
-					tr.basis.elements[0][0],
-					tr.basis.elements[1][0],
-					tr.basis.elements[2][0],
-					0,
-					tr.basis.elements[0][1],
-					tr.basis.elements[1][1],
-					tr.basis.elements[2][1],
-					0,
-					tr.basis.elements[0][2],
-					tr.basis.elements[1][2],
-					tr.basis.elements[2][2],
-					0,
-					tr.origin.x,
-					tr.origin.y,
-					tr.origin.z,
-					1
-				};
-
-				glUniformMatrix4fv(p_uniform, 1, false, matrix);
-			} break;
-			default: {
-				ERR_FAIL();
-			} // do nothing
-		}
-	}
-
-	bool _bind(bool p_binding_fallback);
-	bool _bind_ubershader(bool p_for_warmrup = false);
+	int base_texture_index = 0;
+	Version::Specialization *current_shader = nullptr;
 
 protected:
-	_FORCE_INLINE_ int _get_uniform(int p_which) const;
-	_FORCE_INLINE_ void _set_conditional(int p_which, bool p_value);
-
-	void setup(const char **p_conditional_defines, int p_conditional_count, const char **p_uniform_names, int p_uniform_count, const AttributePair *p_attribute_pairs, int p_attribute_count, const TexUnitPair *p_texunit_pairs, int p_texunit_pair_count, const UBOPair *p_ubo_pairs, int p_ubo_pair_count, const Feedback *p_feedback, int p_feedback_count, const char *p_vertex_code, const char *p_fragment_code, int p_vertex_code_start, int p_fragment_code_start);
-
 	ShaderGLES3();
+	void _setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_feedback_count, const Feedback *p_feedback, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants);
+
+	_FORCE_INLINE_ bool _version_bind_shader(RID p_version, int p_variant, uint64_t p_specialization) {
+		ERR_FAIL_INDEX_V(p_variant, variant_count, false);
+
+		Version *version = version_owner.get_or_null(p_version);
+		ERR_FAIL_COND_V(!version, false);
+
+		if (version->variants.size() == 0) {
+			_initialize_version(version); //may lack initialization
+		}
+
+		Version::Specialization *spec = version->variants[p_variant].lookup_ptr(p_specialization);
+		if (!spec) {
+			if (false) {
+				// Queue load this specialization and use defaults in the meantime (TODO)
+
+				spec = version->variants[p_variant].lookup_ptr(specialization_default_mask);
+			} else {
+				// Compile on the spot
+				Version::Specialization s;
+				_compile_specialization(s, p_variant, version, p_specialization);
+				version->variants[p_variant].insert(p_specialization, s);
+				spec = version->variants[p_variant].lookup_ptr(p_specialization);
+			}
+		} else if (spec->build_queued) {
+			// Still queued, wait
+			spec = version->variants[p_variant].lookup_ptr(specialization_default_mask);
+		}
+
+		if (!spec || !spec->ok) {
+			WARN_PRINT_ONCE("shader failed to compile, unable to bind shader.");
+			return false;
+		}
+
+		glUseProgram(spec->id);
+		current_shader = spec;
+		return true;
+	}
+
+	_FORCE_INLINE_ int _version_get_uniform(int p_which, RID p_version, int p_variant, uint64_t p_specialization) {
+		ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
+		Version *version = version_owner.get_or_null(p_version);
+		ERR_FAIL_COND_V(!version, -1);
+		ERR_FAIL_INDEX_V(p_variant, int(version->variants.size()), -1);
+		Version::Specialization *spec = version->variants[p_variant].lookup_ptr(p_specialization);
+		ERR_FAIL_COND_V(!spec, -1);
+		ERR_FAIL_INDEX_V(p_which, int(spec->uniform_location.size()), -1);
+		return spec->uniform_location[p_which];
+	}
+
+	virtual void _init() = 0;
 
 public:
-	enum {
-		CUSTOM_SHADER_DISABLED = 0
-	};
+	RID version_create();
 
-	GLint get_uniform_location(const String &p_name) const;
-	GLint get_uniform_location(int p_index) const;
+	void version_set_code(RID p_version, const HashMap<String, String> &p_code, const String &p_uniforms, const String &p_vertex_globals, const String &p_fragment_globals, const Vector<String> &p_custom_defines, const Vector<StringName> &p_texture_uniforms, bool p_initialize = false);
 
-	static _FORCE_INLINE_ ShaderGLES3 *get_active() { return active; };
-	bool bind();
-	void unbind();
+	bool version_is_valid(RID p_version);
 
-	void clear_caches();
+	bool version_free(RID p_version);
 
-	uint32_t create_custom_shader();
-	void set_custom_shader_code(uint32_t p_code_id, const String &p_vertex, const String &p_vertex_globals, const String &p_fragment, const String &p_light, const String &p_fragment_globals, const String &p_uniforms, const Vector<StringName> &p_texture_uniforms, const Vector<CharString> &p_custom_defines, AsyncMode p_async_mode);
-	void set_custom_shader(uint32_t p_code_id);
-	void free_custom_shader(uint32_t p_code_id);
-	bool is_custom_code_ready_for_render(uint32_t p_code_id);
+	static void set_shader_cache_dir(const String &p_dir);
+	static void set_shader_cache_save_compressed(bool p_enable);
+	static void set_shader_cache_save_compressed_zstd(bool p_enable);
+	static void set_shader_cache_save_debug(bool p_enable);
 
-	uint32_t get_version() const { return new_conditional_version.version; }
-	_FORCE_INLINE_ bool is_version_valid() const { return version && version->compile_status == Version::COMPILE_STATUS_OK; }
+	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
-	virtual void init() = 0;
-	void init_async_compilation();
-	bool is_async_compilation_supported();
-	void finish();
-
-	void set_base_material_tex_index(int p_idx);
-
-	void add_custom_define(const String &p_define) {
-		custom_defines.push_back(p_define.utf8());
-	}
-
-	void get_custom_defines(Vector<String> *p_defines) {
-		for (int i = 0; i < custom_defines.size(); i++) {
-			p_defines->push_back(custom_defines[i].get_data());
-		}
-	}
-
-	void remove_custom_define(const String &p_define) {
-		custom_defines.erase(p_define.utf8());
-	}
-
+	void initialize(const String &p_general_defines = "", int p_base_texture_index = 0);
 	virtual ~ShaderGLES3();
 };
 
-// called a lot, made inline
-
-int ShaderGLES3::_get_uniform(int p_which) const {
-	ERR_FAIL_INDEX_V(p_which, uniform_count, -1);
-	ERR_FAIL_COND_V(!version, -1);
-	return version->uniform_location[p_which];
-}
-
-void ShaderGLES3::_set_conditional(int p_which, bool p_value) {
-	ERR_FAIL_INDEX(p_which, conditional_count);
-	if (p_value) {
-		new_conditional_version.version |= (1 << p_which);
-	} else {
-		new_conditional_version.version &= ~(1 << p_which);
-	}
-}
+#endif // GLES3_ENABLED
 
 #endif // SHADER_GLES3_H

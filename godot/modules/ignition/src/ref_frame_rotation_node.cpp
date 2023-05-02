@@ -57,21 +57,21 @@ bool RefFrameRotationNode::deserialize( const Dictionary & data )
 	return true;
 }
 
-void RefFrameRotationNode::_ign_physics_pre_process( real_t delta )
+void RefFrameRotationNode::ign_physics_pre_process( real_t delta )
 {
 	//dbg_process( delta );
 	this->se3_ = cr.process( delta );
-	RefFrameNode::_ign_physics_pre_process( delta );
+	RefFrameNode::ign_physics_pre_process( delta );
 }
 
-void RefFrameRotationNode::_ign_physics_process( real_t delta )
+void RefFrameRotationNode::ign_physics_process( real_t delta )
 {
-	RefFrameNode::_ign_physics_process( delta );
+	RefFrameNode::ign_physics_process( delta );
 }
 
-void RefFrameRotationNode::_ign_physics_post_process( real_t delta )
+void RefFrameRotationNode::ign_physics_post_process( real_t delta )
 {
-	RefFrameNode::_ign_physics_post_process( delta );
+	RefFrameNode::ign_physics_post_process( delta );
 }
 
 

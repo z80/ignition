@@ -40,15 +40,7 @@ void NavRegion::set_map(NavMap *p_map) {
 	}
 }
 
-void NavRegion::set_navigation_layers(uint32_t p_navigation_layers) {
-	navigation_layers = p_navigation_layers;
-}
-
-uint32_t NavRegion::get_navigation_layers() const {
-	return navigation_layers;
-}
-
-void NavRegion::set_transform(Transform p_transform) {
+void NavRegion::set_transform(Transform3D p_transform) {
 	transform = p_transform;
 	polygons_dirty = true;
 }
@@ -100,13 +92,13 @@ void NavRegion::update_polygons() {
 		return;
 	}
 
-	PoolVector<Vector3> vertices = mesh->get_vertices();
+	Vector<Vector3> vertices = mesh->get_vertices();
 	int len = vertices.size();
 	if (len == 0) {
 		return;
 	}
 
-	PoolVector<Vector3>::Read vertices_r = vertices.read();
+	const Vector3 *vertices_r = vertices.ptr();
 
 	polygons.resize(mesh->get_polygon_count());
 
@@ -155,7 +147,3 @@ void NavRegion::update_polygons() {
 		}
 	}
 }
-
-NavRegion::NavRegion() {}
-
-NavRegion::~NavRegion() {}

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioEffectCapture" inherits="AudioEffect" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AudioEffectCapture" inherits="AudioEffect" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Captures audio from an audio bus in real-time.
 	</brief_description>
 	<description>
 		AudioEffectCapture is an AudioEffect which copies all audio frames from the attached audio effect bus into its internal ring buffer.
 		Application code should consume these audio frames from this ring buffer using [method get_buffer] and process it as needed, for example to capture data from an [AudioStreamMicrophone], implement application-defined effects, or to transmit audio over the network. When capturing audio data from a microphone, the format of the samples will be stereo 32-bit floating point PCM.
-		[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
+		[b]Note:[/b] [member ProjectSettings.audio/driver/enable_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
@@ -15,9 +15,9 @@
 	<methods>
 		<method name="can_get_buffer" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="frames" type="int" />
+			<param index="0" name="frames" type="int" />
 			<description>
-				Returns [code]true[/code] if at least [code]frames[/code] audio frames are available to read in the internal ring buffer.
+				Returns [code]true[/code] if at least [param frames] audio frames are available to read in the internal ring buffer.
 			</description>
 		</method>
 		<method name="clear_buffer">
@@ -27,11 +27,11 @@
 			</description>
 		</method>
 		<method name="get_buffer">
-			<return type="PoolVector2Array" />
-			<argument index="0" name="frames" type="int" />
+			<return type="PackedVector2Array" />
+			<param index="0" name="frames" type="int" />
 			<description>
-				Gets the next [code]frames[/code] audio samples from the internal ring buffer.
-				Returns a [PoolVector2Array] containing exactly [code]frames[/code] audio samples if available, or an empty [PoolVector2Array] if insufficient data was available.
+				Gets the next [param frames] audio samples from the internal ring buffer.
+				Returns a [PackedVector2Array] containing exactly [param frames] audio samples if available, or an empty [PackedVector2Array] if insufficient data was available.
 			</description>
 		</method>
 		<method name="get_buffer_length_frames" qualifiers="const">
@@ -64,6 +64,4 @@
 			Length of the internal ring buffer, in seconds. Setting the buffer length will have no effect if already initialized.
 		</member>
 	</members>
-	<constants>
-	</constants>
 </class>

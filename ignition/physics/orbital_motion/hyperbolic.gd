@@ -3,8 +3,8 @@ const Consts = preload( "res://physics/orbital_motion/constants.gd" )
 const Velocity = preload( "res://physics/orbital_motion/velocity.gd" )
 
 static func init( r: Vector3, v: Vector3, args: Dictionary ):
-	r = args.inv_A.xform( r )
-	v = args.inv_A.xform( v )
+	r = args.inv_A * (r)
+	v = args.inv_A * (v)
 	
 	var a: float = args.a
 	var gm: float = args.gm
@@ -59,8 +59,8 @@ static func process( dt: float, args: Dictionary ):
 	#print( "local v: ", v )
 	
 	var A: Basis = args.A
-	r = A.xform( r )
-	v = A.xform( v )
+	r = A * (r)
+	v = A * (v)
 	
 	return [r, v]
 

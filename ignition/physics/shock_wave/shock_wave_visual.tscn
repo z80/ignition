@@ -4,7 +4,7 @@
 [ext_resource path="res://physics/shock_wave/shock_stripe.tscn" type="PackedScene" id=2]
 [ext_resource path="res://physics/shock_wave/shock_wave_config.tres" type="Resource" id=3]
 
-[node name="ShockWaveVisual" type="Spatial"]
+[node name="ShockWaveVisual" type="Node3D"]
 script = ExtResource( 1 )
 shock_wave_config = ExtResource( 3 )
 

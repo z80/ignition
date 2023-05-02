@@ -3,7 +3,7 @@
 #define __MATRIX3D_H_
 
 #include "vector3d.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 namespace Ign
 {

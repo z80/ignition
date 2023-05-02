@@ -1,40 +1,40 @@
 # Licensed under the MIT License.
 # Copyright (c) 2018 Jaccomo Lorenz (Maujoe)
 
-extends Camera
+extends Camera3D
 
 # User settings:
 # General settings
-export var enabled = true setget set_enabled
-export(int, "Visible", "Hidden", "Caputered, Confined") var mouse_mode = 2
+@export var enabled = true: set = set_enabled
+@export var mouse_mode = 2 # (int, "Visible", "Hidden", "Caputered, Confined")
 
 # Mouslook settings
-export var mouselook = true
-export (float, 0.0, 1.0) var sensitivity = 0.5
-export (float, 0.0, 0.999, 0.001) var smoothness = 0.5 setget set_smoothness
-export(NodePath) var privot setget set_privot
-export var distance = 5.0 setget set_distance
-export var rotate_privot = false
-export var collisions = true setget set_collisions
-export (int, 0, 360) var yaw_limit = 360
-export (int, 0, 360) var pitch_limit = 360
+@export var mouselook = true
+@export (float, 0.0, 1.0) var sensitivity = 0.5
+@export (float, 0.0, 0.999, 0.001) var smoothness = 0.5: set = set_smoothness
+@export var privot: NodePath: set = set_privot
+@export var distance = 5.0: set = set_distance
+@export var rotate_privot = false
+@export var collisions = true: set = set_collisions
+@export (int, 0, 360) var yaw_limit = 360
+@export (int, 0, 360) var pitch_limit = 360
 
 # Movement settings
-export var movement = true
-export (float, 0.0, 1.0) var acceleration = 1.0
-export (float, 0.0, 0.0, 1.0) var deceleration = 0.1
-export var max_speed = Vector3(1.0, 1.0, 1.0)
-export var local = true
-export var forward_action = "ui_up"
-export var backward_action = "ui_down"
-export var left_action = "ui_left"
-export var right_action = "ui_right"
-export var up_action = "ui_page_up"
-export var down_action = "ui_page_down"
+@export var movement = true
+@export (float, 0.0, 1.0) var acceleration = 1.0
+@export (float, 0.0, 0.0, 1.0) var deceleration = 0.1
+@export var max_speed = Vector3(1.0, 1.0, 1.0)
+@export var local = true
+@export var forward_action = "ui_up"
+@export var backward_action = "ui_down"
+@export var left_action = "ui_left"
+@export var right_action = "ui_right"
+@export var up_action = "ui_page_up"
+@export var down_action = "ui_page_down"
 
 # Gui settings
-export var use_gui = true
-export var gui_action = "ui_cancel"
+@export var use_gui = true
+@export var gui_action = "ui_cancel"
 
 # Intern variables.
 var _mouse_position = Vector2(0.0, 0.0)
@@ -103,10 +103,10 @@ func _physics_process(delta):
 	if mouselook:
 		_update_mouselook()
 
-	var space_state = get_world().get_direct_space_state()
-	var obstacle = space_state.intersect_ray(privot.get_translation(),  get_translation())
-	if not obstacle.empty():
-		set_translation(obstacle.position)
+	var space_state = get_world_3d().get_direct_space_state()
+	var obstacle = space_state.intersect_ray(privot.get_position(),  get_position())
+	if not obstacle.is_empty():
+		set_position(obstacle.position)
 
 func _update_movement(delta):
 	var offset = max_speed * acceleration * _direction
@@ -143,24 +143,24 @@ func _update_mouselook():
 	_total_pitch += _pitch
 
 	if privot:
-		var target = privot.get_translation()
-		var offset = get_translation().distance_to(target)
+		var target = privot.get_position()
+		var offset = get_position().distance_to(target)
 
-		set_translation(target)
-		rotate_y(deg2rad(-_yaw))
-		rotate_object_local(Vector3(1,0,0), deg2rad(-_pitch))
+		set_position(target)
+		rotate_y(deg_to_rad(-_yaw))
+		rotate_object_local(Vector3(1,0,0), deg_to_rad(-_pitch))
 		translate(Vector3(0.0, 0.0, offset))
 
 		if rotate_privot:
-			privot.rotate_y(deg2rad(-_yaw))
+			privot.rotate_y(deg_to_rad(-_yaw))
 	else:
-		rotate_y(deg2rad(-_yaw))
-		rotate_object_local(Vector3(1,0,0), deg2rad(-_pitch))
+		rotate_y(deg_to_rad(-_yaw))
+		rotate_object_local(Vector3(1,0,0), deg_to_rad(-_pitch))
 
 func _update_distance():
-	var t = privot.get_translation()
+	var t = privot.get_position()
 	t.z -= distance
-	set_translation(t)
+	set_position(t)
 
 func _update_process_func():
 	# Use physics process if collision are enabled

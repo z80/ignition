@@ -13,19 +13,19 @@ var _texts: Array = []
 var _font : Font = null
 var _color: Color = TEXT_COLOR
 
-export(bool) var debug = false
+@export var debug: bool = false
 
 func _ready():
 	# Get default font
 	# Meh
 	var c := Control.new()
 	add_child(c)
-	_font = c.get_font( "font" )
+	_font = c.get_theme_font( "font" )
 	c.queue_free()
 	
 	_canvas_item = Node2D.new()
 	_canvas_item.position = Vector2(8, 8)
-	_canvas_item.connect( "draw", self, "_on_CanvasItem_draw" )
+	_canvas_item.connect("draw", Callable(self, "_on_CanvasItem_draw"))
 	_canvas_item.z_index = 100
 
 	add_child(_canvas_item)
@@ -41,7 +41,7 @@ func print( stri: String, timeout: float = 5.0, key: String = "" ):
 	if not debug:
 		return
 	
-	if not key.empty():
+	if not key.is_empty():
 		var qty: int = _texts.size()
 		for i in range(qty):
 			var t: Dictionary = _texts[i]
@@ -81,7 +81,8 @@ func _process(delta: float):
 	_texts = new_texts
 
 	# Update canvas
-	_canvas_item.update()
+	#_canvas_item.update()
+	_canvas_item.queue_redraw()
 
 
 func _on_CanvasItem_draw():
@@ -99,23 +100,23 @@ func _on_CanvasItem_draw():
 		var t: Dictionary = _texts[i]
 		var key: String = t.key
 		
-		if not key.empty():
+		if not key.is_empty():
 			var text: String = t.stri
 			var ss := _font.get_string_size(text)
 			#ci.draw_rect( Rect2(pos, Vector2(ss.x + xpad * 2, line_height)), TEXT_BG_COLOR )
-			ci.draw_string( _font, pos + font_offset, text, TEXT_COLOR_IMPORTANT )
+			ci.draw_string( _font, pos + font_offset, text, 0, -1, 16, TEXT_COLOR_IMPORTANT )
 			pos.y += line_height
 
 	for i in range(qty):
 		var t: Dictionary = _texts[i]
 		var key: String = t.key
 		
-		if key.empty():
+		if key.is_empty():
 			var text: String = t.stri
 			var color: Color = t.color
 			var ss := _font.get_string_size(text)
 			#ci.draw_rect( Rect2(pos, Vector2(ss.x + xpad * 2, line_height)), TEXT_BG_COLOR )
-			ci.draw_string( _font, pos + font_offset, text, color )
+			ci.draw_string( _font, pos + font_offset, text, 0, -1, 16, color )
 			pos.y += line_height
 
 

@@ -5,18 +5,18 @@
 [ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=3]
 [ext_resource path="res://physics/shock_wave/shock_wave_visual.tscn" type="PackedScene" id=4]
 
-[node name="Visual" type="MeshInstance"]
+[node name="Visual" type="MeshInstance3D"]
 mesh = ExtResource( 2 )
 
-[node name="Top" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0 )
+[node name="Top" type="Node3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0 )
 script = ExtResource( 1 )
 
-[node name="Bottom" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, -1, 3.25841e-07, 0, -3.25841e-07, -1, 0, -0.25, 0 )
+[node name="Bottom" type="Node3D" parent="."]
+transform = Transform3D( 1, 0, 0, 0, -1, 3.25841e-07, 0, -3.25841e-07, -1, 0, -0.25, 0 )
 script = ExtResource( 1 )
 
-[node name="InteractionNode" type="Spatial" parent="."]
+[node name="InteractionNode" type="Node3D" parent="."]
 script = ExtResource( 3 )
 
 [node name="ShockWaveVisual" parent="." instance=ExtResource( 4 )]

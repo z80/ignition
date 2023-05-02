@@ -3,15 +3,15 @@
 #define __MARCHING_CUBES_REBUILD_STRATEGY_GD_H_
 
 #include "marching_cubes_rebuild_strategy.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 #include "se3_ref.h"
 
 namespace Ign
 {
 
-class MarchingCubesRebuildStrategyGd: public Reference
+class MarchingCubesRebuildStrategyGd: public RefCounted
 {
-	GDCLASS( MarchingCubesRebuildStrategyGd, Reference );
+	GDCLASS( MarchingCubesRebuildStrategyGd, RefCounted );
 protected:
 	static void _bind_methods();
 public:

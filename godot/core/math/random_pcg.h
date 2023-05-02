@@ -31,16 +31,16 @@
 #ifndef RANDOM_PCG_H
 #define RANDOM_PCG_H
 
-#include <math.h>
-
 #include "core/math/math_defs.h"
 
 #include "thirdparty/misc/pcg.h"
 
-#if defined(__GNUC__) || (_llvm_has_builtin(__builtin_clz))
+#include <math.h>
+
+#if defined(__GNUC__)
 #define CLZ32(x) __builtin_clz(x)
 #elif defined(_MSC_VER)
-#include "intrin.h"
+#include <intrin.h>
 static int __bsr_clz32(uint32_t x) {
 	unsigned long index;
 	_BitScanReverse(&index, x);
@@ -50,19 +50,19 @@ static int __bsr_clz32(uint32_t x) {
 #else
 #endif
 
-#if defined(__GNUC__) || (_llvm_has_builtin(__builtin_ldexp) && _llvm_has_builtin(__builtin_ldexpf))
+#if defined(__GNUC__)
 #define LDEXP(s, e) __builtin_ldexp(s, e)
 #define LDEXPF(s, e) __builtin_ldexpf(s, e)
 #else
-#include "math.h"
+#include <math.h>
 #define LDEXP(s, e) ldexp(s, e)
 #define LDEXPF(s, e) ldexp(s, e)
 #endif
 
 class RandomPCG {
 	pcg32_random_t pcg;
-	uint64_t current_seed; // The seed the current generator state started from.
-	uint64_t current_inc;
+	uint64_t current_seed = 0; // The seed the current generator state started from.
+	uint64_t current_inc = 0;
 
 public:
 	static const uint64_t DEFAULT_SEED = 12047754176567800795U;
@@ -81,8 +81,10 @@ public:
 
 	void randomize();
 	_FORCE_INLINE_ uint32_t rand() {
-		current_seed = pcg.state;
 		return pcg32_random_r(&pcg);
+	}
+	_FORCE_INLINE_ uint32_t rand(uint32_t bounds) {
+		return pcg32_boundedrand_r(&pcg, bounds);
 	}
 
 	// Obtaining floating point numbers in [0, 1] range with "good enough" uniformity.
@@ -124,15 +126,23 @@ public:
 	}
 
 	_FORCE_INLINE_ double randfn(double p_mean, double p_deviation) {
-		return p_mean + p_deviation * (cos(Math_TAU * randd()) * sqrt(-2.0 * log(randd()))); // Box-Muller transform
+		double temp = randd();
+		if (temp < CMP_EPSILON) {
+			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
+		}
+		return p_mean + p_deviation * (cos(Math_TAU * randd()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
 	}
 	_FORCE_INLINE_ float randfn(float p_mean, float p_deviation) {
-		return p_mean + p_deviation * (cos(Math_TAU * randf()) * sqrt(-2.0 * log(randf()))); // Box-Muller transform
+		float temp = randf();
+		if (temp < CMP_EPSILON) {
+			temp += CMP_EPSILON; // To prevent generating of INF value in log function, resulting to return NaN value from this function.
+		}
+		return p_mean + p_deviation * (cos((float)Math_TAU * randf()) * sqrt(-2.0 * log(temp))); // Box-Muller transform.
 	}
 
 	double random(double p_from, double p_to);
 	float random(float p_from, float p_to);
-	real_t random(int p_from, int p_to) { return (real_t)random((real_t)p_from, (real_t)p_to); }
+	int random(int p_from, int p_to);
 };
 
 #endif // RANDOM_PCG_H

@@ -1,0 +1,36 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://ijumgtq7jedb"
+path.s3tc="res://.godot/imported/reaction_control_wheels_reactionwheel_metalness-reactionwheel_roughness.png-b370987e170d8d0be7c1a3a8fc03ab7d.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={}
+
+[deps]
+
+source_file="res://physics/parts/reaction_control_wheels/2m/m1/assets/reaction_control_wheels_reactionwheel_metalness-reactionwheel_roughness.png"
+dest_files=["res://.godot/imported/reaction_control_wheels_reactionwheel_metalness-reactionwheel_roughness.png-b370987e170d8d0be7c1a3a8fc03ab7d.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

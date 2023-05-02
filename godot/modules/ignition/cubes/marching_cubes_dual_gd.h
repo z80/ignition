@@ -3,7 +3,7 @@
 #define __MARCHING_CUBES_DUAL_GD_H_
 
 #include "marching_cubes_dual.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 #include "se3_ref.h"
 #include "volume_source_gd.h"
 #include "marching_cubes_dual_node_gd.h"
@@ -15,9 +15,9 @@ class Node;
 namespace Ign
 {
 
-class MarchingCubesDualGd: public Reference
+class MarchingCubesDualGd: public RefCounted
 {
-	GDCLASS(MarchingCubesDualGd, Reference);
+	GDCLASS(MarchingCubesDualGd, RefCounted);
 protected:
 	static void _bind_methods();
 
@@ -46,7 +46,7 @@ public:
 
 	Ref<Se3Ref> se3_in_point( const Vector3 & at, const Ref<Se3Ref> & inv_source_se3=Ref<Se3Ref>() ) const;
 	Ref<Se3Ref> asset_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;
-	Transform   asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;
+	Transform3D asset_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & asset_at ) const;
 
 	Array materials_used();
 	// This one computes and applies synchronously.
@@ -58,8 +58,8 @@ public:
 	bool apply_to_collision_shape( Object * concave_polygon_shape );
 
 	//Ref<Se3Ref> compute_source_se3( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
-	//Transform compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
-	const PoolVector3Array & collision_faces( const Ref<Se3Ref> & src_se3, real_t dist );
+	//Transform3D compute_source_transform( const Ref<Se3Ref> & src_se3, const Ref<Se3Ref> & pt_in_source_se3 );
+	const PackedVector3Array & collision_faces( const Ref<Se3Ref> & src_se3, real_t dist );
 
 	void set_max_nodes_qty( int qty );
 	int get_max_nodes_qty() const;
@@ -76,14 +76,14 @@ public:
 public:
 	MarchingCubesDual cubes;
 
-	PoolVector3Array vertices,
-		             normals;
-	PoolRealArray    tangents;
-	PoolVector2Array uvs,
-		             uv2s;
+	PackedVector3Array vertices,
+					   normals;
+	PackedFloat32Array tangents;
+	PackedVector2Array uvs,
+	                   uv2s;
 
-	PoolVector3Array ret_pool_array;
-	Array            ret_array;
+	PackedVector3Array ret_packed_array;
+	Array              ret_array;
 };
 
 

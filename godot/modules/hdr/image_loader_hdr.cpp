@@ -31,9 +31,9 @@
 #include "image_loader_hdr.h"
 
 #include "core/os/os.h"
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
-Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
+Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	String header = f->get_token();
 
 	ERR_FAIL_COND_V_MSG(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED, "Unsupported header information in HDR: " + header + ".");
@@ -41,7 +41,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	while (true) {
 		String line = f->get_line();
 		ERR_FAIL_COND_V(f->eof_reached(), ERR_FILE_UNRECOGNIZED);
-		if (line == "") { // empty line indicates end of header
+		if (line.is_empty()) { // empty line indicates end of header
 			break;
 		}
 		if (line.begins_with("FORMAT=")) { // leave option to implement other commands
@@ -63,19 +63,19 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	int width = f->get_line().to_int();
 
-	PoolVector<uint8_t> imgdata;
+	Vector<uint8_t> imgdata;
 
-	imgdata.resize(height * width * sizeof(uint32_t));
+	imgdata.resize(height * width * (int)sizeof(uint32_t));
 
 	{
-		PoolVector<uint8_t>::Write w = imgdata.write();
+		uint8_t *w = imgdata.ptrw();
 
-		uint8_t *ptr = (uint8_t *)w.ptr();
+		uint8_t *ptr = (uint8_t *)w;
 
 		if (width < 8 || width >= 32768) {
 			// Read flat data
 
-			f->get_buffer(ptr, width * height * 4);
+			f->get_buffer(ptr, (uint64_t)width * height * 4);
 		} else {
 			// Read RLE-encoded data
 
@@ -131,8 +131,8 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 					ptr[1] * exp / 255.0,
 					ptr[2] * exp / 255.0);
 
-			if (p_force_linear) {
-				c = c.to_linear();
+			if (p_flags & FLAG_FORCE_LINEAR) {
+				c = c.srgb_to_linear();
 			}
 
 			*(uint32_t *)ptr = c.to_rgbe9995();
@@ -140,7 +140,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		}
 	}
 
-	p_image->create(width, height, false, Image::FORMAT_RGBE9995, imgdata);
+	p_image->set_data(width, height, false, Image::FORMAT_RGBE9995, imgdata);
 
 	return OK;
 }

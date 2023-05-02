@@ -4,11 +4,11 @@ class_name FuelTank
 
 enum FuelType {LIQUID_FUEL=0, LIQUID_OXIDIZER=1, SOLID_FUEL=2}
 
-export(Resource) var fuel_params = preload( "res://physics/parts/fuel_tanks/resource_fuel_tanks.tres" )
+@export var fuel_params: Resource = preload( "res://physics/parts/fuel_tanks/resource_fuel_tanks.tres" )
 
-export(FuelType) var fuel_type = FuelType.LIQUID_FUEL
-export(float) var radius = 1.0
-export(float) var height = 5.0
+@export var fuel_type: FuelType = FuelType.LIQUID_FUEL
+@export var radius: float = 1.0
+@export var height: float = 5.0
 
 var initial_volume_percent: float = 100.0
 
@@ -22,20 +22,20 @@ var accessible_fuel_tanks: Array = []
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	._ready()
+	super._ready()
 
 
 
 
 func init():
-	.init()
+	super.init()
 	set_volume_percent( initial_volume_percent )
 	update_inertia()
 
 
 
 func process_inner( _delta: float ):
-	.process_inner( _delta )
+	super.process_inner( _delta )
 	_equalize_volumes()
 	if _mass_changed:
 		update_inertia()
@@ -90,11 +90,11 @@ func _fuel_density():
 
 func gui_classes( mode: Array ):
 	var classes = []
-	var common_classes = .gui_classes( mode )
+	var common_classes = super.gui_classes( mode )
 	for cl in common_classes:
 		classes.push_back( cl )
 	
-	var empty: bool = mode.empty()
+	var empty: bool = mode.is_empty()
 	if empty:
 		var Status = load( "res://physics/parts/fuel_tanks/gui_elements/gui_fuel_tank.tscn" )
 		classes.push_back( Status )

@@ -31,7 +31,7 @@
 #ifndef JOYPAD_UWP_H
 #define JOYPAD_UWP_H
 
-#include "main/input_default.h"
+#include "core/input/input.h"
 
 ref class JoypadUWP sealed {
 	/** clang-format breaks this, it does not understand this token. */
@@ -58,26 +58,17 @@ private:
 	struct ControllerDevice {
 		Windows::Gaming::Input::IGameController ^ controller_reference;
 
-		int id;
-		bool connected;
-		ControllerType type;
-		float ff_timestamp;
-		float ff_end_timestamp;
-		bool vibrating;
-
-		ControllerDevice() {
-			id = -1;
-			connected = false;
-			type = ControllerType::GAMEPAD_CONTROLLER;
-			ff_timestamp = 0.0f;
-			ff_end_timestamp = 0.0f;
-			vibrating = false;
-		}
+		int id = -1;
+		bool connected = false;
+		ControllerType type = ControllerType::GAMEPAD_CONTROLLER;
+		float ff_timestamp = 0;
+		float ff_end_timestamp = 0;
+		bool vibrating = false;
 	};
 
 	ControllerDevice controllers[MAX_CONTROLLERS];
 
-	InputDefault *input;
+	InputDefault *input = nullptr;
 
 	void OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
 	void OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);

@@ -1,9 +1,9 @@
 [gd_scene load_steps=2 format=2]
 
-[sub_resource type="CubeMesh" id=1]
+[sub_resource type="BoxMesh" id=1]
 
-[node name="Spatial" type="Spatial"]
+[node name="Node3D" type="Node3D"]
 
-[node name="Target" type="MeshInstance" parent="."]
+[node name="Target" type="MeshInstance3D" parent="."]
 mesh = SubResource( 1 )
 material/0 = null

@@ -1,6 +1,6 @@
-tool
+@tool
 class_name PaletteImporter
-extends Reference
+extends RefCounted
 
 
 # Adapted from Github -> Orama-Interactive/Pixelorama/src/Autoload/Import.gd
@@ -24,15 +24,15 @@ static func import_gpl(path : String) -> Palette:
 				else:
 					result = Palette.new()
 					result.path = path
-					var name_start = path.find_last('/') + 1
-					var name_end = path.find_last('.')
+					var name_start = path.rfind('/') + 1
+					var name_end = path.rfind('.')
 					if name_end > name_start:
 						result.name = path.substr(name_start, name_end - name_start)
 			# Comments
 			elif line.begins_with('#'):
 				comments += line.trim_prefix('#') + '\n'
-			elif line.substr(0, 1).is_valid_integer():
-				var color_data : PoolStringArray = line.split("\t")[0].split(" ", false, 4)
+			elif line.substr(0, 1).is_valid_int():
+				var color_data : PackedStringArray = line.split("\t")[0].split(" ", false, 4)
 				var red : float = color_data[0].to_float() / 255.0
 				var green : float = color_data[1].to_float() / 255.0
 				var blue : float = color_data[2].to_float() / 255.0
@@ -55,9 +55,9 @@ static func import_gpl(path : String) -> Palette:
 static func get_gpl_files(path) -> Array:
 	var files = []
 	
-	var dir = Directory.new()
+	var dir = DirAccess.new()
 	if dir.open(path) == OK:
-		dir.list_dir_begin()
+		dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 		var file_name = dir.get_next()
 		while file_name != "":
 			if !dir.current_is_dir() and file_name.ends_with(".gpl"):

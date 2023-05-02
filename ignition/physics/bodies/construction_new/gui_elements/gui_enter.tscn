@@ -5,7 +5,7 @@
 [node name="Enter" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-rect_min_size = Vector2( 80, 32 )
+custom_minimum_size = Vector2( 80, 32 )
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
@@ -14,17 +14,17 @@ __meta__ = {
 [node name="CenterContainer" type="CenterContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = 1.0
-rect_min_size = Vector2( 80, 32 )
+offset_right = 1.0
+custom_minimum_size = Vector2( 80, 32 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="Enter" type="Button" parent="CenterContainer"]
-margin_left = 478.0
-margin_top = 292.0
-margin_right = 547.0
-margin_bottom = 308.0
-hint_tooltip = "Enter construction mode. In this mode one can build. But parts should not be too far from each other."
+offset_left = 478.0
+offset_top = 292.0
+offset_right = 547.0
+offset_bottom = 308.0
+tooltip_text = "Enter construction mode. In this mode one can build. But parts should not be too far from each other."
 text = "Activate"
 [connection signal="pressed" from="CenterContainer/Enter" to="." method="_on_Enter_pressed"]

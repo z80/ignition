@@ -51,8 +51,8 @@ private:
 	static jmethodID _multicast_lock_acquire;
 	static jmethodID _multicast_lock_release;
 
-	bool wants_broadcast;
-	int multicast_groups;
+	bool wants_broadcast = false;
+	int multicast_groups = 0;
 
 	static void multicast_lock_acquire();
 	static void multicast_lock_release();
@@ -67,10 +67,10 @@ public:
 	virtual void close();
 
 	virtual Error set_broadcasting_enabled(bool p_enabled);
-	virtual Error join_multicast_group(const IP_Address &p_multi_address, String p_if_name);
-	virtual Error leave_multicast_group(const IP_Address &p_multi_address, String p_if_name);
+	virtual Error join_multicast_group(const IPAddress &p_multi_address, String p_if_name);
+	virtual Error leave_multicast_group(const IPAddress &p_multi_address, String p_if_name);
 
-	NetSocketAndroid();
+	NetSocketAndroid() {}
 	~NetSocketAndroid();
 };
 

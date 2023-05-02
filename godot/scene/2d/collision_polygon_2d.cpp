@@ -31,12 +31,12 @@
 #include "collision_polygon_2d.h"
 
 #include "collision_object_2d.h"
-#include "core/engine.h"
+#include "core/math/geometry_2d.h"
 #include "scene/2d/area_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
-#include "thirdparty/misc/triangulator.h"
+#include "thirdparty/misc/polypartition.h"
 
 void CollisionPolygon2D::_build_polygon() {
 	parent->shape_owner_clear_shapes(owner_id);
@@ -64,17 +64,15 @@ void CollisionPolygon2D::_build_polygon() {
 
 		Ref<ConcavePolygonShape2D> concave = memnew(ConcavePolygonShape2D);
 
-		PoolVector<Vector2> segments;
+		Vector<Vector2> segments;
 		segments.resize(polygon.size() * 2);
-		PoolVector<Vector2>::Write w = segments.write();
+		Vector2 *w = segments.ptrw();
 
-		int polygon_count = polygon.size();
-		for (int i = 0; i < polygon_count; i++) {
+		for (int i = 0; i < polygon.size(); i++) {
 			w[(i << 1) + 0] = polygon[i];
-			w[(i << 1) + 1] = polygon[(i + 1) % polygon_count];
+			w[(i << 1) + 1] = polygon[(i + 1) % polygon.size()];
 		}
 
-		w.release();
 		concave->set_segments(segments);
 
 		parent->shape_owner_add_shape(owner_id, concave);
@@ -82,7 +80,7 @@ void CollisionPolygon2D::_build_polygon() {
 }
 
 Vector<Vector<Vector2>> CollisionPolygon2D::_decompose_in_convex() {
-	Vector<Vector<Vector2>> decomp = Geometry::decompose_polygon_in_convex(polygon);
+	Vector<Vector<Vector2>> decomp = Geometry2D::decompose_polygon_in_convex(polygon);
 	return decomp;
 }
 
@@ -105,26 +103,20 @@ void CollisionPolygon2D::_notification(int p_what) {
 				_build_polygon();
 				_update_in_shape_owner();
 			}
-
-			/*if (Engine::get_singleton()->is_editor_hint()) {
-				//display above all else
-				set_z_as_relative(false);
-				set_z_index(VS::CANVAS_ITEM_Z_MAX - 1);
-			}*/
-
 		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			if (parent) {
 				_update_in_shape_owner();
 			}
-
 		} break;
+
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
-
 		} break;
+
 		case NOTIFICATION_UNPARENTED: {
 			if (parent) {
 				parent->remove_shape_owner(owner_id);
@@ -139,15 +131,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				break;
 			}
 
-			int polygon_count = polygon.size();
-			for (int i = 0; i < polygon_count; i++) {
-				Vector2 p = polygon[i];
-				Vector2 n = polygon[(i + 1) % polygon_count];
-				// draw line with width <= 1, so it does not scale with zoom and break pixel exact editing
-				draw_line(p, n, Color(0.9, 0.2, 0.0, 0.8), 1);
-			}
-
-			if (polygon_count > 2) {
+			if (polygon.size() > 2) {
 #define DEBUG_DECOMPOSE
 #if defined(TOOLS_ENABLED) && defined(DEBUG_DECOMPOSE)
 				Vector<Vector<Vector2>> decomp = _decompose_in_convex();
@@ -160,6 +144,11 @@ void CollisionPolygon2D::_notification(int p_what) {
 #else
 				draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
 #endif
+
+				const Color stroke_color = Color(0.9, 0.2, 0.0);
+				draw_polyline(polygon, stroke_color);
+				// Draw the last segment.
+				draw_line(polygon[polygon.size() - 1], polygon[0], stroke_color);
 			}
 
 			if (one_way_collision) {
@@ -167,15 +156,15 @@ void CollisionPolygon2D::_notification(int p_what) {
 				dcol.a = 1.0;
 				Vector2 line_to(0, 20);
 				draw_line(Vector2(), line_to, dcol, 3);
-				Vector<Vector2> pts;
-				float tsize = 8;
-				pts.push_back(line_to + (Vector2(0, tsize)));
-				pts.push_back(line_to + (Vector2(Math_SQRT12 * tsize, 0)));
-				pts.push_back(line_to + (Vector2(-Math_SQRT12 * tsize, 0)));
-				Vector<Color> cols;
-				for (int i = 0; i < 3; i++) {
-					cols.push_back(dcol);
-				}
+				real_t tsize = 8;
+
+				Vector<Vector2> pts = {
+					line_to + Vector2(0, tsize),
+					line_to + Vector2(Math_SQRT12 * tsize, 0),
+					line_to + Vector2(-Math_SQRT12 * tsize, 0)
+				};
+
+				Vector<Color> cols{ dcol, dcol, dcol };
 
 				draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
 			}
@@ -206,8 +195,8 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 		_build_polygon();
 		_update_in_shape_owner();
 	}
-	update();
-	update_configuration_warning();
+	queue_redraw();
+	update_configuration_warnings();
 }
 
 Vector<Point2> CollisionPolygon2D::get_polygon() const {
@@ -221,8 +210,8 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 		_build_polygon();
 		_update_in_shape_owner();
 	}
-	update();
-	update_configuration_warning();
+	queue_redraw();
+	update_configuration_warnings();
 }
 
 CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
@@ -239,51 +228,40 @@ bool CollisionPolygon2D::_edit_use_rect() const {
 }
 
 bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	return Geometry::is_point_in_polygon(p_point, Variant(polygon));
+	return Geometry2D::is_point_in_polygon(p_point, Variant(polygon));
 }
 #endif
 
-String CollisionPolygon2D::get_configuration_warning() const {
-	String warning = Node2D::get_configuration_warning();
+PackedStringArray CollisionPolygon2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
-		if (warning != String()) {
-			warning += "\n\n";
-		}
-		warning += TTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape.");
+		warnings.push_back(RTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));
 	}
 
 	int polygon_count = polygon.size();
 	if (polygon_count == 0) {
-		if (!warning.empty()) {
-			warning += "\n\n";
-		}
-		warning += TTR("An empty CollisionPolygon2D has no effect on collision.");
+		warnings.push_back(RTR("An empty CollisionPolygon2D has no effect on collision."));
 	} else {
 		bool solids = build_mode == BUILD_SOLIDS;
 		if (solids) {
 			if (polygon_count < 3) {
-				if (!warning.empty()) {
-					warning += "\n\n";
-				}
-				warning += TTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode.");
+				warnings.push_back(RTR("Invalid polygon. At least 3 points are needed in 'Solids' build mode."));
 			}
 		} else if (polygon_count < 2) {
-			if (!warning.empty()) {
-				warning += "\n\n";
-			}
-			warning += TTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode.");
+			warnings.push_back(RTR("Invalid polygon. At least 2 points are needed in 'Segments' build mode."));
 		}
 	}
 	if (one_way_collision && Object::cast_to<Area2D>(get_parent())) {
-		warning += TTR("The One Way Collision property will be ignored when the parent is an Area2D.");
+		warnings.push_back(RTR("The One Way Collision property will be ignored when the parent is an Area2D."));
 	}
 
-	return warning;
+	return warnings;
 }
 
 void CollisionPolygon2D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_set_disabled(owner_id, p_disabled);
 	}
@@ -295,27 +273,28 @@ bool CollisionPolygon2D::is_disabled() const {
 
 void CollisionPolygon2D::set_one_way_collision(bool p_enable) {
 	one_way_collision = p_enable;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
 	}
-	update_configuration_warning();
+	update_configuration_warnings();
 }
 
 bool CollisionPolygon2D::is_one_way_collision_enabled() const {
 	return one_way_collision;
 }
 
-void CollisionPolygon2D::set_one_way_collision_margin(float p_margin) {
+void CollisionPolygon2D::set_one_way_collision_margin(real_t p_margin) {
 	one_way_collision_margin = p_margin;
 	if (parent) {
 		parent->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 	}
 }
 
-float CollisionPolygon2D::get_one_way_collision_margin() const {
+real_t CollisionPolygon2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
+
 void CollisionPolygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &CollisionPolygon2D::set_polygon);
 	ClassDB::bind_method(D_METHOD("get_polygon"), &CollisionPolygon2D::get_polygon);
@@ -330,22 +309,16 @@ void CollisionPolygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionPolygon2D::get_one_way_collision_margin);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "build_mode", PROPERTY_HINT_ENUM, "Solids,Segments"), "set_build_mode", "get_build_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 
 	BIND_ENUM_CONSTANT(BUILD_SOLIDS);
 	BIND_ENUM_CONSTANT(BUILD_SEGMENTS);
 }
 
 CollisionPolygon2D::CollisionPolygon2D() {
-	aabb = Rect2(-10, -10, 20, 20);
-	build_mode = BUILD_SOLIDS;
 	set_notify_local_transform(true);
-	parent = nullptr;
-	owner_id = 0;
-	disabled = false;
-	one_way_collision = false;
-	one_way_collision_margin = 1.0;
+	set_hide_clip_children(true);
 }

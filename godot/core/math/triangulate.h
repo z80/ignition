@@ -32,9 +32,10 @@
 #define TRIANGULATE_H
 
 #include "core/math/vector2.h"
+#include "core/templates/vector.h"
 
 /*
-http://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
+https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
 */
 
 class Triangulate {

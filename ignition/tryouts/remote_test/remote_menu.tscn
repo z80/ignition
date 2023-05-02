@@ -15,23 +15,23 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -55.0
-margin_top = -48.0
-margin_right = 58.0
-margin_bottom = 52.0
+offset_left = -55.0
+offset_top = -48.0
+offset_right = 58.0
+offset_bottom = 52.0
 
 [node name="Create" type="Button" parent="Panel"]
-margin_left = 18.8154
-margin_top = 8.3624
-margin_right = 91.8154
-margin_bottom = 35.3624
+offset_left = 18.8154
+offset_top = 8.3624
+offset_right = 91.8154
+offset_bottom = 35.3624
 text = "Create"
 
 [node name="Join" type="Button" parent="Panel"]
-margin_left = 18.8154
-margin_top = 58.955
-margin_right = 91.8154
-margin_bottom = 85.955
+offset_left = 18.8154
+offset_top = 58.955
+offset_right = 91.8154
+offset_bottom = 85.955
 text = "Join"
 [connection signal="pressed" from="Panel/Create" to="." method="_on_Create_pressed"]
 [connection signal="pressed" from="Panel/Join" to="." method="_on_Join_pressed"]

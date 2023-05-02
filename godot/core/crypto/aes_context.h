@@ -32,10 +32,10 @@
 #define AES_CONTEXT_H
 
 #include "core/crypto/crypto_core.h"
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
-class AESContext : public Reference {
-	GDCLASS(AESContext, Reference);
+class AESContext : public RefCounted {
+	GDCLASS(AESContext, RefCounted);
 
 public:
 	enum Mode {
@@ -47,17 +47,17 @@ public:
 	};
 
 private:
-	Mode mode;
+	Mode mode = MODE_MAX;
 	CryptoCore::AESContext ctx;
-	PoolByteArray iv;
+	PackedByteArray iv;
 
 protected:
 	static void _bind_methods();
 
 public:
-	Error start(Mode p_mode, PoolByteArray p_key, PoolByteArray p_iv = PoolByteArray());
-	PoolByteArray update(PoolByteArray p_src);
-	PoolByteArray get_iv_state();
+	Error start(Mode p_mode, PackedByteArray p_key, PackedByteArray p_iv = PackedByteArray());
+	PackedByteArray update(PackedByteArray p_src);
+	PackedByteArray get_iv_state();
 	void finish();
 
 	AESContext();

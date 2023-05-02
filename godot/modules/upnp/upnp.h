@@ -31,19 +31,19 @@
 #ifndef UPNP_H
 #define UPNP_H
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 
 #include "upnp_device.h"
 
 #include <miniupnpc.h>
 
-class UPNP : public Reference {
-	GDCLASS(UPNP, Reference);
+class UPNP : public RefCounted {
+	GDCLASS(UPNP, RefCounted);
 
 private:
-	String discover_multicast_if;
-	int discover_local_port;
-	bool discover_ipv6;
+	String discover_multicast_if = "";
+	int discover_local_port = 0;
+	bool discover_ipv6 = false;
 
 	Vector<Ref<UPNPDevice>> devices;
 
@@ -57,7 +57,6 @@ protected:
 
 public:
 	enum UPNPResult {
-
 		UPNP_RESULT_SUCCESS,
 		UPNP_RESULT_NOT_AUTHORIZED,
 		UPNP_RESULT_PORT_MAPPING_NOT_FOUND,

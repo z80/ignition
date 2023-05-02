@@ -5,10 +5,10 @@ class_name FoliageInstanceBase
 # It currently has no collisions and only 
 # has visual.
 
-export(PackedScene) var VisualScene = null
-export(float) var scale = 1.0
+@export var VisualScene: PackedScene = null
+@export var scale: float = 1.0
 
-var _visual: Spatial = null
+var _visual: Node3D = null
 
 # Pose with respect to specified parent.
 var _se3: Se3Ref          = null
@@ -21,7 +21,7 @@ func place( parent: RefFrameNode, se3: Se3Ref ):
 		_se3 = Se3Ref.new()
 	_se3.copy_from( se3 )
 	
-	change_parent( parent )
+	change_parent( parent, false )
 	set_se3( _se3 )
 
 
@@ -43,7 +43,7 @@ func _exit_tree():
 
 func _create_objects():
 	if _visual == null:
-		_visual = VisualScene.instance()
+		_visual = VisualScene.instantiate()
 		var root_for_visuals: Node = RootScene.get_visual_layer_near()
 		root_for_visuals.add_child( _visual )
 	
@@ -56,6 +56,6 @@ func _ign_pre_process(delta):
 	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
 	var se3: Se3Ref = self.relative_to( cam )
 	
-	var t: Transform = se3.transform
+	var t: Transform3D = se3.transform
 	#t = t.scaled( Vector3( scale, scale, scale ) )
 	_visual.transform = t

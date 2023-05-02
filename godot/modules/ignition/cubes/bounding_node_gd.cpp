@@ -7,17 +7,17 @@ namespace Ign
 
 void BoundingNodeGd::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD("create_adjacent_node", "dx", "dy", "dz"), &BoundingNodeGd::create_adjacent_node, Variant::OBJECT );
-	ClassDB::bind_method( D_METHOD("equals_to", "other_node"),                &BoundingNodeGd::equals_to,            Variant::BOOL );
-	ClassDB::bind_method( D_METHOD("get_node_id"),                            &BoundingNodeGd::get_node_id,          Variant::STRING );
-	ClassDB::bind_method( D_METHOD("get_adjacent_node_id", "dx", "dy", "dz"), &BoundingNodeGd::get_adjacent_node_id, Variant::STRING );
-	ClassDB::bind_method( D_METHOD("get_center", "surface"),                  &BoundingNodeGd::get_center,           Variant::OBJECT );
-	ClassDB::bind_method( D_METHOD("get_size", "surface"),                    &BoundingNodeGd::get_size,             Variant::REAL );
-	ClassDB::bind_method( D_METHOD("get_hash"),                               &BoundingNodeGd::get_hash,             Variant::STRING );
+	ClassDB::bind_method( D_METHOD("create_adjacent_node", "dx", "dy", "dz"), &BoundingNodeGd::create_adjacent_node );
+	ClassDB::bind_method( D_METHOD("equals_to", "other_node"),                &BoundingNodeGd::equals_to );
+	ClassDB::bind_method( D_METHOD("get_node_id"),                            &BoundingNodeGd::get_node_id );
+	ClassDB::bind_method( D_METHOD("get_adjacent_node_id", "dx", "dy", "dz"), &BoundingNodeGd::get_adjacent_node_id );
+	ClassDB::bind_method( D_METHOD("get_center", "surface"),                  &BoundingNodeGd::get_center );
+	ClassDB::bind_method( D_METHOD("get_size", "surface"),                    &BoundingNodeGd::get_size );
+	ClassDB::bind_method( D_METHOD("get_hash"),                               &BoundingNodeGd::get_hash );
 }
 
 BoundingNodeGd::BoundingNodeGd()
-	: Reference()
+	: RefCounted()
 {
 }
 
@@ -28,7 +28,7 @@ BoundingNodeGd::~BoundingNodeGd()
 Ref<BoundingNodeGd> BoundingNodeGd::create_adjacent_node( int dx, int dy, int dz ) const
 {
 	Ref<BoundingNodeGd> ret;
-	ret.instance();
+	ret.instantiate();
 	ret->node = node.create_adjacent_node( dx, dy, dz );
 
 	return ret;
@@ -75,7 +75,7 @@ Ref<Se3Ref> BoundingNodeGd::get_center( const Ref<MarchingCubesDualGd> & surface
 	const SE3 se3                   = cubes.se3_in_point( at );
 
 	Ref<Se3Ref> ret_se3;
-	ret_se3.instance();
+	ret_se3.instantiate();
 	ret_se3->se3 = se3;
 	return ret_se3;
 }

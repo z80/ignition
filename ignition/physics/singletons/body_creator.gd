@@ -4,7 +4,7 @@ extends Node
 
 # It is where all visual and physical nodes are attached.
 # For some reason if I use get_tree().get_root().add_child( inst ) those stay invisible.
-var root_node: Node setget set_root, get_root
+var root_node: Node: get = get_root, set = set_root
 
 func set_root( root: Node ):
 	root_node = root
@@ -70,7 +70,7 @@ func create( type_name: String ):
 
 
 func _create( CL ):
-	var inst = CL.instance()
+	var inst = CL.instantiate()
 	var root = RootScene.get_root_for_bodies()
 	inst.init()
 	if root != null:

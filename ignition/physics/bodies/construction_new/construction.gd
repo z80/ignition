@@ -19,14 +19,14 @@ var dynamic_blocks: Array = []
 var static_blocks: Array  = []
 
 func _ready():
-	init()
+	super()
 	
 
 
 
 
 func process_inner(delta):
-	.process_inner(delta)
+	super.process_inner(delta)
 	
 	#t_elapsed += delta
 	#if t_elapsed >= 1.0:
@@ -43,7 +43,7 @@ func process_inner(delta):
 
 
 func init():
-	.init()
+	super.init()
 	_apply_default_orientation()
 	#var t: Transform = Transform.IDENTITY
 	#t.origin = Vector3( 0.0, 1.0, 0.0 )
@@ -63,14 +63,14 @@ func _apply_default_orientation():
 	var co: float = wanted_up.y
 	var si: float = Vector2( wanted_up.x, wanted_up.z ).length()
 	var elevation: float = atan2( si, co )
-	var q_el: Quat = Quat( Vector3.RIGHT, elevation )
+	var q_el: Quaternion = Quaternion( Vector3.RIGHT, elevation )
 	
 	co = wanted_up.z
 	si = wanted_up.x
 	var azimuth: float = atan2( si, co )
-	var q_az: Quat = Quat( Vector3.UP, azimuth )
+	var q_az: Quaternion = Quaternion( Vector3.UP, azimuth )
 	
-	var q_total: Quat = q_az * q_el
+	var q_total: Quaternion = q_az * q_el
 	
 	var se3: Se3Ref = get_se3()
 	se3.q = q_total
@@ -109,11 +109,11 @@ func set_collision_layer( layer ):
 func construction_activate():
 	#$PanelParts.visible = true
 	var PanelParts = load( "res://physics/bodies/construction_new/panel_parts/panel_combined.tscn" )
-	panel_parts = PanelParts.instance()
+	panel_parts = PanelParts.instantiate()
 	#panel_parts.construction = self
-	var _ok: int = panel_parts.connect( "block_picked", self, "on_create_block" )
-	_ok = panel_parts.connect( "launch",       self, "on_launch" )
-	_ok = panel_parts.connect( "abort",        self, "on_abort" )
+	var _ok: int = panel_parts.connect("block_picked", Callable(self, "on_create_block"))
+	_ok = panel_parts.connect("launch", Callable(self, "on_launch"))
+	_ok = panel_parts.connect("abort", Callable(self, "on_abort"))
 	var panel_parent: Control = RootScene.get_root_for_gui_panels()
 	panel_parent.add_child( panel_parts )
 	
@@ -143,15 +143,15 @@ func activate_grab( body ):
 	if not is_instance_valid( body ):
 		return
 	var Grab = load( "res://physics/bodies/construction_new/manip_grab/manip_grab.tscn" )
-	var grab = Grab.instance()
-	RootScene.get_visual_layer_near().add_child( grab )
+	var grab = Grab.instantiate()
+	RootScene.get_root_for_gui_popups().add_child( grab )
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body
 	activated_mode = "construction_editing"
 	
-	grab.connect( "drag_started",  self, "_on_drag_started" )
-	grab.connect( "drag_finished", self, "_on_drag_finished" )
+	grab.connect("drag_started", Callable(self, "_on_drag_started"))
+	grab.connect("drag_finished", Callable(self, "_on_drag_finished"))
 
 
 func _on_drag_started( grab: Node ):
@@ -268,7 +268,7 @@ func check_if_deactivate():
 func create_block( block_desc: Resource ):
 	var player: RefFrameNode = RootScene.ref_frame_root.player_camera.get_parent()
 	
-	var t: Transform = Transform.IDENTITY
+	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
 	var se3: Se3Ref = Se3Ref.new()
 	se3.transform = t
@@ -332,7 +332,7 @@ func set_show_coupling_nodes( en: bool ):
 func create_assembly():
 	var sb = ConstructionSuperBodyNew.new()
 	var p = get_parent()
-	sb.change_parent( p )
+	sb.change_parent( p, false )
 	# Place own reference there.
 	sb.construction = self
 	# And in the list of sub-bodies.

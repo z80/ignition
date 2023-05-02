@@ -1,6 +1,7 @@
-extends ImmediateGeometry
 
-export(bool) var enabled = false
+extends MeshInstance3D
+
+@export var enabled: bool = false
 
 var _m: Material = null
 
@@ -22,21 +23,25 @@ func draw_faces( broad_tree: BroadTreeGd, camera: RefFrameNode, ref_frame: RefFr
 	if not enabled:
 		return
 	
+	var im: ImmediateMesh = ImmediateMesh.new()
+	
 	#var se3: Se3Ref = camera.relative_to( ref_frame )
 	var se3: Se3Ref = ref_frame.relative_to( camera )
-	var t: Transform = se3.transform
-	var faces: PoolVector3Array = broad_tree.face_lines( t )
+	var t: Transform3D = se3.transform
+	var faces: PackedVector3Array = broad_tree.face_lines( t )
 	var qty: int = faces.size()
 	
-	set_material_override( _m )
-	clear()
-	begin( Mesh.PRIMITIVE_LINES )
+	im.clear_surfaces()
+	im.surface_begin( ImmediateMesh.PRIMITIVE_LINES, _m )
 	
 	for i in range( qty ):
 		var at: Vector3 = faces[i]
-		add_vertex( at )
+		im.surface_add_vertex( at )
 	
-	end()
+	im.surface_end()
+	
+	self.mesh = im
+
 
 
 

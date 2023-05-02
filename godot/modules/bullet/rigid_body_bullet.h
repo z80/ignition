@@ -46,8 +46,8 @@ class SpaceBullet;
 class btRigidBody;
 class GodotMotionState;
 
-class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState {
-	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState);
+class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState3D {
+	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState3D);
 
 public:
 	RigidBodyBullet *body = nullptr;
@@ -58,7 +58,8 @@ public:
 	virtual float get_total_angular_damp() const;
 	virtual float get_total_linear_damp() const;
 
-	virtual Vector3 get_center_of_mass() const;
+	virtual Vector3 get_center_of_mass() const override;
+	virtual Vector3 get_center_of_mass_local() const override;
 	virtual Basis get_principal_inertia_axes() const;
 	// get the mass
 	virtual float get_inverse_mass() const;
@@ -73,17 +74,34 @@ public:
 	virtual void set_angular_velocity(const Vector3 &p_velocity);
 	virtual Vector3 get_angular_velocity() const;
 
-	virtual void set_transform(const Transform &p_transform);
-	virtual Transform get_transform() const;
+	virtual void set_transform(const Transform3D &p_transform);
+	virtual Transform3D get_transform() const;
 
 	virtual Vector3 get_velocity_at_local_position(const Vector3 &p_position) const;
 
-	virtual void add_central_force(const Vector3 &p_force);
-	virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
-	virtual void add_torque(const Vector3 &p_torque);
-	virtual void apply_central_impulse(const Vector3 &p_impulse);
-	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
-	virtual void apply_torque_impulse(const Vector3 &p_impulse);
+	//virtual void add_central_force(const Vector3 &p_force);
+	//virtual void add_force(const Vector3 &p_force, const Vector3 &p_pos);
+	//virtual void add_torque(const Vector3 &p_torque);
+
+	virtual void apply_central_impulse(const Vector3 &p_impulse) override;
+	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse) override;
+	virtual void apply_torque_impulse(const Vector3 &p_impulse) override;
+
+	virtual void apply_central_force(const Vector3 &p_force) override;
+	virtual void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+	virtual void apply_torque(const Vector3 &p_torque) override;
+
+	virtual void add_constant_central_force(const Vector3 &p_force) override;
+	virtual void add_constant_force(const Vector3 &p_force, const Vector3 &p_position = Vector3()) override;
+	virtual void add_constant_torque(const Vector3 &p_torque) override;
+
+	virtual void set_constant_force(const Vector3 &p_force) override;
+	virtual Vector3 get_constant_force() const override;
+
+	virtual void set_constant_torque(const Vector3 &p_torque) override;
+	virtual Vector3 get_constant_torque() const override;
+
+
 
 	virtual void set_sleep_state(bool p_enable);
 	virtual bool is_sleeping() const;
@@ -92,7 +110,7 @@ public:
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const;
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const;
-	virtual float get_contact_impulse(int p_contact_idx) const;
+	virtual Vector3 get_contact_impulse(int p_contact_idx) const;
 	virtual int get_contact_local_shape(int p_contact_idx) const;
 
 	virtual RID get_contact_collider(int p_contact_idx) const;
@@ -106,11 +124,14 @@ public:
 		// Skip the execution of this function
 	}
 
-	virtual PhysicsDirectSpaceState *get_space_state();
+	virtual PhysicsDirectSpaceState3D *get_space_state();
 };
 
 class RigidBodyBullet : public RigidCollisionObjectBullet {
 public:
+
+	Callable body_state_callback;
+
 	struct CollisionData {
 		RigidBodyBullet *otherObject;
 		int other_object_shape;
@@ -160,7 +181,7 @@ private:
 	// This is required only for Kinematic movement
 	KinematicUtilities *kinematic_utilities;
 
-	PhysicsServer::BodyMode mode;
+	PhysicsServer3D::BodyMode mode;
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
 	uint16_t locked_axis;
@@ -199,6 +220,9 @@ private:
 	ForceIntegrationCallback *force_integration_callback;
 
 public:
+	void set_state_sync_callback(const Callable &p_callable);
+	void call_queries();
+
 	RigidBodyBullet();
 	~RigidBodyBullet();
 
@@ -248,14 +272,14 @@ public:
 	void set_omit_forces_integration(bool p_omit);
 	_FORCE_INLINE_ bool get_omit_forces_integration() const { return omit_forces_integration; }
 
-	void set_param(PhysicsServer::BodyParameter p_param, real_t);
-	real_t get_param(PhysicsServer::BodyParameter p_param) const;
+	void set_param(PhysicsServer3D::BodyParameter p_param, real_t);
+	real_t get_param(PhysicsServer3D::BodyParameter p_param) const;
 
-	void set_mode(PhysicsServer::BodyMode p_mode);
-	PhysicsServer::BodyMode get_mode() const;
+	void set_mode(PhysicsServer3D::BodyMode p_mode);
+	PhysicsServer3D::BodyMode get_mode() const;
 
-	void set_state(PhysicsServer::BodyState p_state, const Variant &p_variant);
-	Variant get_state(PhysicsServer::BodyState p_state) const;
+	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
+	Variant get_state(PhysicsServer3D::BodyState p_state) const;
 
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 	void apply_central_impulse(const Vector3 &p_impulse);
@@ -270,8 +294,8 @@ public:
 	void set_applied_torque(const Vector3 &p_torque);
 	Vector3 get_applied_torque() const;
 
-	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool lock);
-	bool is_axis_locked(PhysicsServer::BodyAxis p_axis) const;
+	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);
+	bool is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const;
 	void reload_axis_lock();
 
 	/// Doc:

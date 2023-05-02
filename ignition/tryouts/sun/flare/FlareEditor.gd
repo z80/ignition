@@ -1,6 +1,6 @@
 extends Panel
 
-onready var lens_flare = $"../LensFlare"
+@onready var lens_flare = $"../LensFlare"
 
 
 func _on_FlareStrength_value_changed(value: float) -> void:

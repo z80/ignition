@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AESContext" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AESContext" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Interface to low level AES encryption features.
 	</brief_description>
 	<description>
 		This class provides access to AES encryption/decryption of raw data. Both AES-ECB and AES-CBC mode are supported.
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		extends Node
 
 		var aes = AESContext.new()
@@ -35,7 +36,45 @@
 		    aes.finish()
 		    # Check CBC
 		    assert(decrypted == data.to_utf8())
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		using Godot;
+		using System.Diagnostics;
+
+		public partial class MyNode : Node
+		{
+		    private AesContext _aes = new AesContext();
+
+		    public override void _Ready()
+		    {
+		        string key = "My secret key!!!"; // Key must be either 16 or 32 bytes.
+		        string data = "My secret text!!"; // Data size must be multiple of 16 bytes, apply padding if needed.
+		        // Encrypt ECB
+		        _aes.Start(AesContext.Mode.EcbEncrypt, key.ToUtf8());
+		        byte[] encrypted = _aes.Update(data.ToUtf8());
+		        _aes.Finish();
+		        // Decrypt ECB
+		        _aes.Start(AesContext.Mode.EcbDecrypt, key.ToUtf8());
+		        byte[] decrypted = _aes.Update(encrypted);
+		        _aes.Finish();
+		        // Check ECB
+		        Debug.Assert(decrypted == data.ToUtf8());
+
+		        string iv = "My secret iv!!!!"; // IV must be of exactly 16 bytes.
+		        // Encrypt CBC
+		        _aes.Start(AesContext.Mode.EcbEncrypt, key.ToUtf8(), iv.ToUtf8());
+		        encrypted = _aes.Update(data.ToUtf8());
+		        _aes.Finish();
+		        // Decrypt CBC
+		        _aes.Start(AesContext.Mode.EcbDecrypt, key.ToUtf8(), iv.ToUtf8());
+		        decrypted = _aes.Update(encrypted);
+		        _aes.Finish();
+		        // Check CBC
+		        Debug.Assert(decrypted == data.ToUtf8());
+		    }
+		}
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -47,7 +86,7 @@
 			</description>
 		</method>
 		<method name="get_iv_state">
-			<return type="PoolByteArray" />
+			<return type="PackedByteArray" />
 			<description>
 				Get the current IV state for this context (IV gets updated when calling [method update]). You normally don't need this function.
 				[b]Note:[/b] This function only makes sense when the context is started with [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
@@ -55,19 +94,19 @@
 		</method>
 		<method name="start">
 			<return type="int" enum="Error" />
-			<argument index="0" name="mode" type="int" enum="AESContext.Mode" />
-			<argument index="1" name="key" type="PoolByteArray" />
-			<argument index="2" name="iv" type="PoolByteArray" default="PoolByteArray(  )" />
+			<param index="0" name="mode" type="int" enum="AESContext.Mode" />
+			<param index="1" name="key" type="PackedByteArray" />
+			<param index="2" name="iv" type="PackedByteArray" default="PackedByteArray()" />
 			<description>
-				Start the AES context in the given [code]mode[/code]. A [code]key[/code] of either 16 or 32 bytes must always be provided, while an [code]iv[/code] (initialization vector) of exactly 16 bytes, is only needed when [code]mode[/code] is either [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
+				Start the AES context in the given [param mode]. A [param key] of either 16 or 32 bytes must always be provided, while an [param iv] (initialization vector) of exactly 16 bytes, is only needed when [param mode] is either [constant MODE_CBC_ENCRYPT] or [constant MODE_CBC_DECRYPT].
 			</description>
 		</method>
 		<method name="update">
-			<return type="PoolByteArray" />
-			<argument index="0" name="src" type="PoolByteArray" />
+			<return type="PackedByteArray" />
+			<param index="0" name="src" type="PackedByteArray" />
 			<description>
-				Run the desired operation for this AES context. Will return a [PoolByteArray] containing the result of encrypting (or decrypting) the given [code]src[/code]. See [method start] for mode of operation.
-				[b]Note:[/b] The size of [code]src[/code] must be a multiple of 16. Apply some padding if needed.
+				Run the desired operation for this AES context. Will return a [PackedByteArray] containing the result of encrypting (or decrypting) the given [param src]. See [method start] for mode of operation.
+				[b]Note:[/b] The size of [param src] must be a multiple of 16. Apply some padding if needed.
 			</description>
 		</method>
 	</methods>

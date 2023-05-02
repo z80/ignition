@@ -3,4 +3,4 @@ extends FuelTank
 
 
 func init():
-	.init()
+	super.init()

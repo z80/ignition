@@ -12,7 +12,7 @@ func _init():
 
 
 func init():
-	.init()
+	super.init()
 
 
 
@@ -21,10 +21,10 @@ func set_collision_layer( layer ):
 		_physical.set_collision_layer( layer )
 
 
-func set_vertices( vertices: PoolVector3Array, surface_relative_to_rf: Se3Ref ):
+func set_vertices( vertices: PackedVector3Array, surface_relative_to_rf: Se3Ref ):
 	self.inv_surface_relative_to_rf = surface_relative_to_rf.inverse()
 	if _physical != null:
-		_physical.transform = Transform.IDENTITY
+		_physical.transform = Transform3D.IDENTITY
 		_physical.set_vertices( vertices )
 
 

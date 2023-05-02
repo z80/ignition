@@ -1,22 +1,22 @@
-extends Spatial
+extends Node3D
 
 
 var rf_a = null
 var rf_b = null
 
-var rb_a: RigidBody = null
-var rb_b: RigidBody = null
+var rb_a: RigidBody3D = null
+var rb_b: RigidBody3D = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	rf_a = get_node( "RfA" )
 	rf_b = get_node( "RfB" )
 	
-	var t: Transform = Transform.IDENTITY
+	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = Vector3( -5.0, -0.2, 0.0 )
 	
 	var S = load( "res://tryouts/physics_viewport/physics_obj.tscn" )
-	var rb: RigidBody = S.instance()
+	var rb: RigidBody3D = S.instantiate()
 	rb.gravity_scale = 0.0
 	rb.transform = t
 	rb.linear_velocity = Vector3( 1.0, 0.0, 0.0 )
@@ -24,7 +24,7 @@ func _ready():
 	rb_a = rb
 	
 	t.origin = Vector3( 5.0, 0.2, 0.0 )
-	rb = S.instance()
+	rb = S.instantiate()
 	rb.gravity_scale = 0.0
 	rb.transform = t
 	rb.linear_velocity = Vector3( -1.0, 0.0, 0.0 )

@@ -31,43 +31,40 @@
 #ifndef GRADIENT_EDITOR_PLUGIN_H
 #define GRADIENT_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
-#include "scene/gui/gradient_edit.h"
+#include "gradient_editor.h"
 
-class GradientEditor : public GradientEdit {
-	GDCLASS(GradientEditor, GradientEdit);
+class GradientReverseButton : public BaseButton {
+	GDCLASS(GradientReverseButton, BaseButton);
 
-	bool editing;
-	Ref<Gradient> gradient;
+	int margin = 2;
 
-	void _gradient_changed();
-	void _ramp_changed();
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual Size2 get_minimum_size() const;
-	void set_gradient(const Ref<Gradient> &p_gradient);
-	GradientEditor();
+	void _notification(int p_what);
+	virtual Size2 get_minimum_size() const override;
 };
 
 class EditorInspectorPluginGradient : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin);
 
+	GradientEditor *editor = nullptr;
+	HBoxContainer *gradient_tools_hbox = nullptr;
+	GradientReverseButton *reverse_btn = nullptr;
+
+	void _reverse_button_pressed();
+
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class GradientEditorPlugin : public EditorPlugin {
 	GDCLASS(GradientEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const { return "ColorRamp"; }
+	virtual String get_name() const override { return "Gradient"; }
 
-	GradientEditorPlugin(EditorNode *p_node);
+	GradientEditorPlugin();
 };
 
 #endif // GRADIENT_EDITOR_PLUGIN_H

@@ -26,7 +26,7 @@ func _ready():
 	# It is suppsed to be picked up when close enough.
 	#var construction: PhysicsBodyBase = BodyCreator.create( "construction" )
 	
-	var camera: Camera = get_node( "Camera" )
+	var camera: Camera3D = get_node( "Camera3D" )
 	camera.set_mode( PlayerCamera.Mode.TPS_AZIMUTH )
 	
 	# Initial set of select and focus object.

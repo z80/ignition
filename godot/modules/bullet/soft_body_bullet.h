@@ -43,7 +43,9 @@
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "collision_object_bullet.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
+
+#include "core/templates/rid_owner.h"
 
 #ifdef x11_None
 /// This is required to re add the macro None defined by x11 compiler
@@ -53,6 +55,7 @@
 
 /**
 	@author AndreaCatania
+	FatherTed
 */
 
 class SoftBodyBullet : public CollisionObjectBullet {
@@ -62,7 +65,10 @@ private:
 	btSoftBody::Material *mat0; // This is just a copy of pointer managed by btSoftBody
 	bool isScratched;
 
-	Ref<Mesh> soft_mesh;
+	//Ref<Mesh> soft_mesh;
+	RID soft_mesh;
+	//mutable RID_Owner<Mesh> soft_mesh;
+
 
 	int simulation_precision;
 	real_t total_mass;
@@ -99,15 +105,18 @@ public:
 
 	_FORCE_INLINE_ btSoftBody *get_bt_soft_body() const { return bt_soft_body; }
 
-	void update_visual_server(class SoftBodyVisualServerHandler *p_visual_server_handler);
+	void update_visual_server(class SoftBodyRenderingServerHandler *p_visual_server_handler);
+	void update_rendering_server(class PhysicsServer3DRenderingServerHandler *p_visual_server_handler);
 
-	void set_soft_mesh(const Ref<Mesh> &p_mesh);
+	//void set_soft_mesh(const Ref<Mesh> &p_mesh);
+	void set_soft_mesh(RID p_mesh);
+	AABB get_bounds() const;
 	void destroy_soft_body();
 
 	// Special function. This function has bad performance
-	void set_soft_transform(const Transform &p_transform);
+	void set_soft_transform(const Transform3D &p_transform);
 
-	void move_all_nodes(const Transform &p_transform);
+	void move_all_nodes(const Transform3D &p_transform);
 	void set_node_position(int node_index, const Vector3 &p_global_position);
 	void set_node_position(int node_index, const btVector3 &p_global_position);
 	void get_node_position(int node_index, Vector3 &r_position) const;
@@ -151,7 +160,7 @@ public:
 	_FORCE_INLINE_ real_t get_drag_coefficient() const { return drag_coefficient; }
 
 private:
-	void set_trimesh_body_shape(PoolVector<int> p_indices, PoolVector<Vector3> p_vertices);
+	void set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector3> p_vertices);
 	void setup_soft_body();
 
 	void pin_node(int p_node_index);

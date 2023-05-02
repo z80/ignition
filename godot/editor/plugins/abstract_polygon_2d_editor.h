@@ -31,38 +31,45 @@
 #ifndef ABSTRACT_POLYGON_2D_EDITOR_H
 #define ABSTRACT_POLYGON_2D_EDITOR_H
 
-#include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
-#include "scene/gui/tool_button.h"
+#include "scene/gui/box_container.h"
 
 class CanvasItemEditor;
+class ConfirmationDialog;
 
 class AbstractPolygon2DEditor : public HBoxContainer {
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
-	ToolButton *button_create;
-	ToolButton *button_edit;
-	ToolButton *button_delete;
+	Button *button_create = nullptr;
+	Button *button_edit = nullptr;
+	Button *button_delete = nullptr;
 
 	struct Vertex {
-		Vertex();
-		Vertex(int p_vertex);
-		Vertex(int p_polygon, int p_vertex);
+		Vertex() {}
+		Vertex(int p_vertex) :
+				vertex(p_vertex) {}
+		Vertex(int p_polygon, int p_vertex) :
+				polygon(p_polygon),
+				vertex(p_vertex) {}
 
 		bool operator==(const Vertex &p_vertex) const;
 		bool operator!=(const Vertex &p_vertex) const;
 
 		bool valid() const;
 
-		int polygon;
-		int vertex;
+		int polygon = -1;
+		int vertex = -1;
 	};
 
 	struct PosVertex : public Vertex {
-		PosVertex();
-		PosVertex(const Vertex &p_vertex, const Vector2 &p_pos);
-		PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos);
+		PosVertex() {}
+		PosVertex(const Vertex &p_vertex, const Vector2 &p_pos) :
+				Vertex(p_vertex.polygon, p_vertex.vertex),
+				pos(p_pos) {}
+		PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos) :
+				Vertex(p_polygon, p_vertex),
+				pos(p_pos) {}
 
 		Vector2 pos;
 	};
@@ -74,15 +81,14 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 
 	Vector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
-	bool wip_active;
-	bool wip_destructive;
+	bool wip_active = false;
+	bool wip_destructive = false;
 
-	bool _polygon_editing_enabled;
+	bool _polygon_editing_enabled = false;
 
-	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
-	Panel *panel;
-	ConfirmationDialog *create_resource;
+	CanvasItemEditor *canvas_item_editor = nullptr;
+	Panel *panel = nullptr;
+	ConfirmationDialog *create_resource = nullptr;
 
 protected:
 	enum {
@@ -92,9 +98,7 @@ protected:
 		MODE_CONT,
 	};
 
-	int mode;
-
-	UndoRedo *undo_redo;
+	int mode = MODE_EDIT;
 
 	virtual void _menu_option(int p_option);
 	void _wip_changed();
@@ -138,27 +142,26 @@ public:
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
 	void edit(Node *p_polygon);
-	AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wip_destructive = true);
+	AbstractPolygon2DEditor(bool p_wip_destructive = true);
 };
 
 class AbstractPolygon2DEditorPlugin : public EditorPlugin {
 	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
 
-	AbstractPolygon2DEditor *polygon_editor;
-	EditorNode *editor;
+	AbstractPolygon2DEditor *polygon_editor = nullptr;
 	String klass;
 
 public:
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return polygon_editor->forward_gui_input(p_event); }
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) { polygon_editor->forward_canvas_draw_over_viewport(p_overlay); }
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return polygon_editor->forward_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { polygon_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	bool has_main_screen() const { return false; }
-	virtual String get_name() const { return klass; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	bool has_main_screen() const override { return false; }
+	virtual String get_name() const override { return klass; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
-	AbstractPolygon2DEditorPlugin(EditorNode *p_node, AbstractPolygon2DEditor *p_polygon_editor, String p_class);
+	AbstractPolygon2DEditorPlugin(AbstractPolygon2DEditor *p_polygon_editor, String p_class);
 	~AbstractPolygon2DEditorPlugin();
 };
 

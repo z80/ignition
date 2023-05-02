@@ -32,10 +32,10 @@
 
 #include "midi_driver_coremidi.h"
 
-#include "core/print_string.h"
+#include "core/string/print_string.h"
 
-#include <CoreAudio/HostTime.h>
-#include <CoreServices/CoreServices.h>
+#import <CoreAudio/HostTime.h>
+#import <CoreServices/CoreServices.h>
 
 void MIDIDriverCoreMidi::read(const MIDIPacketList *packet_list, void *read_proc_ref_con, void *src_conn_ref_con) {
 	MIDIPacket *packet = const_cast<MIDIPacket *>(packet_list->packet);
@@ -46,8 +46,8 @@ void MIDIDriverCoreMidi::read(const MIDIPacketList *packet_list, void *read_proc
 }
 
 Error MIDIDriverCoreMidi::open() {
-	CFStringRef name = CFStringCreateWithCString(NULL, "Godot", kCFStringEncodingASCII);
-	OSStatus result = MIDIClientCreate(name, NULL, NULL, &client);
+	CFStringRef name = CFStringCreateWithCString(nullptr, "Godot", kCFStringEncodingASCII);
+	OSStatus result = MIDIClientCreate(name, nullptr, nullptr, &client);
 	CFRelease(name);
 	if (result != noErr) {
 		ERR_PRINT("MIDIClientCreate failed, code: " + itos(result));
@@ -90,12 +90,12 @@ void MIDIDriverCoreMidi::close() {
 	}
 }
 
-PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
-	PoolStringArray list;
+PackedStringArray MIDIDriverCoreMidi::get_connected_inputs() {
+	PackedStringArray list;
 
 	for (int i = 0; i < connected_sources.size(); i++) {
 		MIDIEndpointRef source = connected_sources[i];
-		CFStringRef ref = NULL;
+		CFStringRef ref = nullptr;
 		char name[256];
 
 		MIDIObjectGetStringProperty(source, kMIDIPropertyDisplayName, &ref);
@@ -108,9 +108,7 @@ PoolStringArray MIDIDriverCoreMidi::get_connected_inputs() {
 	return list;
 }
 
-MIDIDriverCoreMidi::MIDIDriverCoreMidi() :
-		client(0) {
-}
+MIDIDriverCoreMidi::MIDIDriverCoreMidi() {}
 
 MIDIDriverCoreMidi::~MIDIDriverCoreMidi() {
 	close();

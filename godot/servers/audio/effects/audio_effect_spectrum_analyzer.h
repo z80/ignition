@@ -61,7 +61,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) override;
 	Vector2 get_magnitude_for_frequency_range(float p_begin, float p_end, MagnitudeMode p_mode = MAGNITUDE_MAX) const;
 };
 
@@ -71,7 +71,7 @@ class AudioEffectSpectrumAnalyzer : public AudioEffect {
 	GDCLASS(AudioEffectSpectrumAnalyzer, AudioEffect);
 
 public:
-	enum FFT_Size {
+	enum FFTSize {
 		FFT_SIZE_256,
 		FFT_SIZE_512,
 		FFT_SIZE_1024,
@@ -84,24 +84,24 @@ public:
 	friend class AudioEffectSpectrumAnalyzerInstance;
 	float buffer_length;
 	float tapback_pos;
-	FFT_Size fft_size;
+	FFTSize fft_size;
 
 protected:
 	static void _bind_methods();
 
 public:
-	Ref<AudioEffectInstance> instance();
+	Ref<AudioEffectInstance> instantiate() override;
 	void set_buffer_length(float p_seconds);
 	float get_buffer_length() const;
 	void set_tap_back_pos(float p_seconds);
 	float get_tap_back_pos() const;
 
-	void set_fft_size(FFT_Size);
-	FFT_Size get_fft_size() const;
+	void set_fft_size(FFTSize);
+	FFTSize get_fft_size() const;
 
 	AudioEffectSpectrumAnalyzer();
 };
 
-VARIANT_ENUM_CAST(AudioEffectSpectrumAnalyzer::FFT_Size);
+VARIANT_ENUM_CAST(AudioEffectSpectrumAnalyzer::FFTSize);
 
 #endif // AUDIO_EFFECT_SPECTRUM_ANALYZER_H

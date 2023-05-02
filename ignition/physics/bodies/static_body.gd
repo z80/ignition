@@ -5,13 +5,13 @@ class_name StaticPhysicsBody
 var _first_parent: RefFrameNode = null
 var _first_se3: Se3Ref          = null
 
-func get_class():
-	return "StaticPhysicsBody"
+#func get_class():
+#	return "StaticPhysicsBody"
 
 
 
 func _notification( what ):
-	if (what == NOTIFICATION_PARENTED) or (what == NOTIFICATION_PATH_CHANGED):
+	if (what == NOTIFICATION_PARENTED) or (what == NOTIFICATION_PATH_RENAMED):
 		if (_first_se3 == null) or ( not is_instance_valid(_first_parent) ):
 			_init_first_parent()
 		

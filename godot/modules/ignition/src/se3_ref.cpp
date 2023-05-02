@@ -7,19 +7,19 @@ namespace Ign
 void Se3Ref::_bind_methods()
 {
     ClassDB::bind_method( D_METHOD("set_r", "r"), &Se3Ref::set_r );
-    ClassDB::bind_method( D_METHOD("get_r"), &Se3Ref::get_r, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD("get_r"), &Se3Ref::get_r );
 
     ClassDB::bind_method( D_METHOD("set_v", "v"), &Se3Ref::set_v );
-    ClassDB::bind_method( D_METHOD("get_v"), &Se3Ref::get_v, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD("get_v"), &Se3Ref::get_v );
 
     ClassDB::bind_method( D_METHOD("set_w", "w"), &Se3Ref::set_w );
-    ClassDB::bind_method( D_METHOD("get_w"), &Se3Ref::get_w, Variant::VECTOR3 );
+    ClassDB::bind_method( D_METHOD("get_w"), &Se3Ref::get_w );
 
     ClassDB::bind_method( D_METHOD("set_q", "q"), &Se3Ref::set_q );
-    ClassDB::bind_method( D_METHOD("get_q"), &Se3Ref::get_q, Variant::QUAT );
+    ClassDB::bind_method( D_METHOD("get_q"), &Se3Ref::get_q );
 
     ClassDB::bind_method( D_METHOD("set_transform", "t"), &Se3Ref::set_transform );
-    ClassDB::bind_method( D_METHOD("get_transform"), &Se3Ref::get_transform, Variant::TRANSFORM );
+    ClassDB::bind_method( D_METHOD("get_transform"), &Se3Ref::get_transform );
 
     ClassDB::bind_method( D_METHOD("copy_from",   "se3"), &Se3Ref::copy_from );
     ClassDB::bind_method( D_METHOD("copy_r_from", "se3"), &Se3Ref::copy_r_from );
@@ -27,19 +27,19 @@ void Se3Ref::_bind_methods()
     ClassDB::bind_method( D_METHOD("copy_w_from", "se3"), &Se3Ref::copy_w_from );
     ClassDB::bind_method( D_METHOD("copy_q_from", "se3"), &Se3Ref::copy_q_from );
 
-    ClassDB::bind_method( D_METHOD("mul", "se3"), &Se3Ref::mul, Variant::OBJECT );
-    ClassDB::bind_method( D_METHOD("div", "se3"), &Se3Ref::div, Variant::OBJECT );
-    ClassDB::bind_method( D_METHOD("inverse"),    &Se3Ref::inverse, Variant::OBJECT );
+    ClassDB::bind_method( D_METHOD("mul", "se3"), &Se3Ref::mul );
+    ClassDB::bind_method( D_METHOD("div", "se3"), &Se3Ref::div );
+    ClassDB::bind_method( D_METHOD("inverse"),    &Se3Ref::inverse );
 
-    ClassDB::bind_method( D_METHOD("serialize"),           &Se3Ref::serialize,   Variant::DICTIONARY );
-    ClassDB::bind_method( D_METHOD("deserialize", "data"), &Se3Ref::deserialize, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD("serialize"),           &Se3Ref::serialize );
+    ClassDB::bind_method( D_METHOD("deserialize", "data"), &Se3Ref::deserialize );
 
 	ADD_GROUP( "Ignition", "" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "r" ), "set_r", "get_r" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "v" ), "set_v", "get_v" );
     ADD_PROPERTY( PropertyInfo( Variant::VECTOR3,   "w" ), "set_w", "get_w" );
-    ADD_PROPERTY( PropertyInfo( Variant::QUAT,      "q" ), "set_q", "get_q" );
-    ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "transform" ), "set_transform", "get_transform" );
+    ADD_PROPERTY( PropertyInfo( Variant::QUATERNION, "q" ), "set_q", "get_q" );
+    ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM3D, "transform" ), "set_transform", "get_transform" );
 }
 
 Se3Ref::Se3Ref()
@@ -86,31 +86,31 @@ Vector3 Se3Ref::get_w() const
     return wf;
 }
 
-void Se3Ref::set_q( const Quat & q )
+void Se3Ref::set_q( const Quaternion & q )
 {
     se3.q_ = Quaterniond( q.w, q.x, q.y, q.z );
 }
 
-Quat Se3Ref::get_q() const
+Quaternion Se3Ref::get_q() const
 {
     const Quaterniond & q = se3.q_;
-    const Quat qf( q.x_, q.y_, q.z_, q.w_ );
+    const Quaternion qf( q.x_, q.y_, q.z_, q.w_ );
     return qf;
 }
 
-void Se3Ref::set_transform( const Transform & t )
+void Se3Ref::set_transform( const Transform3D & t )
 {
     const Vector3 r = t.origin;
     se3.r_ = Vector3d( r.x, r.y, r.z );
-    const Quat q = t.basis.get_rotation_quat();
+    const Quaternion q = t.basis.get_rotation_quaternion();
     se3.q_ = Quaterniond( q.w, q.x, q.y, q.z );
 }
 
-Transform Se3Ref::get_transform() const
+Transform3D Se3Ref::get_transform() const
 {
-    const Vector3 r = Vector3( se3.r_.x_, se3.r_.y_, se3.r_.z_ );
-    const Quat    q = Quat( se3.q_.x_, se3.q_.y_, se3.q_.z_, se3.q_.w_ );
-    Transform t;
+    const Vector3    r = Vector3( se3.r_.x_, se3.r_.y_, se3.r_.z_ );
+    const Quaternion q = Quaternion( se3.q_.x_, se3.q_.y_, se3.q_.z_, se3.q_.w_ );
+    Transform3D t;
     t.origin = r;
     t.basis = Basis( q );
     return t;
@@ -144,7 +144,7 @@ void Se3Ref::copy_q_from( const Ref<Se3Ref> & ref )
 Ref<Se3Ref> Se3Ref::mul( const Ref<Se3Ref> & rhs )
 {
     Ref<Se3Ref> ret;
-    ret.instance();
+    ret.instantiate();
     ret.ptr()->se3 = this->se3 * rhs.ptr()->se3;
     return ret;
 }
@@ -152,7 +152,7 @@ Ref<Se3Ref> Se3Ref::mul( const Ref<Se3Ref> & rhs )
 Ref<Se3Ref> Se3Ref::div( const Ref<Se3Ref> & rhs )
 {
     Ref<Se3Ref> ret;
-    ret.instance();
+    ret.instantiate();
     ret.ptr()->se3 = this->se3 / rhs.ptr()->se3;
     return ret;
 }
@@ -160,7 +160,7 @@ Ref<Se3Ref> Se3Ref::div( const Ref<Se3Ref> & rhs )
 Ref<Se3Ref> Se3Ref::inverse() const
 {
     Ref<Se3Ref> ret;
-    ret.instance();
+    ret.instantiate();
     ret.ptr()->se3 = this->se3.inverse();
     return ret;
 }

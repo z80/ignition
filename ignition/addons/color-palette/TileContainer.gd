@@ -1,4 +1,4 @@
-tool
+@tool
 extends FlexGridContainer
 
 signal grid_item_reordered(index_from, index_to)

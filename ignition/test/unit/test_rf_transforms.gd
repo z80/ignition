@@ -7,23 +7,23 @@ var phys_frame: RefFrame = null
 var thruster: RefFrame = null
 
 func before_all():
-	var vp: Viewport = get_viewport()
+	var vp: SubViewport = get_viewport()
 	#root = RefFrame.new()
 	#vp.add_child( root )
 	#root.set_q( Quat( Vector3( 1.0, 1.0, 1.0 ).normalized(), PI/7.0 ) )
 	
 	landscape = RefFrame.new()
 	vp.add_child( landscape )
-	landscape.set_q( Quat( Vector3( 0.0, 1.0, 0.0 ), 0.0 ) )
+	landscape.set_q( Quaternion( Vector3( 0.0, 1.0, 0.0 ), 0.0 ) )
 	
 	phys_frame = RefFrame.new()
 	landscape.add_child( phys_frame )
-	phys_frame.set_q( Quat( Vector3( 0.0, 1.0, 0.0 ), PI/4.0 - 0.1 ) )
+	phys_frame.set_q( Quaternion( Vector3( 0.0, 1.0, 0.0 ), PI/4.0 - 0.1 ) )
 	phys_frame.set_r( Vector3( 10.0, 20.0, 30.0 ) )
 	
 	thruster = RefFrame.new()
 	phys_frame.add_child( thruster )
-	thruster.set_q( Quat( Vector3( 0.0, 1.0, 0.0 ), PI/4.0 + 0.1 ) )
+	thruster.set_q( Quaternion( Vector3( 0.0, 1.0, 0.0 ), PI/4.0 + 0.1 ) )
 	thruster.set_r( Vector3( 1.0, 2.0, 3.0 ) )
 
 
@@ -41,9 +41,9 @@ func test_thruster_relative_to_root():
 	#var inv_qa: Quat = root.q_root()
 	
 	thruster.compute_relative_to_root( landscape )
-	var qb: Quat = thruster.q_root()
+	var qb: Quaternion = thruster.q_root()
 	landscape.compute_relative_to_root( thruster )
-	var inv_qb: Quat = landscape.q_root()
+	var inv_qb: Quaternion = landscape.q_root()
 	
 	
 	
@@ -62,7 +62,7 @@ func test_thruster_relative_to_root():
 	landscape.compute_relative_to_root( thruster )
 	inv_qb = landscape.q_root()
 
-	var qt: Quat = thruster.q()
+	var qt: Quaternion = thruster.q()
 	var rt: Vector3 = thruster.r()
 
 	
@@ -84,7 +84,7 @@ func rand_r( one_axis: bool = false ):
 func rand_q( one_axis: bool = false ):
 	var v: Vector3 = rand_r( one_axis )
 	var a: float = ( (randf() * 2.0) - 1.0 ) * 2.0 * PI
-	var q: Quat = Quat( v, a )
+	var q: Quaternion = Quaternion( v, a )
 	return q
 
 
@@ -93,23 +93,23 @@ func test_random_ref_frames():
 	for i in range( 100 ):
 		var one_axis: bool = false
 		
-		var q1: Quat = rand_q( one_axis )
+		var q1: Quaternion = rand_q( one_axis )
 		var r1: Vector3 = rand_r( one_axis )
 		phys_frame.set_q( q1 )
 		phys_frame.set_r( r1 )
 		
-		var q2: Quat = rand_q( one_axis )
+		var q2: Quaternion = rand_q( one_axis )
 		var r2: Vector3 = rand_r( one_axis )
 		thruster.set_q( q2 )
 		thruster.set_r( r2 )
 		
 		thruster.compute_relative_to_root( landscape )
-		var qa: Quat = thruster.q_root()
+		var qa: Quaternion = thruster.q_root()
 		landscape.compute_relative_to_root( thruster )
-		var inv_qa: Quat = landscape.q_root()
+		var inv_qa: Quaternion = landscape.q_root()
 		
-		var q_product_a: Quat = q1 * q2
-		var q_identity_a: Quat = q_product_a * inv_qa
+		var q_product_a: Quaternion = q1 * q2
+		var q_identity_a: Quaternion = q_product_a * inv_qa
 		var axis: Vector3 = Vector3( q_identity_a.x, q_identity_a.y, q_identity_a.z )
 		var l: float = axis.length()
 		var ok: bool = (l < 0.0001)
@@ -128,12 +128,12 @@ func test_random_ref_frames():
 		phys_frame.apply_jump()
 
 		thruster.compute_relative_to_root( landscape )
-		var qb: Quat = thruster.q_root()
+		var qb: Quaternion = thruster.q_root()
 		landscape.compute_relative_to_root( thruster )
-		var inv_qb: Quat = landscape.q_root()
+		var inv_qb: Quaternion = landscape.q_root()
 		
-		var q_product_b: Quat = q1 * q2
-		var q_identity_b: Quat = q_product_b * inv_qb
+		var q_product_b: Quaternion = q1 * q2
+		var q_identity_b: Quaternion = q_product_b * inv_qb
 		axis = Vector3( q_identity_b.x, q_identity_b.y, q_identity_b.z )
 		l = axis.length()
 		ok = (l < 0.0001)
@@ -147,18 +147,18 @@ func test_random_ref_frames():
 			landscape.compute_relative_to_root( thruster )
 		
 		
-		var q3: Quat = rand_q( one_axis )
+		var q3: Quaternion = rand_q( one_axis )
 		var r3: Vector3 = rand_r( one_axis )
 		thruster.set_q( q3 )
 		thruster.set_r( r3 )
 
 		thruster.compute_relative_to_root( landscape )
-		var qc: Quat = thruster.q_root()
+		var qc: Quaternion = thruster.q_root()
 		landscape.compute_relative_to_root( thruster )
-		var inv_qc: Quat = landscape.q_root()
+		var inv_qc: Quaternion = landscape.q_root()
 		
-		var q_product_c: Quat = q1 * q2 * q3
-		var q_identity_c: Quat = q_product_c * inv_qc
+		var q_product_c: Quaternion = q1 * q2 * q3
+		var q_identity_c: Quaternion = q_product_c * inv_qc
 		axis = Vector3( q_identity_c.x, q_identity_c.y, q_identity_c.z )
 		l = axis.length()
 		ok = (l < 0.0001)

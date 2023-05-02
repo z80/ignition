@@ -1,57 +1,33 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://d3tpyd1ox2ky1"]
 
-[ext_resource path="res://physics/interact_icon/interaction_node.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/characters/central/visual.gd" type="Script" id=2]
-[ext_resource path="res://physics/parts/characters/central/assets/astronaut_02/astronaut.gltf" type="PackedScene" id=3]
+[ext_resource type="PackedScene" uid="uid://dyellch2mtnch" path="res://physics/parts/characters/central/assets/astronaut_02/astronaut.gltf" id="3"]
 
-[sub_resource type="AnimationNodeAnimation" id=2]
-animation = "Idle"
+[node name="Scene" instance=ExtResource("3")]
 
-[sub_resource type="AnimationNodeAnimation" id=3]
-animation = "WalkForward"
-
-[sub_resource type="AnimationNodeAnimation" id=4]
-animation = "WalkBackward"
-
-[sub_resource type="AnimationNodeAnimation" id=5]
-animation = "WalkRight"
-
-[sub_resource type="AnimationNodeAnimation" id=6]
-animation = "WalkLeft"
-
-[sub_resource type="AnimationNodeBlendSpace2D" id=7]
-blend_point_0/node = SubResource( 2 )
-blend_point_0/pos = Vector2( 0, 0 )
-blend_point_1/node = SubResource( 3 )
-blend_point_1/pos = Vector2( 0, 1 )
-blend_point_2/node = SubResource( 4 )
-blend_point_2/pos = Vector2( 0, -1 )
-blend_point_3/node = SubResource( 5 )
-blend_point_3/pos = Vector2( 1, 0 )
-blend_point_4/node = SubResource( 6 )
-blend_point_4/pos = Vector2( -1, 0 )
-
-[node name="astronaut" instance=ExtResource( 3 )]
-script = ExtResource( 2 )
-
-[node name="Armature" parent="." index="0"]
-transform = Transform( -0.7, 0, -6.11959e-08, 0, 0.7, 0, 6.11959e-08, 0, -0.7, 0, 0.65, 0 )
-
-[node name="AnimationTree" type="AnimationTree" parent="." index="2"]
-tree_root = SubResource( 7 )
-anim_player = NodePath("../AnimationPlayer")
-active = true
-parameters/blend_position = Vector2( -0.000808418, 0 )
-
-[node name="Sphere" type="MeshInstance" parent="." index="3"]
-visible = false
-
-[node name="target_fps" type="Spatial" parent="." index="4"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15116, -0.599606 )
-
-[node name="target_tps" type="Spatial" parent="." index="5"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38217, -0.0942358 )
-
-[node name="InteractionNode" type="Spatial" parent="." index="6"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.839893, -0.0666171 )
-script = ExtResource( 1 )
+[node name="Skeleton3D" parent="Armature" index="0"]
+bones/0/position = Vector3(0, -0.0502793, 0)
+bones/0/rotation = Quaternion(0.0766586, -0.174398, 0.0559232, 0.980093)
+bones/1/rotation = Quaternion(0.138083, -0.227859, -0.90918, 0.320008)
+bones/2/rotation = Quaternion(1.43681e-07, -1.26062e-07, -0.212918, 0.97707)
+bones/3/rotation = Quaternion(9.51642e-09, 8.26249e-08, 0.0121952, 0.999926)
+bones/4/rotation = Quaternion(-0.673654, -0.385134, -0.62998, 0.0314301)
+bones/5/rotation = Quaternion(-0.017046, -0.000168537, 0.541483, 0.840539)
+bones/6/rotation = Quaternion(-0.147276, 0.216652, -0.58248, 0.769473)
+bones/7/rotation = Quaternion(-0.00994881, -0.149473, 0.926884, 0.344158)
+bones/8/rotation = Quaternion(9.3459e-08, 1.46573e-07, 0.212918, 0.97707)
+bones/10/rotation = Quaternion(0.481598, -0.337264, -0.808395, 0.0285379)
+bones/11/rotation = Quaternion(-0.00609736, 0.000196678, -0.193689, 0.981044)
+bones/12/rotation = Quaternion(0.143748, 0.428837, 0.576124, 0.680821)
+bones/13/rotation = Quaternion(0.138084, -0.227859, -0.90918, 0.320008)
+bones/14/rotation = Quaternion(4.34923e-08, -1.30919e-07, -0.212918, 0.97707)
+bones/15/rotation = Quaternion(2.55477e-09, 4.24902e-08, 0.0121952, 0.999926)
+bones/16/rotation = Quaternion(-0.00994884, -0.149473, 0.926884, 0.344158)
+bones/17/rotation = Quaternion(2.83379e-08, 1.30476e-07, 0.212918, 0.97707)
+bones/19/position = Vector3(0.532718, -0.535972, 0.0331934)
+bones/20/position = Vector3(-0.412061, -0.735418, 0.0331934)
+bones/23/position = Vector3(0, -0.0502793, 0)
+bones/23/rotation = Quaternion(-0.638824, -0.162861, -0.0837741, 0.747236)
+bones/24/position = Vector3(0.717471, 0.0103143, -0.604898)
+bones/24/rotation = Quaternion(0.419113, 0.1992, 0.87903, 0.109405)
+bones/25/position = Vector3(-0.596814, -0.189132, -0.604898)
+bones/25/rotation = Quaternion(-0.67403, 0.63566, 0.275665, -0.256181)

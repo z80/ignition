@@ -36,7 +36,7 @@
 #include <stdlib.h>
 
 bool UPNP::is_common_device(const String &dev) const {
-	return dev.empty() ||
+	return dev.is_empty() ||
 			dev.find("InternetGatewayDevice") >= 0 ||
 			dev.find("WANIPConnection") >= 0 ||
 			dev.find("WANPPPConnection") >= 0 ||
@@ -44,9 +44,8 @@ bool UPNP::is_common_device(const String &dev) const {
 }
 
 int UPNP::discover(int timeout, int ttl, const String &device_filter) {
-	ERR_FAIL_COND_V(timeout < 0, UPNP_RESULT_INVALID_PARAM);
-	ERR_FAIL_COND_V(ttl < 0, UPNP_RESULT_INVALID_PARAM);
-	ERR_FAIL_COND_V(ttl > 255, UPNP_RESULT_INVALID_PARAM);
+	ERR_FAIL_COND_V_MSG(timeout < 0, UPNP_RESULT_INVALID_PARAM, "The response's wait time can't be negative.");
+	ERR_FAIL_COND_V_MSG(ttl < 0 || ttl > 255, UPNP_RESULT_INVALID_PARAM, "The time-to-live must be set between 0 and 255 (inclusive).");
 
 	devices.clear();
 
@@ -79,7 +78,7 @@ int UPNP::discover(int timeout, int ttl, const String &device_filter) {
 	struct UPNPDev *dev = devlist;
 
 	while (dev) {
-		if (device_filter.empty() || strstr(dev->st, device_filter.utf8().get_data())) {
+		if (device_filter.is_empty() || strstr(dev->st, device_filter.utf8().get_data())) {
 			add_device_to_list(dev, devlist);
 		}
 
@@ -93,7 +92,7 @@ int UPNP::discover(int timeout, int ttl, const String &device_filter) {
 
 void UPNP::add_device_to_list(UPNPDev *dev, UPNPDev *devlist) {
 	Ref<UPNPDevice> new_device;
-	new_device.instance();
+	new_device.instantiate();
 
 	new_device->set_description_url(dev->descURL);
 	new_device->set_service_type(dev->st);
@@ -258,7 +257,7 @@ void UPNP::set_device(int index, Ref<UPNPDevice> device) {
 void UPNP::remove_device(int index) {
 	ERR_FAIL_INDEX(index, devices.size());
 
-	devices.remove(index);
+	devices.remove_at(index);
 }
 
 void UPNP::clear_devices() {
@@ -266,7 +265,7 @@ void UPNP::clear_devices() {
 }
 
 Ref<UPNPDevice> UPNP::get_gateway() const {
-	ERR_FAIL_COND_V(devices.size() < 1, nullptr);
+	ERR_FAIL_COND_V_MSG(devices.size() < 1, nullptr, "Couldn't find any UPNPDevices.");
 
 	for (int i = 0; i < devices.size(); i++) {
 		Ref<UPNPDevice> dev = get_device(i);
@@ -319,8 +318,6 @@ int UPNP::add_port_mapping(int port, int port_internal, String desc, String prot
 	if (dev == nullptr) {
 		return UPNP_RESULT_NO_GATEWAY;
 	}
-
-	dev->delete_port_mapping(port, proto);
 
 	return dev->add_port_mapping(port, port_internal, desc, proto, duration);
 }
@@ -396,9 +393,6 @@ void UPNP::_bind_methods() {
 }
 
 UPNP::UPNP() {
-	discover_multicast_if = "";
-	discover_local_port = 0;
-	discover_ipv6 = false;
 }
 
 UPNP::~UPNP() {

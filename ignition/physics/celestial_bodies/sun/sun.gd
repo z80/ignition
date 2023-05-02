@@ -4,22 +4,27 @@ class_name Sun
 
 
 # Defining geometry and GM based on surface orbiting velocity.
-export(float)  var radius_km = 5.0
+@export var radius_km: float: get = _get_radius_km
 
-export(float) var glow_size = 0.2
-export(float) var ray_scale = 10.0
-export(float) var ray_size  = 1.0
-export(float) var ray_bias  = 0.1
+@export var glow_size: float = 0.2
+@export var ray_scale: float = 10.0
+@export var ray_size: float  = 1.0
+@export var ray_bias: float  = 0.1
 
 var ref_frame_to_check_index: int = 0
 
 
-func get_class():
-	return "Sun"
+#func get_class():
+#	return "Sun"
+
+func _get_radius_km():
+	var ret: float = surface_source.radius_km
+	return ret
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	super()
 	init_forces()
 
 
@@ -35,13 +40,13 @@ func init_forces():
 	var gm: float = motion.compute_gm_by_speed( radius_km, surface_orbital_vel_kms )
 	set_own_gm( gm )
 	
-	.init_forces()
+	super.init_forces()
 
 
 
 
 func process_ref_frames( celestial_bodies: Array ):
-	.process_ref_frames( celestial_bodies )
+	super.process_ref_frames( celestial_bodies )
 	
 	var rfs: Array = get_ref_frames( self )
 	var qty: int = len( rfs )
@@ -66,25 +71,20 @@ func process_ref_frames( celestial_bodies: Array ):
 	# Check if the strongest influence is caused by other celestial body.
 	if (biggest_influence_body != null) and (biggest_influence_body != self):
 		# Need to teleport celestial body to that other celestial body
-		rf.change_parent( biggest_influence_body )
+		rf.change_parent( biggest_influence_body, false )
 
 
 
 
 
 
-func serialize():
-	var data: Dictionary = .serialize()
-	
-	return data
+func _serialize( data: Dictionary ):
+	pass
 
 
 
 
-func deserialize( data: Dictionary ):
-	var ret: bool = .deserialize( data )
-	if not ret:
-		return false
+func _deserialize( data: Dictionary ):
 	init_forces()
 	return true
 

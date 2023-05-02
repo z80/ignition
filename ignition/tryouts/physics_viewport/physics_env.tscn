@@ -3,7 +3,7 @@
 [ext_resource path="res://tryouts/physics_viewport/physics_env.gd" type="Script" id=1]
 [ext_resource path="res://tryouts/physics_viewport/physics_scene.tscn" type="PackedScene" id=2]
 
-[sub_resource type="ProceduralSky" id=1]
+[sub_resource type="Sky" id=1]
 
 [sub_resource type="Environment" id=2]
 background_mode = 2
@@ -12,18 +12,18 @@ background_sky = SubResource( 1 )
 [sub_resource type="World" id=3]
 environment = SubResource( 2 )
 
-[node name="PhysicsEnv" type="ViewportContainer"]
+[node name="PhysicsEnv" type="SubViewportContainer"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_right = -1.0
-margin_bottom = -1.0
+offset_right = -1.0
+offset_bottom = -1.0
 stretch = true
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Vp" type="Viewport" parent="."]
+[node name="Vp" type="SubViewport" parent="."]
 size = Vector2( 1023, 599 )
 own_world = true
 world = SubResource( 3 )

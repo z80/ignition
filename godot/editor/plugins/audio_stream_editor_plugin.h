@@ -31,24 +31,26 @@
 #ifndef AUDIO_STREAM_EDITOR_PLUGIN_H
 #define AUDIO_STREAM_EDITOR_PLUGIN_H
 
-#include "editor/editor_node.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
+#include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
-#include "scene/resources/texture.h"
+#include "scene/gui/label.h"
 
 class AudioStreamEditor : public ColorRect {
 	GDCLASS(AudioStreamEditor, ColorRect);
 
 	Ref<AudioStream> stream;
+
 	AudioStreamPlayer *_player = nullptr;
 	ColorRect *_preview = nullptr;
 	Control *_indicator = nullptr;
 	Label *_current_label = nullptr;
 	Label *_duration_label = nullptr;
 
-	ToolButton *_play_button = nullptr;
-	ToolButton *_stop_button = nullptr;
+	Button *_play_button = nullptr;
+	Button *_stop_button = nullptr;
 
 	float _current = 0;
 	bool _dragging = false;
@@ -64,29 +66,28 @@ protected:
 	void _draw_indicator();
 	void _on_input_indicator(Ref<InputEvent> p_event);
 	void _seek_to(real_t p_x);
-	void _changed_callback(Object *p_changed, const char *p_prop);
-	static void _bind_methods();
+	void _stream_changed();
 
 public:
-	void edit(Ref<AudioStream> p_stream);
+	void set_stream(const Ref<AudioStream> &p_stream);
+
 	AudioStreamEditor();
+};
+
+class EditorInspectorPluginAudioStream : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginAudioStream, EditorInspectorPlugin);
+	AudioStreamEditor *editor = nullptr;
+
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class AudioStreamEditorPlugin : public EditorPlugin {
 	GDCLASS(AudioStreamEditorPlugin, EditorPlugin);
 
-	AudioStreamEditor *audio_editor;
-	EditorNode *editor;
-
 public:
-	virtual String get_name() const { return "Audio"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	AudioStreamEditorPlugin(EditorNode *p_node);
-	~AudioStreamEditorPlugin();
+	AudioStreamEditorPlugin();
 };
 
 #endif // AUDIO_STREAM_EDITOR_PLUGIN_H

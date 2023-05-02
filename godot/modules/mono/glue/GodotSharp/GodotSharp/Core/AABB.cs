@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -14,7 +9,7 @@ namespace Godot
     /// </summary>
     [Serializable]
     [StructLayout(LayoutKind.Sequential)]
-    public struct AABB : IEquatable<AABB>
+    public struct Aabb : IEquatable<Aabb>
     {
         private Vector3 _position;
         private Vector3 _size;
@@ -25,7 +20,7 @@ namespace Godot
         /// <value>Directly uses a private field.</value>
         public Vector3 Position
         {
-            get { return _position; }
+            readonly get { return _position; }
             set { _position = value; }
         }
 
@@ -36,7 +31,7 @@ namespace Godot
         /// <value>Directly uses a private field.</value>
         public Vector3 Size
         {
-            get { return _size; }
+            readonly get { return _size; }
             set { _size = value; }
         }
 
@@ -50,149 +45,154 @@ namespace Godot
         /// </value>
         public Vector3 End
         {
-            get { return _position + _size; }
+            readonly get { return _position + _size; }
             set { _size = value - _position; }
         }
 
         /// <summary>
-        /// Returns an <see cref="AABB"/> with equivalent position and size, modified so that
-        /// the most-negative corner is the origin and the size is positive.
+        /// The volume of this <see cref="Aabb"/>.
+        /// See also <see cref="HasVolume"/>.
         /// </summary>
-        /// <returns>The modified <see cref="AABB"/>.</returns>
-        public AABB Abs()
+        public readonly real_t Volume
         {
-            Vector3 end = End;
-            Vector3 topLeft = new Vector3(Mathf.Min(_position.x, end.x), Mathf.Min(_position.y, end.y), Mathf.Min(_position.z, end.z));
-            return new AABB(topLeft, _size.Abs());
+            get { return _size.X * _size.Y * _size.Z; }
         }
 
         /// <summary>
-        /// Returns the center of the <see cref="AABB"/>, which is equal
+        /// Returns an <see cref="Aabb"/> with equivalent position and size, modified so that
+        /// the most-negative corner is the origin and the size is positive.
+        /// </summary>
+        /// <returns>The modified <see cref="Aabb"/>.</returns>
+        public readonly Aabb Abs()
+        {
+            Vector3 end = End;
+            Vector3 topLeft = new Vector3(Mathf.Min(_position.X, end.X), Mathf.Min(_position.Y, end.Y), Mathf.Min(_position.Z, end.Z));
+            return new Aabb(topLeft, _size.Abs());
+        }
+
+        /// <summary>
+        /// Returns the center of the <see cref="Aabb"/>, which is equal
         /// to <see cref="Position"/> + (<see cref="Size"/> / 2).
         /// </summary>
         /// <returns>The center.</returns>
-        public Vector3 GetCenter()
+        public readonly Vector3 GetCenter()
         {
             return _position + (_size * 0.5f);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this <see cref="AABB"/> completely encloses another one.
+        /// Returns <see langword="true"/> if this <see cref="Aabb"/> completely encloses another one.
         /// </summary>
-        /// <param name="with">The other <see cref="AABB"/> that may be enclosed.</param>
+        /// <param name="with">The other <see cref="Aabb"/> that may be enclosed.</param>
         /// <returns>
-        /// A <see langword="bool"/> for whether or not this <see cref="AABB"/> encloses <paramref name="with"/>.
+        /// A <see langword="bool"/> for whether or not this <see cref="Aabb"/> encloses <paramref name="with"/>.
         /// </returns>
-        public bool Encloses(AABB with)
+        public readonly bool Encloses(Aabb with)
         {
             Vector3 srcMin = _position;
             Vector3 srcMax = _position + _size;
             Vector3 dstMin = with._position;
             Vector3 dstMax = with._position + with._size;
 
-            return srcMin.x <= dstMin.x &&
-                   srcMax.x > dstMax.x &&
-                   srcMin.y <= dstMin.y &&
-                   srcMax.y > dstMax.y &&
-                   srcMin.z <= dstMin.z &&
-                   srcMax.z > dstMax.z;
+            return srcMin.X <= dstMin.X &&
+                   srcMax.X > dstMax.X &&
+                   srcMin.Y <= dstMin.Y &&
+                   srcMax.Y > dstMax.Y &&
+                   srcMin.Z <= dstMin.Z &&
+                   srcMax.Z > dstMax.Z;
         }
 
         /// <summary>
-        /// Returns this <see cref="AABB"/> expanded to include a given point.
+        /// Returns this <see cref="Aabb"/> expanded to include a given point.
         /// </summary>
         /// <param name="point">The point to include.</param>
-        /// <returns>The expanded <see cref="AABB"/>.</returns>
-        public AABB Expand(Vector3 point)
+        /// <returns>The expanded <see cref="Aabb"/>.</returns>
+        public readonly Aabb Expand(Vector3 point)
         {
             Vector3 begin = _position;
             Vector3 end = _position + _size;
 
-            if (point.x < begin.x)
+            if (point.X < begin.X)
             {
-                begin.x = point.x;
+                begin.X = point.X;
             }
-            if (point.y < begin.y)
+            if (point.Y < begin.Y)
             {
-                begin.y = point.y;
+                begin.Y = point.Y;
             }
-            if (point.z < begin.z)
+            if (point.Z < begin.Z)
             {
-                begin.z = point.z;
-            }
-
-            if (point.x > end.x)
-            {
-                end.x = point.x;
-            }
-            if (point.y > end.y)
-            {
-                end.y = point.y;
-            }
-            if (point.z > end.z)
-            {
-                end.z = point.z;
+                begin.Z = point.Z;
             }
 
-            return new AABB(begin, end - begin);
+            if (point.X > end.X)
+            {
+                end.X = point.X;
+            }
+            if (point.Y > end.Y)
+            {
+                end.Y = point.Y;
+            }
+            if (point.Z > end.Z)
+            {
+                end.Z = point.Z;
+            }
+
+            return new Aabb(begin, end - begin);
         }
 
         /// <summary>
-        /// Returns the area of the <see cref="AABB"/>.
-        /// </summary>
-        /// <returns>The area.</returns>
-        public real_t GetArea()
-        {
-            return _size.x * _size.y * _size.z;
-        }
-
-        /// <summary>
-        /// Gets the position of one of the 8 endpoints of the <see cref="AABB"/>.
+        /// Gets the position of one of the 8 endpoints of the <see cref="Aabb"/>.
         /// </summary>
         /// <param name="idx">Which endpoint to get.</param>
-        /// <returns>An endpoint of the <see cref="AABB"/>.</returns>
-        public Vector3 GetEndpoint(int idx)
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="idx"/> is less than 0 or greater than 7.
+        /// </exception>
+        /// <returns>An endpoint of the <see cref="Aabb"/>.</returns>
+        public readonly Vector3 GetEndpoint(int idx)
         {
             switch (idx)
             {
                 case 0:
-                    return new Vector3(_position.x, _position.y, _position.z);
+                    return new Vector3(_position.X, _position.Y, _position.Z);
                 case 1:
-                    return new Vector3(_position.x, _position.y, _position.z + _size.z);
+                    return new Vector3(_position.X, _position.Y, _position.Z + _size.Z);
                 case 2:
-                    return new Vector3(_position.x, _position.y + _size.y, _position.z);
+                    return new Vector3(_position.X, _position.Y + _size.Y, _position.Z);
                 case 3:
-                    return new Vector3(_position.x, _position.y + _size.y, _position.z + _size.z);
+                    return new Vector3(_position.X, _position.Y + _size.Y, _position.Z + _size.Z);
                 case 4:
-                    return new Vector3(_position.x + _size.x, _position.y, _position.z);
+                    return new Vector3(_position.X + _size.X, _position.Y, _position.Z);
                 case 5:
-                    return new Vector3(_position.x + _size.x, _position.y, _position.z + _size.z);
+                    return new Vector3(_position.X + _size.X, _position.Y, _position.Z + _size.Z);
                 case 6:
-                    return new Vector3(_position.x + _size.x, _position.y + _size.y, _position.z);
+                    return new Vector3(_position.X + _size.X, _position.Y + _size.Y, _position.Z);
                 case 7:
-                    return new Vector3(_position.x + _size.x, _position.y + _size.y, _position.z + _size.z);
+                    return new Vector3(_position.X + _size.X, _position.Y + _size.Y, _position.Z + _size.Z);
                 default:
+                {
                     throw new ArgumentOutOfRangeException(nameof(idx),
                         $"Index is {idx}, but a value from 0 to 7 is expected.");
+                }
             }
         }
 
         /// <summary>
-        /// Returns the normalized longest axis of the <see cref="AABB"/>.
+        /// Returns the normalized longest axis of the <see cref="Aabb"/>.
         /// </summary>
-        /// <returns>A vector representing the normalized longest axis of the <see cref="AABB"/>.</returns>
-        public Vector3 GetLongestAxis()
+        /// <returns>A vector representing the normalized longest axis of the <see cref="Aabb"/>.</returns>
+        public readonly Vector3 GetLongestAxis()
         {
             var axis = new Vector3(1f, 0f, 0f);
-            real_t maxSize = _size.x;
+            real_t maxSize = _size.X;
 
-            if (_size.y > maxSize)
+            if (_size.Y > maxSize)
             {
                 axis = new Vector3(0f, 1f, 0f);
-                maxSize = _size.y;
+                maxSize = _size.Y;
             }
 
-            if (_size.z > maxSize)
+            if (_size.Z > maxSize)
             {
                 axis = new Vector3(0f, 0f, 1f);
             }
@@ -201,21 +201,21 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the <see cref="Vector3.Axis"/> index of the longest axis of the <see cref="AABB"/>.
+        /// Returns the <see cref="Vector3.Axis"/> index of the longest axis of the <see cref="Aabb"/>.
         /// </summary>
         /// <returns>A <see cref="Vector3.Axis"/> index for which axis is longest.</returns>
-        public Vector3.Axis GetLongestAxisIndex()
+        public readonly Vector3.Axis GetLongestAxisIndex()
         {
             var axis = Vector3.Axis.X;
-            real_t maxSize = _size.x;
+            real_t maxSize = _size.X;
 
-            if (_size.y > maxSize)
+            if (_size.Y > maxSize)
             {
                 axis = Vector3.Axis.Y;
-                maxSize = _size.y;
+                maxSize = _size.Y;
             }
 
-            if (_size.z > maxSize)
+            if (_size.Z > maxSize)
             {
                 axis = Vector3.Axis.Z;
             }
@@ -224,38 +224,38 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the scalar length of the longest axis of the <see cref="AABB"/>.
+        /// Returns the scalar length of the longest axis of the <see cref="Aabb"/>.
         /// </summary>
-        /// <returns>The scalar length of the longest axis of the <see cref="AABB"/>.</returns>
-        public real_t GetLongestAxisSize()
+        /// <returns>The scalar length of the longest axis of the <see cref="Aabb"/>.</returns>
+        public readonly real_t GetLongestAxisSize()
         {
-            real_t maxSize = _size.x;
+            real_t maxSize = _size.X;
 
-            if (_size.y > maxSize)
-                maxSize = _size.y;
+            if (_size.Y > maxSize)
+                maxSize = _size.Y;
 
-            if (_size.z > maxSize)
-                maxSize = _size.z;
+            if (_size.Z > maxSize)
+                maxSize = _size.Z;
 
             return maxSize;
         }
 
         /// <summary>
-        /// Returns the normalized shortest axis of the <see cref="AABB"/>.
+        /// Returns the normalized shortest axis of the <see cref="Aabb"/>.
         /// </summary>
-        /// <returns>A vector representing the normalized shortest axis of the <see cref="AABB"/>.</returns>
-        public Vector3 GetShortestAxis()
+        /// <returns>A vector representing the normalized shortest axis of the <see cref="Aabb"/>.</returns>
+        public readonly Vector3 GetShortestAxis()
         {
             var axis = new Vector3(1f, 0f, 0f);
-            real_t maxSize = _size.x;
+            real_t maxSize = _size.X;
 
-            if (_size.y < maxSize)
+            if (_size.Y < maxSize)
             {
                 axis = new Vector3(0f, 1f, 0f);
-                maxSize = _size.y;
+                maxSize = _size.Y;
             }
 
-            if (_size.z < maxSize)
+            if (_size.Z < maxSize)
             {
                 axis = new Vector3(0f, 0f, 1f);
             }
@@ -264,21 +264,21 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the <see cref="Vector3.Axis"/> index of the shortest axis of the <see cref="AABB"/>.
+        /// Returns the <see cref="Vector3.Axis"/> index of the shortest axis of the <see cref="Aabb"/>.
         /// </summary>
         /// <returns>A <see cref="Vector3.Axis"/> index for which axis is shortest.</returns>
-        public Vector3.Axis GetShortestAxisIndex()
+        public readonly Vector3.Axis GetShortestAxisIndex()
         {
             var axis = Vector3.Axis.X;
-            real_t maxSize = _size.x;
+            real_t maxSize = _size.X;
 
-            if (_size.y < maxSize)
+            if (_size.Y < maxSize)
             {
                 axis = Vector3.Axis.Y;
-                maxSize = _size.y;
+                maxSize = _size.Y;
             }
 
-            if (_size.z < maxSize)
+            if (_size.Z < maxSize)
             {
                 axis = Vector3.Axis.Z;
             }
@@ -287,18 +287,18 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the scalar length of the shortest axis of the <see cref="AABB"/>.
+        /// Returns the scalar length of the shortest axis of the <see cref="Aabb"/>.
         /// </summary>
-        /// <returns>The scalar length of the shortest axis of the <see cref="AABB"/>.</returns>
-        public real_t GetShortestAxisSize()
+        /// <returns>The scalar length of the shortest axis of the <see cref="Aabb"/>.</returns>
+        public readonly real_t GetShortestAxisSize()
         {
-            real_t maxSize = _size.x;
+            real_t maxSize = _size.X;
 
-            if (_size.y < maxSize)
-                maxSize = _size.y;
+            if (_size.Y < maxSize)
+                maxSize = _size.Y;
 
-            if (_size.z < maxSize)
-                maxSize = _size.z;
+            if (_size.Z < maxSize)
+                maxSize = _size.Z;
 
             return maxSize;
         }
@@ -309,92 +309,96 @@ namespace Godot
         /// </summary>
         /// <param name="dir">The direction to find support for.</param>
         /// <returns>A vector representing the support.</returns>
-        public Vector3 GetSupport(Vector3 dir)
+        public readonly Vector3 GetSupport(Vector3 dir)
         {
             Vector3 halfExtents = _size * 0.5f;
             Vector3 ofs = _position + halfExtents;
 
             return ofs + new Vector3(
-                dir.x > 0f ? -halfExtents.x : halfExtents.x,
-                dir.y > 0f ? -halfExtents.y : halfExtents.y,
-                dir.z > 0f ? -halfExtents.z : halfExtents.z);
+                dir.X > 0f ? -halfExtents.X : halfExtents.X,
+                dir.Y > 0f ? -halfExtents.Y : halfExtents.Y,
+                dir.Z > 0f ? -halfExtents.Z : halfExtents.Z);
         }
 
         /// <summary>
-        /// Returns a copy of the <see cref="AABB"/> grown a given amount of units towards all the sides.
+        /// Returns a copy of the <see cref="Aabb"/> grown a given amount of units towards all the sides.
         /// </summary>
         /// <param name="by">The amount to grow by.</param>
-        /// <returns>The grown <see cref="AABB"/>.</returns>
-        public AABB Grow(real_t by)
+        /// <returns>The grown <see cref="Aabb"/>.</returns>
+        public readonly Aabb Grow(real_t by)
         {
-            AABB res = this;
+            Aabb res = this;
 
-            res._position.x -= by;
-            res._position.y -= by;
-            res._position.z -= by;
-            res._size.x += 2.0f * by;
-            res._size.y += 2.0f * by;
-            res._size.z += 2.0f * by;
+            res._position.X -= by;
+            res._position.Y -= by;
+            res._position.Z -= by;
+            res._size.X += 2.0f * by;
+            res._size.Y += 2.0f * by;
+            res._size.Z += 2.0f * by;
 
             return res;
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="AABB"/> is flat or empty,
-        /// or <see langword="false"/> otherwise.
-        /// </summary>
-        /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> has area.
-        /// </returns>
-        public bool HasNoArea()
-        {
-            return _size.x <= 0f || _size.y <= 0f || _size.z <= 0f;
-        }
-
-        /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="AABB"/> has no surface (no size),
-        /// or <see langword="false"/> otherwise.
-        /// </summary>
-        /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> has area.
-        /// </returns>
-        public bool HasNoSurface()
-        {
-            return _size.x <= 0f && _size.y <= 0f && _size.z <= 0f;
-        }
-
-        /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="AABB"/> contains a point,
+        /// Returns <see langword="true"/> if the <see cref="Aabb"/> contains a point,
         /// or <see langword="false"/> otherwise.
         /// </summary>
         /// <param name="point">The point to check.</param>
         /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> contains <paramref name="point"/>.
+        /// A <see langword="bool"/> for whether or not the <see cref="Aabb"/> contains <paramref name="point"/>.
         /// </returns>
-        public bool HasPoint(Vector3 point)
+        public readonly bool HasPoint(Vector3 point)
         {
-            if (point.x < _position.x)
+            if (point.X < _position.X)
                 return false;
-            if (point.y < _position.y)
+            if (point.Y < _position.Y)
                 return false;
-            if (point.z < _position.z)
+            if (point.Z < _position.Z)
                 return false;
-            if (point.x > _position.x + _size.x)
+            if (point.X > _position.X + _size.X)
                 return false;
-            if (point.y > _position.y + _size.y)
+            if (point.Y > _position.Y + _size.Y)
                 return false;
-            if (point.z > _position.z + _size.z)
+            if (point.Z > _position.Z + _size.Z)
                 return false;
 
             return true;
         }
 
         /// <summary>
-        /// Returns the intersection of this <see cref="AABB"/> and <paramref name="with"/>.
+        /// Returns <see langword="true"/> if the <see cref="Aabb"/>
+        /// has a surface or a length, and <see langword="false"/>
+        /// if the <see cref="Aabb"/> is empty (all components
+        /// of <see cref="Size"/> are zero or negative).
         /// </summary>
-        /// <param name="with">The other <see cref="AABB"/>.</param>
-        /// <returns>The clipped <see cref="AABB"/>.</returns>
-        public AABB Intersection(AABB with)
+        /// <returns>
+        /// A <see langword="bool"/> for whether or not the <see cref="Aabb"/> has surface.
+        /// </returns>
+        public readonly bool HasSurface()
+        {
+            return _size.X > 0.0f || _size.Y > 0.0f || _size.Z > 0.0f;
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if the <see cref="Aabb"/> has
+        /// area, and <see langword="false"/> if the <see cref="Aabb"/>
+        /// is linear, empty, or has a negative <see cref="Size"/>.
+        /// See also <see cref="Volume"/>.
+        /// </summary>
+        /// <returns>
+        /// A <see langword="bool"/> for whether or not the <see cref="Aabb"/> has volume.
+        /// </returns>
+        public readonly bool HasVolume()
+        {
+            return _size.X > 0.0f && _size.Y > 0.0f && _size.Z > 0.0f;
+        }
+
+        /// <summary>
+        /// Returns the intersection of this <see cref="Aabb"/> and <paramref name="with"/>.
+        /// </summary>
+        /// <param name="with">The other <see cref="Aabb"/>.</param>
+        /// <returns>The clipped <see cref="Aabb"/>.</returns>
+        public readonly Aabb Intersection(Aabb with)
         {
             Vector3 srcMin = _position;
             Vector3 srcMax = _position + _size;
@@ -403,101 +407,78 @@ namespace Godot
 
             Vector3 min, max;
 
-            if (srcMin.x > dstMax.x || srcMax.x < dstMin.x)
+            if (srcMin.X > dstMax.X || srcMax.X < dstMin.X)
             {
-                return new AABB();
+                return new Aabb();
             }
 
-            min.x = srcMin.x > dstMin.x ? srcMin.x : dstMin.x;
-            max.x = srcMax.x < dstMax.x ? srcMax.x : dstMax.x;
+            min.X = srcMin.X > dstMin.X ? srcMin.X : dstMin.X;
+            max.X = srcMax.X < dstMax.X ? srcMax.X : dstMax.X;
 
-            if (srcMin.y > dstMax.y || srcMax.y < dstMin.y)
+            if (srcMin.Y > dstMax.Y || srcMax.Y < dstMin.Y)
             {
-                return new AABB();
+                return new Aabb();
             }
 
-            min.y = srcMin.y > dstMin.y ? srcMin.y : dstMin.y;
-            max.y = srcMax.y < dstMax.y ? srcMax.y : dstMax.y;
+            min.Y = srcMin.Y > dstMin.Y ? srcMin.Y : dstMin.Y;
+            max.Y = srcMax.Y < dstMax.Y ? srcMax.Y : dstMax.Y;
 
-            if (srcMin.z > dstMax.z || srcMax.z < dstMin.z)
+            if (srcMin.Z > dstMax.Z || srcMax.Z < dstMin.Z)
             {
-                return new AABB();
+                return new Aabb();
             }
 
-            min.z = srcMin.z > dstMin.z ? srcMin.z : dstMin.z;
-            max.z = srcMax.z < dstMax.z ? srcMax.z : dstMax.z;
+            min.Z = srcMin.Z > dstMin.Z ? srcMin.Z : dstMin.Z;
+            max.Z = srcMax.Z < dstMax.Z ? srcMax.Z : dstMax.Z;
 
-            return new AABB(min, max - min);
+            return new Aabb(min, max - min);
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="AABB"/> overlaps with <paramref name="with"/>
+        /// Returns <see langword="true"/> if the <see cref="Aabb"/> overlaps with <paramref name="with"/>
         /// (i.e. they have at least one point in common).
-        ///
-        /// If <paramref name="includeBorders"/> is <see langword="true"/>,
-        /// they will also be considered overlapping if their borders touch,
-        /// even without intersection.
         /// </summary>
-        /// <param name="with">The other <see cref="AABB"/> to check for intersections with.</param>
-        /// <param name="includeBorders">Whether or not to consider borders.</param>
+        /// <param name="with">The other <see cref="Aabb"/> to check for intersections with.</param>
         /// <returns>
         /// A <see langword="bool"/> for whether or not they are intersecting.
         /// </returns>
-        public bool Intersects(AABB with, bool includeBorders = false)
+        public readonly bool Intersects(Aabb with)
         {
-            if (includeBorders)
-            {
-                if (_position.x > with._position.x + with._size.x)
-                    return false;
-                if (_position.x + _size.x < with._position.x)
-                    return false;
-                if (_position.y > with._position.y + with._size.y)
-                    return false;
-                if (_position.y + _size.y < with._position.y)
-                    return false;
-                if (_position.z > with._position.z + with._size.z)
-                    return false;
-                if (_position.z + _size.z < with._position.z)
-                    return false;
-            }
-            else
-            {
-                if (_position.x >= with._position.x + with._size.x)
-                    return false;
-                if (_position.x + _size.x <= with._position.x)
-                    return false;
-                if (_position.y >= with._position.y + with._size.y)
-                    return false;
-                if (_position.y + _size.y <= with._position.y)
-                    return false;
-                if (_position.z >= with._position.z + with._size.z)
-                    return false;
-                if (_position.z + _size.z <= with._position.z)
-                    return false;
-            }
+            if (_position.X >= with._position.X + with._size.X)
+                return false;
+            if (_position.X + _size.X <= with._position.X)
+                return false;
+            if (_position.Y >= with._position.Y + with._size.Y)
+                return false;
+            if (_position.Y + _size.Y <= with._position.Y)
+                return false;
+            if (_position.Z >= with._position.Z + with._size.Z)
+                return false;
+            if (_position.Z + _size.Z <= with._position.Z)
+                return false;
 
             return true;
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="AABB"/> is on both sides of <paramref name="plane"/>.
+        /// Returns <see langword="true"/> if the <see cref="Aabb"/> is on both sides of <paramref name="plane"/>.
         /// </summary>
         /// <param name="plane">The <see cref="Plane"/> to check for intersection.</param>
         /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> intersects the <see cref="Plane"/>.
+        /// A <see langword="bool"/> for whether or not the <see cref="Aabb"/> intersects the <see cref="Plane"/>.
         /// </returns>
-        public bool IntersectsPlane(Plane plane)
+        public readonly bool IntersectsPlane(Plane plane)
         {
             Vector3[] points =
             {
-                new Vector3(_position.x, _position.y, _position.z),
-                new Vector3(_position.x, _position.y, _position.z + _size.z),
-                new Vector3(_position.x, _position.y + _size.y, _position.z),
-                new Vector3(_position.x, _position.y + _size.y, _position.z + _size.z),
-                new Vector3(_position.x + _size.x, _position.y, _position.z),
-                new Vector3(_position.x + _size.x, _position.y, _position.z + _size.z),
-                new Vector3(_position.x + _size.x, _position.y + _size.y, _position.z),
-                new Vector3(_position.x + _size.x, _position.y + _size.y, _position.z + _size.z)
+                new Vector3(_position.X, _position.Y, _position.Z),
+                new Vector3(_position.X, _position.Y, _position.Z + _size.Z),
+                new Vector3(_position.X, _position.Y + _size.Y, _position.Z),
+                new Vector3(_position.X, _position.Y + _size.Y, _position.Z + _size.Z),
+                new Vector3(_position.X + _size.X, _position.Y, _position.Z),
+                new Vector3(_position.X + _size.X, _position.Y, _position.Z + _size.Z),
+                new Vector3(_position.X + _size.X, _position.Y + _size.Y, _position.Z),
+                new Vector3(_position.X + _size.X, _position.Y + _size.Y, _position.Z + _size.Z)
             };
 
             bool over = false;
@@ -519,15 +500,15 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="AABB"/> intersects
+        /// Returns <see langword="true"/> if the <see cref="Aabb"/> intersects
         /// the line segment between <paramref name="from"/> and <paramref name="to"/>.
         /// </summary>
         /// <param name="from">The start of the line segment.</param>
         /// <param name="to">The end of the line segment.</param>
         /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> intersects the line segment.
+        /// A <see langword="bool"/> for whether or not the <see cref="Aabb"/> intersects the line segment.
         /// </returns>
-        public bool IntersectsSegment(Vector3 from, Vector3 to)
+        public readonly bool IntersectsSegment(Vector3 from, Vector3 to)
         {
             real_t min = 0f;
             real_t max = 1f;
@@ -582,73 +563,83 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a larger <see cref="AABB"/> that contains this <see cref="AABB"/> and <paramref name="with"/>.
+        /// Returns <see langword="true"/> if this <see cref="Aabb"/> is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
         /// </summary>
-        /// <param name="with">The other <see cref="AABB"/>.</param>
-        /// <returns>The merged <see cref="AABB"/>.</returns>
-        public AABB Merge(AABB with)
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
         {
-            Vector3 beg1 = _position;
-            Vector3 beg2 = with._position;
-            var end1 = new Vector3(_size.x, _size.y, _size.z) + beg1;
-            var end2 = new Vector3(with._size.x, with._size.y, with._size.z) + beg2;
-
-            var min = new Vector3(
-                beg1.x < beg2.x ? beg1.x : beg2.x,
-                beg1.y < beg2.y ? beg1.y : beg2.y,
-                beg1.z < beg2.z ? beg1.z : beg2.z
-            );
-
-            var max = new Vector3(
-                end1.x > end2.x ? end1.x : end2.x,
-                end1.y > end2.y ? end1.y : end2.y,
-                end1.z > end2.z ? end1.z : end2.z
-            );
-
-            return new AABB(min, max - min);
+            return _position.IsFinite() && _size.IsFinite();
         }
 
         /// <summary>
-        /// Constructs an <see cref="AABB"/> from a position and size.
+        /// Returns a larger <see cref="Aabb"/> that contains this <see cref="Aabb"/> and <paramref name="with"/>.
+        /// </summary>
+        /// <param name="with">The other <see cref="Aabb"/>.</param>
+        /// <returns>The merged <see cref="Aabb"/>.</returns>
+        public readonly Aabb Merge(Aabb with)
+        {
+            Vector3 beg1 = _position;
+            Vector3 beg2 = with._position;
+            var end1 = new Vector3(_size.X, _size.Y, _size.Z) + beg1;
+            var end2 = new Vector3(with._size.X, with._size.Y, with._size.Z) + beg2;
+
+            var min = new Vector3(
+                beg1.X < beg2.X ? beg1.X : beg2.X,
+                beg1.Y < beg2.Y ? beg1.Y : beg2.Y,
+                beg1.Z < beg2.Z ? beg1.Z : beg2.Z
+            );
+
+            var max = new Vector3(
+                end1.X > end2.X ? end1.X : end2.X,
+                end1.Y > end2.Y ? end1.Y : end2.Y,
+                end1.Z > end2.Z ? end1.Z : end2.Z
+            );
+
+            return new Aabb(min, max - min);
+        }
+
+        /// <summary>
+        /// Constructs an <see cref="Aabb"/> from a position and size.
         /// </summary>
         /// <param name="position">The position.</param>
         /// <param name="size">The size, typically positive.</param>
-        public AABB(Vector3 position, Vector3 size)
+        public Aabb(Vector3 position, Vector3 size)
         {
             _position = position;
             _size = size;
         }
 
         /// <summary>
-        /// Constructs an <see cref="AABB"/> from a <paramref name="position"/>,
+        /// Constructs an <see cref="Aabb"/> from a <paramref name="position"/>,
         /// <paramref name="width"/>, <paramref name="height"/>, and <paramref name="depth"/>.
         /// </summary>
         /// <param name="position">The position.</param>
         /// <param name="width">The width, typically positive.</param>
         /// <param name="height">The height, typically positive.</param>
         /// <param name="depth">The depth, typically positive.</param>
-        public AABB(Vector3 position, real_t width, real_t height, real_t depth)
+        public Aabb(Vector3 position, real_t width, real_t height, real_t depth)
         {
             _position = position;
             _size = new Vector3(width, height, depth);
         }
 
         /// <summary>
-        /// Constructs an <see cref="AABB"/> from <paramref name="x"/>,
+        /// Constructs an <see cref="Aabb"/> from <paramref name="x"/>,
         /// <paramref name="y"/>, <paramref name="z"/>, and <paramref name="size"/>.
         /// </summary>
         /// <param name="x">The position's X coordinate.</param>
         /// <param name="y">The position's Y coordinate.</param>
         /// <param name="z">The position's Z coordinate.</param>
         /// <param name="size">The size, typically positive.</param>
-        public AABB(real_t x, real_t y, real_t z, Vector3 size)
+        public Aabb(real_t x, real_t y, real_t z, Vector3 size)
         {
             _position = new Vector3(x, y, z);
             _size = size;
         }
 
         /// <summary>
-        /// Constructs an <see cref="AABB"/> from <paramref name="x"/>,
+        /// Constructs an <see cref="Aabb"/> from <paramref name="x"/>,
         /// <paramref name="y"/>, <paramref name="z"/>, <paramref name="width"/>,
         /// <paramref name="height"/>, and <paramref name="depth"/>.
         /// </summary>
@@ -658,7 +649,7 @@ namespace Godot
         /// <param name="width">The width, typically positive.</param>
         /// <param name="height">The height, typically positive.</param>
         /// <param name="depth">The depth, typically positive.</param>
-        public AABB(real_t x, real_t y, real_t z, real_t width, real_t height, real_t depth)
+        public Aabb(real_t x, real_t y, real_t z, real_t width, real_t height, real_t depth)
         {
             _position = new Vector3(x, y, z);
             _size = new Vector3(width, height, depth);
@@ -672,7 +663,7 @@ namespace Godot
         /// <param name="left">The left AABB.</param>
         /// <param name="right">The right AABB.</param>
         /// <returns>Whether or not the AABBs are exactly equal.</returns>
-        public static bool operator ==(AABB left, AABB right)
+        public static bool operator ==(Aabb left, Aabb right)
         {
             return left.Equals(right);
         }
@@ -685,7 +676,7 @@ namespace Godot
         /// <param name="left">The left AABB.</param>
         /// <param name="right">The right AABB.</param>
         /// <returns>Whether or not the AABBs are not equal.</returns>
-        public static bool operator !=(AABB left, AABB right)
+        public static bool operator !=(Aabb left, Aabb right)
         {
             return !left.Equals(right);
         }
@@ -698,14 +689,9 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object to compare with.</param>
         /// <returns>Whether or not the AABB and the object are equal.</returns>
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
-            if (obj is AABB)
-            {
-                return Equals((AABB)obj);
-            }
-
-            return false;
+            return obj is Aabb other && Equals(other);
         }
 
         /// <summary>
@@ -715,7 +701,7 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other AABB.</param>
         /// <returns>Whether or not the AABBs are exactly equal.</returns>
-        public bool Equals(AABB other)
+        public readonly bool Equals(Aabb other)
         {
             return _position == other._position && _size == other._size;
         }
@@ -726,44 +712,36 @@ namespace Godot
         /// </summary>
         /// <param name="other">The other AABB to compare.</param>
         /// <returns>Whether or not the AABBs structures are approximately equal.</returns>
-        public bool IsEqualApprox(AABB other)
+        public readonly bool IsEqualApprox(Aabb other)
         {
             return _position.IsEqualApprox(other._position) && _size.IsEqualApprox(other._size);
         }
 
         /// <summary>
-        /// Serves as the hash function for <see cref="AABB"/>.
+        /// Serves as the hash function for <see cref="Aabb"/>.
         /// </summary>
         /// <returns>A hash code for this AABB.</returns>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return _position.GetHashCode() ^ _size.GetHashCode();
         }
 
         /// <summary>
-        /// Converts this <see cref="AABB"/> to a string.
+        /// Converts this <see cref="Aabb"/> to a string.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return String.Format("{0} - {1}", new object[]
-                {
-                    _position.ToString(),
-                    _size.ToString()
-                });
+            return $"{_position}, {_size}";
         }
 
         /// <summary>
-        /// Converts this <see cref="AABB"/> to a string with the given <paramref name="format"/>.
+        /// Converts this <see cref="Aabb"/> to a string with the given <paramref name="format"/>.
         /// </summary>
         /// <returns>A string representation of this AABB.</returns>
-        public string ToString(string format)
+        public readonly string ToString(string format)
         {
-            return String.Format("{0} - {1}", new object[]
-                {
-                    _position.ToString(format),
-                    _size.ToString(format)
-                });
+            return $"{_position.ToString(format)}, {_size.ToString(format)}";
         }
     }
 }

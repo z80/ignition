@@ -1,12 +1,12 @@
-tool
+@tool
 extends HBoxContainer
 
 signal value_changed(value)
 
-export(String) var text := "Slider" setget set_text
-export(float) var min_value := 0.0 setget set_min_value
-export(float) var max_value := 1.0 setget set_max_value
-export(float) var value := 0.0 setget set_value
+@export var text: String := "Slider": set = set_text
+@export var min_value: float := 0.0: set = set_min_value
+@export var max_value: float := 1.0: set = set_max_value
+@export var value: float := 0.0: set = set_value
 
 func _ready() -> void:
 	set_text(text)
@@ -25,7 +25,7 @@ func set_value(val: float) -> void:
 	value = val
 	if has_node("HSlider"):
 		$HSlider.value = value
-		$Value.text = str(stepify(value, 0.01))
+		$Value.text = str(snapped(value, 0.01))
 
 
 func set_min_value(val: float) -> void:
@@ -42,4 +42,4 @@ func set_max_value(val: float) -> void:
 
 func _on_HSlider_value_changed(value: float) -> void:
 	emit_signal("value_changed", value)
-	$Value.text = str(stepify(value, 0.01))
+	$Value.text = str(snapped(value, 0.01))

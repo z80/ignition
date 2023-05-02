@@ -1,14 +1,14 @@
-extends Spatial
+extends Node3D
 
-export(Basis) var sun_direction = Basis.IDENTITY setget _set_sun_direction, _get_sun_direction
+@export var sun_direction: Basis = Basis.IDENTITY: get = _get_sun_direction, set = _set_sun_direction
 
 
-var camera: Camera = null
-var light: DirectionalLight = null
+var camera: Camera3D = null
+var light: DirectionalLight3D = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	camera = get_node("Camera")
+	camera = get_node("Camera3D")
 	light  = get_node("SunLight")
 
 

@@ -1,4 +1,4 @@
-extends Spatial
+extends Node3D
 
 
 var height_source = null
@@ -7,7 +7,7 @@ var distance_scaler = null
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	var o: RefFrameNode = $Origin
-	o.set_t( $Camera.transform )
+	o.set_t( $Camera3D.transform )
 
 	var sphere: CubeSphereNode = get_node( "sphere" )
 	sphere.radius = 10.0
@@ -36,5 +36,5 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	var o = get_node( "Origin" )
-	var c = get_node( "Camera" )
+	var c = get_node( "Camera3D" )
 	o.set_t( c.transform )

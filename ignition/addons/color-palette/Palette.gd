@@ -1,6 +1,6 @@
-tool
+@tool
 class_name Palette
-extends Reference
+extends RefCounted
 
 var name: String = "Palette"
 var colors: Array = [] # of Color
@@ -38,7 +38,7 @@ func remove_color(p_index: int):
 
 func save():
 	if path.ends_with(".gpl") == false:
-		push_error("To export gpl, file name must end in .gpl")
+		push_error("To export gpl, file name must end in super.gpl")
 		return
 
 	var file = File.new()
@@ -57,7 +57,7 @@ func save():
 			"Untitled"
 		]
 
-		var line = PoolStringArray(color_data).join(" ")
+		var line = " ".join(PackedStringArray(color_data))
 		file.store_line(line)
 
 	file.close()

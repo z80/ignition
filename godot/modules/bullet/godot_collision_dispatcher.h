@@ -31,7 +31,7 @@
 #ifndef GODOT_COLLISION_DISPATCHER_H
 #define GODOT_COLLISION_DISPATCHER_H
 
-#include "core/int_types.h"
+//#include "core/int_types.h"
 
 #if defined(__clang__) && (__clang_major__ >= 13)
 #pragma clang diagnostic push
@@ -46,6 +46,7 @@
 
 /**
 	@author AndreaCatania
+	FatherTed
 */
 
 /// This class is required to implement custom collision behaviour in the narrowphase

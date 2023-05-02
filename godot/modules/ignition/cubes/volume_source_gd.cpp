@@ -6,24 +6,24 @@ namespace Ign
 
 void VolumeSourceGd::_bind_methods()
 {
-    ClassDB::bind_method( D_METHOD("value", "at"), &VolumeSourceGd::value, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("value", "at"), &VolumeSourceGd::value );
 
     ClassDB::bind_method( D_METHOD("set_inverted", "en"), &VolumeSourceGd::set_inverted );
-    ClassDB::bind_method( D_METHOD("get_inverted"),       &VolumeSourceGd::get_inverted, Variant::BOOL );
+    ClassDB::bind_method( D_METHOD("get_inverted"),       &VolumeSourceGd::get_inverted );
 
 	ClassDB::bind_method( D_METHOD("set_material_only", "en"), &VolumeSourceGd::set_material_only );
-	ClassDB::bind_method( D_METHOD("get_material_only"),       &VolumeSourceGd::get_material_only, Variant::BOOL );
+	ClassDB::bind_method( D_METHOD("get_material_only"),       &VolumeSourceGd::get_material_only );
 
-    ClassDB::bind_method( D_METHOD("max_node_size"),      &VolumeSourceGd::max_node_size, Variant::REAL );
-    ClassDB::bind_method( D_METHOD("min_node_size"),      &VolumeSourceGd::min_node_size, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("max_node_size"),      &VolumeSourceGd::max_node_size );
+    ClassDB::bind_method( D_METHOD("min_node_size"),      &VolumeSourceGd::min_node_size );
 
-    ClassDB::bind_method( D_METHOD("max_node_size_local", "at"), &VolumeSourceGd::max_node_size_local, Variant::REAL );
-	ClassDB::bind_method( D_METHOD("min_node_size_local", "at"), &VolumeSourceGd::min_node_size_local, Variant::REAL );
+    ClassDB::bind_method( D_METHOD("max_node_size_local", "at"), &VolumeSourceGd::max_node_size_local );
+	ClassDB::bind_method( D_METHOD("min_node_size_local", "at"), &VolumeSourceGd::min_node_size_local );
 
-	ClassDB::bind_method( D_METHOD("material_global", "at"), &VolumeSourceGd::material_global, Variant::INT );
-	ClassDB::bind_method( D_METHOD("material", "at"),        &VolumeSourceGd::material,        Variant::INT );
+	ClassDB::bind_method( D_METHOD("material_global", "at"), &VolumeSourceGd::material_global );
+	ClassDB::bind_method( D_METHOD("material", "at"),        &VolumeSourceGd::material );
 
-	ClassDB::bind_method( D_METHOD("priority"),              &VolumeSourceGd::priority,        Variant::INT );
+	ClassDB::bind_method( D_METHOD("priority"),              &VolumeSourceGd::priority );
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "inverted" ),      "set_inverted",      "get_inverted" );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "material_only" ), "set_material_only", "get_material_only" );

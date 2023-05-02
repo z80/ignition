@@ -1,53 +1,54 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=13 format=3 uid="uid://b5ljlddno6gt5"]
 
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.gd" type="Script" id=1]
-[ext_resource path="res://physics/parts/characters/central/central.tscn" type="PackedScene" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.tscn" type="PackedScene" id=3]
-[ext_resource path="res://physics/bodies/construction_new/construction.tscn" type="PackedScene" id=4]
-[ext_resource path="res://physics/ui/root_ui.tscn" type="PackedScene" id=5]
-[ext_resource path="res://physics/celestial_bodies/sun/sun.tscn" type="PackedScene" id=6]
-[ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=7]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" type="Material" id=8]
-[ext_resource path="res://physics/ref_frames/ref_frame_physics.tscn" type="PackedScene" id=9]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" type="Material" id=10]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" type="Script" id=11]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://4qxv1iovjiyw" path="res://physics/parts/characters/central/central.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://b6oksm4adx8ax" path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://b716hij8htvor" path="res://physics/bodies/construction_new/construction.tscn" id="4"]
+[ext_resource type="PackedScene" uid="uid://d164mxaj5h5it" path="res://physics/ui/root_ui.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://d27mad85dvoyx" path="res://physics/celestial_bodies/sun/sun.tscn" id="6"]
+[ext_resource type="PackedScene" uid="uid://chonhgqhxgjxr" path="res://physics/camera_ctrl/player_camera.tscn" id="7"]
+[ext_resource type="Material" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" id="8"]
+[ext_resource type="PackedScene" uid="uid://dkuexll5bw41" path="res://physics/ref_frames/ref_frame_physics.tscn" id="9"]
+[ext_resource type="Material" uid="uid://b1fyq1lssmtkk" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" id="10"]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="11"]
 
-[sub_resource type="Resource" id=1]
+[sub_resource type="Resource" id="Resource_4pvbl"]
 resource_local_to_scene = true
-script = ExtResource( 11 )
-bounding_radius = 10000.0
-source_radius = 10000.0
-radius_km = 10.0
-orbiting_velocity = 1000.0
-g = 100.0
+script = ExtResource("11")
+override_material = ExtResource("8")
+bounding_radius = 200000.0
+source_radius = 200000.0
+radius_km = 200.0
+orbiting_velocity = 8944.27
+g = 400.0
 focus_depth = 40.0
-materials_solid = [ ExtResource( 10 ) ]
-materials_liquid = [ ExtResource( 10 ) ]
-override_material = ExtResource( 8 )
+materials_solid = [ExtResource("10")]
+materials_liquid = [ExtResource("10")]
 
 [node name="RefFrameRoot" type="RefFrameRoot"]
-script = ExtResource( 1 )
-RefFramePhysicsScene = ExtResource( 9 )
+script = ExtResource("1")
+RefFramePhysicsScene = ExtResource("9")
 
-[node name="Sun" parent="." instance=ExtResource( 6 )]
-surface_source = SubResource( 1 )
-radius_km = 100.0
+[node name="Sun" parent="." instance=ExtResource("6")]
+human_readable_name = "Sun"
+surface_source = SubResource("Resource_4pvbl")
 
-[node name="Translation" parent="Sun" instance=ExtResource( 3 )]
+[node name="Translation" parent="Sun" instance=ExtResource("3")]
 rotation_period_hrs = 1.0
 orbital_period_hrs = 20.0
 
-[node name="RefFramePhysics" parent="Sun/Translation/Rotation" index="1" instance=ExtResource( 9 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 50390, 0, 0 )
+[node name="RefFramePhysics" parent="Sun/Translation/Rotation" index="1" instance=ExtResource("9")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50005, 0, 0)
 
-[node name="Character" parent="Sun/Translation/Rotation/RefFramePhysics" instance=ExtResource( 2 )]
+[node name="Character" parent="Sun/Translation/Rotation/RefFramePhysics" instance=ExtResource("2")]
 
-[node name="PlayerCamera" parent="Sun/Translation/Rotation/RefFramePhysics/Character" instance=ExtResource( 7 )]
+[node name="PlayerCamera" parent="Sun/Translation/Rotation/RefFramePhysics/Character" instance=ExtResource("7")]
 map_mode = true
 
-[node name="Construction" parent="Sun/Translation/Rotation" index="2" instance=ExtResource( 4 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 50382, 0, 0 )
+[node name="Construction" parent="Sun/Translation/Rotation" index="2" instance=ExtResource("4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50001, 0, 0)
 
-[node name="RootUi" parent="." instance=ExtResource( 5 )]
+[node name="RootUi" parent="." instance=ExtResource("5")]
+offset_right = 0.0
 
 [editable path="Sun/Translation"]

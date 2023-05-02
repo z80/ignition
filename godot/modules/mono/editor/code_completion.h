@@ -31,8 +31,8 @@
 #ifndef CODE_COMPLETION_H
 #define CODE_COMPLETION_H
 
-#include "core/ustring.h"
-#include "core/variant.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 namespace gdmono {
 
@@ -46,11 +46,11 @@ enum class CompletionKind {
 	THEME_COLORS,
 	THEME_CONSTANTS,
 	THEME_FONTS,
+	THEME_FONT_SIZES,
 	THEME_STYLES
 };
 
-PoolStringArray get_code_completion(CompletionKind p_kind, const String &p_script_file);
-
+PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_script_file);
 } // namespace gdmono
 
 #endif // CODE_COMPLETION_H

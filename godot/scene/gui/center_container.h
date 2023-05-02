@@ -36,7 +36,7 @@
 class CenterContainer : public Container {
 	GDCLASS(CenterContainer, Container);
 
-	bool use_top_left;
+	bool use_top_left = false;
 
 protected:
 	void _notification(int p_what);
@@ -46,7 +46,10 @@ public:
 	void set_use_top_left(bool p_enable);
 	bool is_using_top_left() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
+
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
+	virtual Vector<int> get_allowed_size_flags_vertical() const override;
 
 	CenterContainer();
 };

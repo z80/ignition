@@ -129,7 +129,7 @@ void BroadTree::subdivide( RefFrameNode * ref_frame_physics )
 
 
 
-void BroadTree::face_lines( Vector<Vector3> & ret, const Transform & t_to_camera ) const
+void BroadTree::face_lines( Vector<Vector3> & ret, const Transform3D & t_to_camera ) const
 {
 	const int qty = octree_meshes_.size();
 	for ( int i=0; i<qty; i++ )
@@ -143,10 +143,10 @@ void BroadTree::face_lines( Vector<Vector3> & ret, const Transform & t_to_camera
 
 
 
-/*PoolVector3Array BroadTree::lines_nodes( RefFrameNode * camera ) const
+/*Array BroadTree::lines_nodes( RefFrameNode * camera ) const
 {
     const SE3        se3 = this->relative_to( camera );
-    const Quat    q_root = se3.q();
+    const Quaternion    q_root = se3.q();
     const Vector3 r_root = se3.r();
 
     Vector<Vector3> ls;
@@ -216,7 +216,7 @@ void BroadTree::face_lines( Vector<Vector3> & ret, const Transform & t_to_camera
         ls.push_back( v[7] );
     }
 
-    PoolVector3Array res;
+    Array res;
     const int sz = ls.size();
     res.resize( sz );
     for ( int i=0; i<sz; i++ )
@@ -279,7 +279,7 @@ OctreeMeshGd * BroadTree::get_octree_mesh( int ind )
 
 OctreeMeshGd * BroadTree::intersects_segment( const Vector3 & start, const Vector3 & end, OctreeMeshGd * exclude_mesh ) const
 {
-	if ( nodes_.empty() )
+	if ( nodes_.is_empty() )
 		return nullptr;
     const BroadTreeNode & root = nodes_.ptr()[0];
 	OctreeMeshGd * mesh_gd = root.intersects_segment( start, end, exclude_mesh );
@@ -288,7 +288,7 @@ OctreeMeshGd * BroadTree::intersects_segment( const Vector3 & start, const Vecto
 
 OctreeMeshGd * BroadTree::intersects_segment_face( const Vector3 & start, const Vector3 & end, real_t & dist, Vector3 & at, OctreeMesh::FaceProperties & face_props, OctreeMeshGd * exclude_mesh ) const
 {
-	if ( nodes_.empty() )
+	if ( nodes_.is_empty() )
 		return nullptr;
 	const BroadTreeNode & root = nodes_.ptr()[0];
 	dist = -1.0;
@@ -321,8 +321,8 @@ static void find_mesh_instances( RefFrameNode * node, Vector<OctreeMeshGd *> & i
             OctreeMeshGd * mesh_gd = Node::cast_to<OctreeMeshGd>( cch );
             if ( mesh_gd != nullptr )
             {
-                const Vector3 at = ref_frame->r();
-                const Quat    q  = ref_frame->q();
+                const Vector3    at = ref_frame->r();
+                const Quaternion q  = ref_frame->q();
 				mesh_gd->set_origin( at );
 				mesh_gd->set_quat( q );
 

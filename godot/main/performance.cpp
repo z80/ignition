@@ -30,44 +30,45 @@
 
 #include "performance.h"
 
-#include "core/message_queue.h"
+#include "core/object/message_queue.h"
 #include "core/os/os.h"
+#include "core/variant/typed_array.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
-#include "servers/physics_2d_server.h"
-#include "servers/physics_server.h"
-#include "servers/visual_server.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
+#include "servers/rendering_server.h"
 
 Performance *Performance::singleton = nullptr;
 
 void Performance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_monitor", "monitor"), &Performance::get_monitor);
+	ClassDB::bind_method(D_METHOD("add_custom_monitor", "id", "callable", "arguments"), &Performance::add_custom_monitor, DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("remove_custom_monitor", "id"), &Performance::remove_custom_monitor);
+	ClassDB::bind_method(D_METHOD("has_custom_monitor", "id"), &Performance::has_custom_monitor);
+	ClassDB::bind_method(D_METHOD("get_custom_monitor", "id"), &Performance::get_custom_monitor);
+	ClassDB::bind_method(D_METHOD("get_monitor_modification_time"), &Performance::get_monitor_modification_time);
+	ClassDB::bind_method(D_METHOD("get_custom_monitor_names"), &Performance::get_custom_monitor_names);
 
 	BIND_ENUM_CONSTANT(TIME_FPS);
 	BIND_ENUM_CONSTANT(TIME_PROCESS);
 	BIND_ENUM_CONSTANT(TIME_PHYSICS_PROCESS);
+	BIND_ENUM_CONSTANT(TIME_NAVIGATION_PROCESS);
 	BIND_ENUM_CONSTANT(MEMORY_STATIC);
-	BIND_ENUM_CONSTANT(MEMORY_DYNAMIC);
 	BIND_ENUM_CONSTANT(MEMORY_STATIC_MAX);
-	BIND_ENUM_CONSTANT(MEMORY_DYNAMIC_MAX);
 	BIND_ENUM_CONSTANT(MEMORY_MESSAGE_BUFFER_MAX);
 	BIND_ENUM_CONSTANT(OBJECT_COUNT);
 	BIND_ENUM_CONSTANT(OBJECT_RESOURCE_COUNT);
 	BIND_ENUM_CONSTANT(OBJECT_NODE_COUNT);
 	BIND_ENUM_CONSTANT(OBJECT_ORPHAN_NODE_COUNT);
-	BIND_ENUM_CONSTANT(RENDER_OBJECTS_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_VERTICES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_MATERIAL_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_SHADER_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_SURFACE_CHANGES_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_DRAW_CALLS_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_2D_ITEMS_IN_FRAME);
-	BIND_ENUM_CONSTANT(RENDER_2D_DRAW_CALLS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_TOTAL_OBJECTS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_TOTAL_PRIMITIVES_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_TOTAL_DRAW_CALLS_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_VIDEO_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDER_TEXTURE_MEM_USED);
-	BIND_ENUM_CONSTANT(RENDER_VERTEX_MEM_USED);
-	BIND_ENUM_CONSTANT(RENDER_USAGE_VIDEO_MEM_TOTAL);
+	BIND_ENUM_CONSTANT(RENDER_BUFFER_MEM_USED);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_2D_ISLAND_COUNT);
@@ -75,11 +76,19 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(PHYSICS_3D_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PHYSICS_3D_ISLAND_COUNT);
 	BIND_ENUM_CONSTANT(AUDIO_OUTPUT_LATENCY);
-
+	BIND_ENUM_CONSTANT(NAVIGATION_ACTIVE_MAPS);
+	BIND_ENUM_CONSTANT(NAVIGATION_REGION_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_AGENT_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_LINK_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_POLYGON_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_MERGE_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_CONNECTION_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_FREE_COUNT);
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 }
 
-float Performance::_get_node_count() const {
+int Performance::_get_node_count() const {
 	MainLoop *ml = OS::get_singleton()->get_main_loop();
 	SceneTree *sml = Object::cast_to<SceneTree>(ml);
 	if (!sml) {
@@ -91,45 +100,46 @@ float Performance::_get_node_count() const {
 String Performance::get_monitor_name(Monitor p_monitor) const {
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, String());
 	static const char *names[MONITOR_MAX] = {
-
 		"time/fps",
 		"time/process",
 		"time/physics_process",
+		"time/navigation_process",
 		"memory/static",
-		"memory/dynamic",
 		"memory/static_max",
-		"memory/dynamic_max",
 		"memory/msg_buf_max",
 		"object/objects",
 		"object/resources",
 		"object/nodes",
 		"object/orphan_nodes",
-		"raster/objects_drawn",
-		"raster/vertices_drawn",
-		"raster/mat_changes",
-		"raster/shader_changes",
-		"raster/surface_changes",
-		"raster/draw_calls",
-		"2d/items",
-		"2d/draw_calls",
+		"raster/total_objects_drawn",
+		"raster/total_primitives_drawn",
+		"raster/total_draw_calls",
 		"video/video_mem",
 		"video/texture_mem",
-		"video/vertex_mem",
-		"video/video_mem_max",
+		"video/buffer_mem",
 		"physics_2d/active_objects",
 		"physics_2d/collision_pairs",
 		"physics_2d/islands",
 		"physics_3d/active_objects",
 		"physics_3d/collision_pairs",
 		"physics_3d/islands",
-		"audio/output_latency",
+		"audio/driver/output_latency",
+		"navigation/active_maps",
+		"navigation/regions",
+		"navigation/agents",
+		"navigation/links",
+		"navigation/polygons",
+		"navigation/edges",
+		"navigation/edges_merged",
+		"navigation/edges_connected",
+		"navigation/edges_free",
 
 	};
 
 	return names[p_monitor];
 }
 
-float Performance::get_monitor(Monitor p_monitor) const {
+double Performance::get_monitor(Monitor p_monitor) const {
 	switch (p_monitor) {
 		case TIME_FPS:
 			return Engine::get_singleton()->get_frames_per_second();
@@ -137,14 +147,12 @@ float Performance::get_monitor(Monitor p_monitor) const {
 			return _process_time;
 		case TIME_PHYSICS_PROCESS:
 			return _physics_process_time;
+		case TIME_NAVIGATION_PROCESS:
+			return _navigation_process_time;
 		case MEMORY_STATIC:
 			return Memory::get_mem_usage();
-		case MEMORY_DYNAMIC:
-			return MemoryPool::total_memory;
 		case MEMORY_STATIC_MAX:
 			return Memory::get_mem_max_usage();
-		case MEMORY_DYNAMIC_MAX:
-			return MemoryPool::max_memory;
 		case MEMORY_MESSAGE_BUFFER_MAX:
 			return MessageQueue::get_singleton()->get_max_buffer_usage();
 		case OBJECT_COUNT:
@@ -155,44 +163,50 @@ float Performance::get_monitor(Monitor p_monitor) const {
 			return _get_node_count();
 		case OBJECT_ORPHAN_NODE_COUNT:
 			return Node::orphan_node_count;
-		case RENDER_OBJECTS_IN_FRAME:
-			return VS::get_singleton()->get_render_info(VS::INFO_OBJECTS_IN_FRAME);
-		case RENDER_VERTICES_IN_FRAME:
-			return VS::get_singleton()->get_render_info(VS::INFO_VERTICES_IN_FRAME);
-		case RENDER_MATERIAL_CHANGES_IN_FRAME:
-			return VS::get_singleton()->get_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
-		case RENDER_SHADER_CHANGES_IN_FRAME:
-			return VS::get_singleton()->get_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
-		case RENDER_SURFACE_CHANGES_IN_FRAME:
-			return VS::get_singleton()->get_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
-		case RENDER_DRAW_CALLS_IN_FRAME:
-			return VS::get_singleton()->get_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
-		case RENDER_2D_ITEMS_IN_FRAME:
-			return VS::get_singleton()->get_render_info(VS::INFO_2D_ITEMS_IN_FRAME);
-		case RENDER_2D_DRAW_CALLS_IN_FRAME:
-			return VS::get_singleton()->get_render_info(VS::INFO_2D_DRAW_CALLS_IN_FRAME);
+		case RENDER_TOTAL_OBJECTS_IN_FRAME:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
+		case RENDER_TOTAL_PRIMITIVES_IN_FRAME:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME);
+		case RENDER_TOTAL_DRAW_CALLS_IN_FRAME:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME);
 		case RENDER_VIDEO_MEM_USED:
-			return VS::get_singleton()->get_render_info(VS::INFO_VIDEO_MEM_USED);
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_VIDEO_MEM_USED);
 		case RENDER_TEXTURE_MEM_USED:
-			return VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED);
-		case RENDER_VERTEX_MEM_USED:
-			return VS::get_singleton()->get_render_info(VS::INFO_VERTEX_MEM_USED);
-		case RENDER_USAGE_VIDEO_MEM_TOTAL:
-			return VS::get_singleton()->get_render_info(VS::INFO_USAGE_VIDEO_MEM_TOTAL);
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TEXTURE_MEM_USED);
+		case RENDER_BUFFER_MEM_USED:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_BUFFER_MEM_USED);
 		case PHYSICS_2D_ACTIVE_OBJECTS:
-			return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ACTIVE_OBJECTS);
+			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_2D_COLLISION_PAIRS:
-			return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_COLLISION_PAIRS);
+			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT:
-			return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ISLAND_COUNT);
+			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ISLAND_COUNT);
 		case PHYSICS_3D_ACTIVE_OBJECTS:
-			return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ACTIVE_OBJECTS);
+			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_3D_COLLISION_PAIRS:
-			return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_COLLISION_PAIRS);
+			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_COLLISION_PAIRS);
 		case PHYSICS_3D_ISLAND_COUNT:
-			return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ISLAND_COUNT);
+			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ISLAND_COUNT);
 		case AUDIO_OUTPUT_LATENCY:
 			return AudioServer::get_singleton()->get_output_latency();
+		case NAVIGATION_ACTIVE_MAPS:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS);
+		case NAVIGATION_REGION_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_REGION_COUNT);
+		case NAVIGATION_AGENT_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_AGENT_COUNT);
+		case NAVIGATION_LINK_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_LINK_COUNT);
+		case NAVIGATION_POLYGON_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_POLYGON_COUNT);
+		case NAVIGATION_EDGE_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_COUNT);
+		case NAVIGATION_EDGE_MERGE_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_MERGE_COUNT);
+		case NAVIGATION_EDGE_CONNECTION_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_CONNECTION_COUNT);
+		case NAVIGATION_EDGE_FREE_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_FREE_COUNT);
 
 		default: {
 		}
@@ -205,15 +219,13 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 	ERR_FAIL_INDEX_V(p_monitor, MONITOR_MAX, MONITOR_TYPE_QUANTITY);
 	// ugly
 	static const MonitorType types[MONITOR_MAX] = {
-
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_TIME,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_MEMORY,
-		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
@@ -221,12 +233,6 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_QUANTITY,
-		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
@@ -237,22 +243,106 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
 
 	};
 
 	return types[p_monitor];
 }
 
-void Performance::set_process_time(float p_pt) {
+void Performance::set_process_time(double p_pt) {
 	_process_time = p_pt;
 }
 
-void Performance::set_physics_process_time(float p_pt) {
+void Performance::set_physics_process_time(double p_pt) {
 	_physics_process_time = p_pt;
+}
+
+void Performance::set_navigation_process_time(double p_pt) {
+	_navigation_process_time = p_pt;
+}
+
+void Performance::add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args) {
+	ERR_FAIL_COND_MSG(has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' already exists.");
+	_monitor_map.insert(p_id, MonitorCall(p_callable, p_args));
+	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
+}
+
+void Performance::remove_custom_monitor(const StringName &p_id) {
+	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	_monitor_map.erase(p_id);
+	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
+}
+
+bool Performance::has_custom_monitor(const StringName &p_id) {
+	return _monitor_map.has(p_id);
+}
+
+Variant Performance::get_custom_monitor(const StringName &p_id) {
+	ERR_FAIL_COND_V_MSG(!has_custom_monitor(p_id), Variant(), "Custom monitor with id '" + String(p_id) + "' doesn't exists.");
+	bool error;
+	String error_message;
+	Variant return_value = _monitor_map[p_id].call(error, error_message);
+	ERR_FAIL_COND_V_MSG(error, return_value, "Error calling from custom monitor '" + String(p_id) + "' to callable: " + error_message);
+	return return_value;
+}
+
+TypedArray<StringName> Performance::get_custom_monitor_names() {
+	if (!_monitor_map.size()) {
+		return TypedArray<StringName>();
+	}
+	TypedArray<StringName> return_array;
+	return_array.resize(_monitor_map.size());
+	int index = 0;
+	for (KeyValue<StringName, MonitorCall> i : _monitor_map) {
+		return_array.set(index, i.key);
+		index++;
+	}
+	return return_array;
+}
+
+uint64_t Performance::get_monitor_modification_time() {
+	return _monitor_modification_time;
 }
 
 Performance::Performance() {
 	_process_time = 0;
 	_physics_process_time = 0;
+	_navigation_process_time = 0;
+	_monitor_modification_time = 0;
 	singleton = this;
+}
+
+Performance::MonitorCall::MonitorCall(Callable p_callable, Vector<Variant> p_arguments) {
+	_callable = p_callable;
+	_arguments = p_arguments;
+}
+
+Performance::MonitorCall::MonitorCall() {
+}
+
+Variant Performance::MonitorCall::call(bool &r_error, String &r_error_message) {
+	Vector<const Variant *> arguments_mem;
+	arguments_mem.resize(_arguments.size());
+	for (int i = 0; i < _arguments.size(); i++) {
+		arguments_mem.write[i] = &_arguments[i];
+	}
+	const Variant **args = (const Variant **)arguments_mem.ptr();
+	int argc = _arguments.size();
+	Variant return_value;
+	Callable::CallError error;
+	_callable.callp(args, argc, return_value, error);
+	r_error = (error.error != Callable::CallError::CALL_OK);
+	if (r_error) {
+		r_error_message = Variant::get_callable_error_text(_callable, args, argc, error);
+	}
+	return return_value;
 }

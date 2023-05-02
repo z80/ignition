@@ -31,12 +31,18 @@
 #ifndef WORLD_ENVIRONMENT_H
 #define WORLD_ENVIRONMENT_H
 
-#include "scene/3d/spatial.h"
+#include "scene/main/node.h"
+#include "scene/resources/camera_attributes.h"
+#include "scene/resources/environment.h"
 
 class WorldEnvironment : public Node {
 	GDCLASS(WorldEnvironment, Node);
 
 	Ref<Environment> environment;
+	Ref<CameraAttributes> camera_attributes;
+
+	void _update_current_environment();
+	void _update_current_camera_attributes();
 
 protected:
 	void _notification(int p_what);
@@ -46,7 +52,10 @@ public:
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
 
-	String get_configuration_warning() const;
+	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
+	Ref<CameraAttributes> get_camera_attributes() const;
+
+	PackedStringArray get_configuration_warnings() const override;
 
 	WorldEnvironment();
 };

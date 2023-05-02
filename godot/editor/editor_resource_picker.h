@@ -31,38 +31,40 @@
 #ifndef EDITOR_RESOURCE_PICKER_H
 #define EDITOR_RESOURCE_PICKER_H
 
-#include "editor_file_dialog.h"
-#include "editor_quick_open.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/texture_rect.h"
 
+class EditorFileDialog;
+class EditorQuickOpen;
+
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
 
-	static HashMap<StringName, List<StringName>> allowed_types_cache;
-
 	String base_type;
-	RES edited_resource;
+	Ref<Resource> edited_resource;
 
 	bool editable = true;
 	bool dropping = false;
 
 	Vector<String> inheritors_array;
 
-	Button *assign_button;
-	TextureRect *preview_rect;
-	Button *edit_button;
+	Button *assign_button = nullptr;
+	TextureRect *preview_rect = nullptr;
+	Button *edit_button = nullptr;
 	EditorFileDialog *file_dialog = nullptr;
 	EditorQuickOpen *quick_open = nullptr;
+
+	Size2i assign_button_min_size = Size2i(1, 1);
 
 	enum MenuOption {
 		OBJ_MENU_LOAD,
 		OBJ_MENU_QUICKLOAD,
-		OBJ_MENU_EDIT,
+		OBJ_MENU_INSPECT,
 		OBJ_MENU_CLEAR,
 		OBJ_MENU_MAKE_UNIQUE,
+		OBJ_MENU_MAKE_UNIQUE_RECURSIVE,
 		OBJ_MENU_SAVE,
 		OBJ_MENU_COPY,
 		OBJ_MENU_PASTE,
@@ -72,10 +74,9 @@ class EditorResourcePicker : public HBoxContainer {
 		CONVERT_BASE_ID = 1000,
 	};
 
-	PopupMenu *edit_menu;
+	PopupMenu *edit_menu = nullptr;
 
-	void _update_resource();
-	void _update_resource_preview(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, ObjectID p_obj);
+	void _update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
 
 	void _resource_selected();
 	void _file_quick_selected();
@@ -88,27 +89,39 @@ class EditorResourcePicker : public HBoxContainer {
 	void _button_draw();
 	void _button_input(const Ref<InputEvent> &p_event);
 
-	void _get_allowed_types(bool p_with_convert, Set<String> *p_vector) const;
+	String _get_resource_type(const Ref<Resource> &p_resource) const;
+	void _get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool _is_type_valid(const String p_type_name, Set<String> p_allowed_types) const;
+	bool _is_type_valid(const String p_type_name, HashSet<StringName> p_allowed_types) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _ensure_resource_menu();
+
 protected:
+	virtual void _update_resource();
+
+	Button *get_assign_button() { return assign_button; }
 	static void _bind_methods();
 	void _notification(int p_what);
 
-public:
-	static void clear_caches();
+	void set_assign_button_min_size(const Size2i &p_size) {
+		assign_button_min_size = p_size;
+		assign_button->set_custom_minimum_size(assign_button_min_size);
+	}
 
+	GDVIRTUAL1(_set_create_options, Object *)
+	GDVIRTUAL1R(bool, _handle_menu_selected, int)
+
+public:
 	void set_base_type(const String &p_base_type);
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;
 
-	void set_edited_resource(RES p_resource);
-	RES get_edited_resource();
+	void set_edited_resource(Ref<Resource> p_resource);
+	Ref<Resource> get_edited_resource();
 
 	void set_toggle_mode(bool p_enable);
 	bool is_toggle_mode() const;
@@ -120,7 +133,7 @@ public:
 	virtual void set_create_options(Object *p_menu_node);
 	virtual bool handle_menu_selected(int p_which);
 
-	EditorResourcePicker();
+	EditorResourcePicker(bool p_hide_assign_button_controls = false);
 };
 
 class EditorScriptPicker : public EditorResourcePicker {
@@ -137,13 +150,56 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void set_create_options(Object *p_menu_node);
-	virtual bool handle_menu_selected(int p_which);
+	virtual void set_create_options(Object *p_menu_node) override;
+	virtual bool handle_menu_selected(int p_which) override;
 
 	void set_script_owner(Node *p_owner);
 	Node *get_script_owner() const;
 
 	EditorScriptPicker();
+};
+
+class EditorShaderPicker : public EditorResourcePicker {
+	GDCLASS(EditorShaderPicker, EditorResourcePicker);
+
+	enum ExtraMenuOption {
+		OBJ_MENU_NEW_SHADER = 10,
+	};
+
+	ShaderMaterial *edited_material = nullptr;
+	int preferred_mode = -1;
+
+public:
+	virtual void set_create_options(Object *p_menu_node) override;
+	virtual bool handle_menu_selected(int p_which) override;
+
+	void set_edited_material(ShaderMaterial *p_material);
+	ShaderMaterial *get_edited_material() const;
+	void set_preferred_mode(int p_preferred_mode);
+
+	EditorShaderPicker();
+};
+
+class EditorAudioStreamPicker : public EditorResourcePicker {
+	GDCLASS(EditorAudioStreamPicker, EditorResourcePicker);
+
+	uint64_t last_preview_version = 0;
+	Control *stream_preview_rect = nullptr;
+
+	enum {
+		MAX_TAGGED_FRAMES = 8
+	};
+	float tagged_frame_offsets[MAX_TAGGED_FRAMES];
+	uint32_t tagged_frame_offset_count = 0;
+
+	void _preview_draw();
+	virtual void _update_resource() override;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	EditorAudioStreamPicker();
 };
 
 #endif // EDITOR_RESOURCE_PICKER_H

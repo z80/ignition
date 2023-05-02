@@ -1,5 +1,5 @@
 
-extends Spatial
+extends Node3D
 
 const LEN: float = 1.0+0.03
 const SPEED_EPS: float = 0.001
@@ -8,7 +8,7 @@ var ball_yaw: float   = 0.0
 var ball_pitch: float = 0.0
 var ball_roll: float  = 0.0
 
-var orientation: Quat = Quat.IDENTITY
+var orientation: Quaternion = Quaternion.IDENTITY
 
 var speed: float = 0.0
 
@@ -23,15 +23,15 @@ func set_orientation_surface( se3_rel: Se3Ref ):
 	var x: float = -r.x
 	var y: float =  r.z
 	var angle: float = atan2( y, x )
-	var q_lattitude: Quat = Quat( Vector3.UP, angle )
+	var q_lattitude: Quaternion = Quaternion( Vector3.UP, angle )
 	var local_up: Vector3 = se3_rel.r.normalized()
-	var q_longtitude: Quat = LocalRefFrame.rotation_to( Vector3.UP, local_up )
+	var q_longtitude: Quaternion = LocalRefFrame.rotation_to( Vector3.UP, local_up )
 	# Total transform
-	var q_total: Quat = q_longtitude * q_lattitude
+	var q_total: Quaternion = q_longtitude * q_lattitude
 	# Navball relative to the object.
 	# Object relative to navball:
 	#var q_debug: Quat = q_total.inverse() * se3_rel.q
-	var q_rel: Quat = se3_rel.q.inverse() * q_total
+	var q_rel: Quaternion = se3_rel.q.inverse() * q_total
 	orientation = q_rel
 
 
@@ -94,7 +94,7 @@ func _update_orientation():
 #	var q_pitch: Quat = Quat( Vector3.RIGHT, ball_pitch )
 #	var q_roll: Quat = Quat( Vector3.BACK, ball_roll )
 #	var q: Quat = q_yaw * q_pitch * q_roll
-	var n: Spatial = get_node( "navball" )
+	var n: Node3D = get_node( "navball" )
 	n.transform.basis = Basis( orientation )
 
 
@@ -103,14 +103,14 @@ func _update_orientation():
 
 # All except ones not having a pair one.
 func _set_indicator( name: String, v: Vector3, visible: bool = true ):
-	var s: Spatial = get_node( name )
+	var s: Node3D = get_node( name )
 	if s == null:
 		return
 	if not visible:
 		s.visible = false
 		return
 	
-	var t: Transform = s.transform
+	var t: Transform3D = s.transform
 	var l: float = v.length()
 	if l < SPEED_EPS:
 		s.visible = false
@@ -124,7 +124,7 @@ func _set_indicator( name: String, v: Vector3, visible: bool = true ):
 	r.y = LEN
 	t.origin = r
 	
-	t.basis = Quat.IDENTITY
+	t.basis = Quaternion.IDENTITY
 	
 	s.transform = t
 

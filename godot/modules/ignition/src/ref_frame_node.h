@@ -6,10 +6,10 @@
 #include "scene/main/node.h"
 
 #include "core/math/vector3.h"
-#include "core/math/quat.h"
-#include "core/math/transform.h"
+#include "core/math/quaternion.h"
+#include "core/math/transform_3d.h"
 
-#include "core/vector.h"
+#include "core/templates/vector.h"
 
 #include "se3.h"
 #include "se3_ref.h"
@@ -20,7 +20,7 @@ namespace Ign
 class RefFrameNode: public Node
 {
 	GDCLASS(RefFrameNode, Node);
-	OBJ_CATEGORY("Ignition");
+	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
@@ -30,15 +30,15 @@ public:
 	virtual ~RefFrameNode();
 
 	void set_r( const Vector3 & r );
-	void set_q( const Quat & q );
+	void set_q( const Quaternion & q );
 	void set_v( const Vector3 & v );
 	void set_w( const Vector3 & w );
 
-	void set_t( const Transform & t );
-	Transform t() const;
+	void set_t( const Transform3D & t );
+	Transform3D t() const;
 
 	Vector3 r() const;
-	Quat    q() const;
+	Quaternion q() const;
 	Vector3 v() const;
 	Vector3 w() const;
 
@@ -51,7 +51,9 @@ public:
 	Ref<Se3Ref> se3_relative_to( const Ref<Se3Ref> & object_se3, Node * origin );
 
 	/// Change origin without changing absolute position in space.
-	void change_parent( Node * origin );
+	virtual void change_parent( Node * origin, bool recursive_call );
+	GDVIRTUAL2(_change_parent, Node *, bool);
+
 
 	/// Related to jump.
 	void jump_to( Node * dest, const Ref<Se3Ref> & dest_se3 );
@@ -60,11 +62,11 @@ public:
 	// inform other functionality pieces about SE3 change.
 	void jump_to_( Node * dest, const SE3 & dest_se3 );
 	// Callbacks for script notification.
-	void _jumped();
-	void _parent_jumped();
-	void _child_jumped( RefFrameNode * child_ref_frame );
-	void _child_entered( RefFrameNode * child_ref_frame );
-	void _child_left( RefFrameNode * child_ref_frame );
+	GDVIRTUAL0(_jumped);
+	GDVIRTUAL0(_parent_jumped);
+	GDVIRTUAL1(_child_jumped, Node *);
+	GDVIRTUAL1(_child_entered, Node *);
+	GDVIRTUAL1(_child_left, Node *);
 
 	/// Compute relative state in the most generic way.
 	/// Provide two points in local and in root frames.
@@ -91,23 +93,31 @@ public:
 
 
 	// Compute forces, integrate dynamics.
-	virtual void _ign_pre_process( real_t delta );
+	virtual void ign_pre_process( real_t delta );
+	GDVIRTUAL1(_ign_pre_process, real_t);
 	// Set positions, place visuals.
-	virtual void _ign_process( real_t delta );
+	virtual void ign_process( real_t delta );
+	GDVIRTUAL1(_ign_process, real_t);
 	// Place camera.
-	virtual void _ign_post_process( real_t delta );
+	virtual void ign_post_process( real_t delta );
+	GDVIRTUAL1(_ign_post_process, real_t);
 
 
 	// Compute forces, integrate dynamics.
-	virtual void _ign_physics_pre_process( real_t delta );
+	virtual void ign_physics_pre_process( real_t delta );
+	GDVIRTUAL1(_ign_physics_pre_process, real_t);
 	// Set positions, place visuals.
-	virtual void _ign_physics_process( real_t delta );
+	virtual void ign_physics_process( real_t delta );
+	GDVIRTUAL1(_ign_physics_process, real_t);
 	// Place camera.
-	virtual void _ign_physics_post_process( real_t delta );
+	virtual void ign_physics_post_process( real_t delta );
+	GDVIRTUAL1(_ign_physics_post_process, real_t);
 
 
 	virtual Dictionary serialize();
+	GDVIRTUAL1(_serialize, Dictionary);
 	virtual bool deserialize( const Dictionary & data );
+	GDVIRTUAL1R(bool, _deserialize, Dictionary);
 };
 
 }

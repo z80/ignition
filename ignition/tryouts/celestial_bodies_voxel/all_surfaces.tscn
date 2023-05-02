@@ -5,7 +5,7 @@
 [ext_resource path="res://tryouts/celestial_bodies_voxel/all_surfaces.gd" type="Script" id=3]
 [ext_resource path="res://tryouts/celestial_bodies_voxel/surface_sources/test_planet/foliage_sources/foliage_source.tres" type="Resource" id=4]
 
-[node name="All_Surfaces" type="Spatial"]
+[node name="All_Surfaces" type="Node3D"]
 script = ExtResource( 3 )
 rebuild_dist = 50.0
 

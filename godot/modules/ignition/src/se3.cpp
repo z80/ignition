@@ -1,7 +1,7 @@
 
 #include "se3.h"
-#include "core/variant.h"
-#include "core/dictionary.h"
+#include "core/variant/variant.h"
+#include "core/variant/dictionary.h"
 
 namespace Ign
 {
@@ -22,7 +22,7 @@ SE3::SE3( const Vector3d & r, const Quaterniond & q, const Vector3d & v, const V
     w_ = w;
 }
 
-SE3::SE3( const Vector3 & r, const Quat & q, const Vector3 & v, const Vector3 & w )
+SE3::SE3( const Vector3 & r, const Quaternion & q, const Vector3 & v, const Vector3 & w )
 {
     r_.x_ = r.x;
     r_.y_ = r.y;
@@ -130,7 +130,7 @@ void SE3::set_r( const Vector3 & r )
     r_.z_ = r.z;
 }
 
-void SE3::set_q( const Quat & q )
+void SE3::set_q( const Quaternion & q )
 {
     q_.w_ = q.w;
     q_.x_ = q.x;
@@ -152,12 +152,12 @@ void SE3::set_w( const Vector3 & w )
     w_.z_ = w.z;
 }
 
-void SE3::set_transform( const Transform & t )
+void SE3::set_transform( const Transform3D & t )
 {
     const Vector3 r = t.get_origin();
     set_r( r );
-    const Basis b = t.get_basis();
-    const Quat q = b.get_quat();
+    const Basis      b = t.get_basis();
+    const Quaternion q = b.get_quaternion();
     set_q( q );
 }
 
@@ -167,9 +167,9 @@ Vector3 SE3::r() const
     return res;
 }
 
-Quat    SE3::q() const
+Quaternion SE3::q() const
 {
-    const Quat res( q_.x_, q_.y_, q_.z_, q_.w_ );
+    const Quaternion res( q_.x_, q_.y_, q_.z_, q_.w_ );
     return res;
 }
 
@@ -185,11 +185,11 @@ Vector3 SE3::w() const
     return res;
 }
 
-Transform SE3::transform() const
+Transform3D SE3::transform() const
 {
-    Transform t;
+    Transform3D t;
     t.set_origin( this->r() );
-    const Quat q = this->q();
+    const Quaternion q = this->q();
     const Basis b = q;
     t.set_basis( b );
 

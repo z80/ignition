@@ -6,7 +6,7 @@ var menu_stack: Array = []
 
 func push( NewMenu: PackedScene = null ):
 	# Make sure that "self" presents in the stack.
-	if menu_stack.empty():
+	if menu_stack.is_empty():
 		menu_stack.push_back( self )
 	
 	var top: Control = menu_stack.back()
@@ -17,7 +17,7 @@ func push( NewMenu: PackedScene = null ):
 	self.visible = false
 	
 	# Create new menu.
-	var new_menu: Control = NewMenu.instance()
+	var new_menu: Control = NewMenu.instantiate()
 	var p: Control = self.get_parent()
 	menu_stack.push_back( new_menu )
 	new_menu.menu_stack = menu_stack
@@ -25,12 +25,12 @@ func push( NewMenu: PackedScene = null ):
 
 
 func pop():
-	if not menu_stack.empty():
+	if not menu_stack.is_empty():
 		var top: Control = menu_stack.back()
 		if top == self:
 			menu_stack.pop_back()
 	
-	if not menu_stack.empty():
+	if not menu_stack.is_empty():
 		var top: Control = menu_stack.back()
 		top.return_back()
 		
@@ -42,7 +42,7 @@ func return_back():
 
 
 func is_current():
-	if menu_stack.empty():
+	if menu_stack.is_empty():
 		menu_stack.push_back( self )
 		return true
 	
@@ -66,7 +66,7 @@ func on_user_input( event: InputEvent ):
 		#print( "pressed: ", pressed )
 		if key_pressed:
 			return
-		if event.scancode == KEY_ESCAPE:
+		if event.keycode == KEY_ESCAPE:
 			var current: bool = is_current()
 			if current:
 				# Prevent "esc" press to be processed by the menu 

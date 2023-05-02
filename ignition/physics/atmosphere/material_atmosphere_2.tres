@@ -1,12 +1,12 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://odvje1q15lu7"]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="Shader" id="1"]
 code = "shader_type spatial;
 render_mode unshaded;
 
 // Atmosphere parameters
-uniform vec4  color_day:   hint_color = vec4( 0.65, 0.8, 1.0, 1.0 );
-uniform vec4  color_night: hint_color = vec4( 1.0, 0.43, 0.46, 1.0 );
+uniform vec4  color_day:   source_color = vec4( 0.65, 0.8, 1.0, 1.0 );
+uniform vec4  color_night: source_color = vec4( 1.0, 0.43, 0.46, 1.0 );
 uniform float planet_radius = 1000.0;
 uniform float inner_height  = 10.0;
 uniform float outer_height  = 10.0;
@@ -156,14 +156,15 @@ void fragment()
 "
 
 [resource]
-shader = SubResource( 1 )
-shader_param/color_day = Color( 0.65, 0.8, 1, 1 )
-shader_param/color_night = Color( 1, 0.43, 0.46, 1 )
-shader_param/planet_radius = 1000.0
-shader_param/inner_height = 10.0
-shader_param/outer_height = 10.0
-shader_param/inner_transparency_distance = 10.0
-shader_param/outer_transparency_distance = 10.0
-shader_param/light_dir = Vector3( 0, 0, -1 )
-shader_param/planet_center = Vector3( 0, -950, -433 )
-shader_param/displacement = -0.101
+render_priority = 0
+shader = SubResource("1")
+shader_parameter/color_day = Color(0.65, 0.8, 1, 1)
+shader_parameter/color_night = Color(1, 0.43, 0.46, 1)
+shader_parameter/planet_radius = 1000.0
+shader_parameter/inner_height = 10.0
+shader_parameter/outer_height = 10.0
+shader_parameter/inner_transparency_distance = 10.0
+shader_parameter/outer_transparency_distance = 10.0
+shader_parameter/light_dir = Vector3(0, 0, -1)
+shader_parameter/planet_center = Vector3(0, -950, -433)
+shader_parameter/displacement = -0.101

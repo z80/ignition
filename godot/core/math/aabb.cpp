@@ -30,66 +30,35 @@
 
 #include "aabb.h"
 
-#include "core/print_string.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
-real_t AABB::get_area() const {
+real_t AABB::get_volume() const {
 	return size.x * size.y * size.z;
 }
 
 bool AABB::operator==(const AABB &p_rval) const {
 	return ((position == p_rval.position) && (size == p_rval.size));
 }
+
 bool AABB::operator!=(const AABB &p_rval) const {
 	return ((position != p_rval.position) || (size != p_rval.size));
 }
 
-bool AABB::create_from_points(const Vector<Vector3> &p_points) {
-	if (!p_points.size()) {
-		return false;
-	}
-
-	Vector3 begin = p_points[0];
-	Vector3 end = begin;
-
-	for (int n = 1; n < p_points.size(); n++) {
-		const Vector3 &pt = p_points[n];
-
-		if (pt.x < begin.x) {
-			begin.x = pt.x;
-		}
-		if (pt.y < begin.y) {
-			begin.y = pt.y;
-		}
-		if (pt.z < begin.z) {
-			begin.z = pt.z;
-		}
-
-		if (pt.x > end.x) {
-			end.x = pt.x;
-		}
-		if (pt.y > end.y) {
-			end.y = pt.y;
-		}
-		if (pt.z > end.z) {
-			end.z = pt.z;
-		}
-	}
-
-	position = begin;
-	size = end - begin;
-
-	return true;
-}
-
 void AABB::merge_with(const AABB &p_aabb) {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
 	Vector3 beg_1, beg_2;
 	Vector3 end_1, end_2;
 	Vector3 min, max;
 
 	beg_1 = position;
 	beg_2 = p_aabb.position;
-	end_1 = Vector3(size.x, size.y, size.z) + beg_1;
-	end_2 = Vector3(p_aabb.size.x, p_aabb.size.y, p_aabb.size.z) + beg_2;
+	end_1 = size + beg_1;
+	end_2 = p_aabb.size + beg_2;
 
 	min.x = (beg_1.x < beg_2.x) ? beg_1.x : beg_2.x;
 	min.y = (beg_1.y < beg_2.y) ? beg_1.y : beg_2.y;
@@ -107,7 +76,16 @@ bool AABB::is_equal_approx(const AABB &p_aabb) const {
 	return position.is_equal_approx(p_aabb.position) && size.is_equal_approx(p_aabb.size);
 }
 
+bool AABB::is_finite() const {
+	return position.is_finite() && size.is_finite();
+}
+
 AABB AABB::intersection(const AABB &p_aabb) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
 	Vector3 src_min = position;
 	Vector3 src_max = position + size;
 	Vector3 dst_min = p_aabb.position;
@@ -140,6 +118,11 @@ AABB AABB::intersection(const AABB &p_aabb) const {
 }
 
 bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip, Vector3 *r_normal) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
 	Vector3 c1, c2;
 	Vector3 end = position + size;
 	real_t near = -1e20;
@@ -183,6 +166,11 @@ bool AABB::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *
 }
 
 bool AABB::intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip, Vector3 *r_normal) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
+	}
+#endif
 	real_t min = 0, max = 1;
 	int axis = 0;
 	real_t sign = 0;
@@ -283,6 +271,7 @@ Vector3 AABB::get_longest_axis() const {
 
 	return axis;
 }
+
 int AABB::get_longest_axis_index() const {
 	int axis = 0;
 	real_t max_size = size.x;
@@ -301,29 +290,30 @@ int AABB::get_longest_axis_index() const {
 
 Vector3 AABB::get_shortest_axis() const {
 	Vector3 axis(1, 0, 0);
-	real_t max_size = size.x;
+	real_t min_size = size.x;
 
-	if (size.y < max_size) {
+	if (size.y < min_size) {
 		axis = Vector3(0, 1, 0);
-		max_size = size.y;
+		min_size = size.y;
 	}
 
-	if (size.z < max_size) {
+	if (size.z < min_size) {
 		axis = Vector3(0, 0, 1);
 	}
 
 	return axis;
 }
+
 int AABB::get_shortest_axis_index() const {
 	int axis = 0;
-	real_t max_size = size.x;
+	real_t min_size = size.x;
 
-	if (size.y < max_size) {
+	if (size.y < min_size) {
 		axis = 1;
-		max_size = size.y;
+		min_size = size.y;
 	}
 
-	if (size.z < max_size) {
+	if (size.z < min_size) {
 		axis = 2;
 	}
 
@@ -335,11 +325,13 @@ AABB AABB::merge(const AABB &p_with) const {
 	aabb.merge_with(p_with);
 	return aabb;
 }
+
 AABB AABB::expand(const Vector3 &p_vector) const {
 	AABB aabb = *this;
 	aabb.expand_to(p_vector);
 	return aabb;
 }
+
 AABB AABB::grow(real_t p_by) const {
 	AABB aabb = *this;
 	aabb.grow_by(p_by);
@@ -408,6 +400,22 @@ void AABB::get_edge(int p_edge, Vector3 &r_from, Vector3 &r_to) const {
 	}
 }
 
+Variant AABB::intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const {
+	Vector3 inters;
+	if (intersects_segment(p_from, p_to, &inters)) {
+		return inters;
+	}
+	return Variant();
+}
+
+Variant AABB::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const {
+	Vector3 inters;
+	if (intersects_ray(p_from, p_dir, &inters)) {
+		return inters;
+	}
+	return Variant();
+}
+
 AABB::operator String() const {
-	return String() + position + " - " + size;
+	return "[P: " + position.operator String() + ", S: " + size + "]";
 }

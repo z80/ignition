@@ -2,7 +2,7 @@
 extends Node
 
 
-var camera: Camera = null
+var camera: Camera3D = null
 var rf_physics: RefFramePhysics = null
 
 func _init():
@@ -16,7 +16,7 @@ func _ready():
 	
 	var rf = RefFramePhysics.new()
 	rf.name = "my_physics_rf"
-	camera = Camera.new()
+	camera = Camera3D.new()
 	var camera_script = preload( "res://assets/maujoe.camera_control/scripts/camera_control.gd" )
 	camera.script = camera_script
 	
@@ -32,7 +32,7 @@ func _ready():
 	#RootScene.ref_frame_root.player_camera = camera
 	
 	
-	var t: Transform = Transform.IDENTITY
+	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = Vector3( 0.0, 0.0, 10.0 )
 	camera.transform = t
 	
@@ -48,5 +48,5 @@ func _process(delta):
 	sun.process( delta )
 	
 	if rf_physics != null:
-		var t: Transform = camera.transform
+		var t: Transform3D = camera.transform
 		rf_physics.transform.origin = t.origin

@@ -3,7 +3,7 @@
 #include "ref_frame_tree.h"
 
 RefFrame::RefFrame()
-	: Reference()
+	: RefCounted()
 {
 	tree_   = nullptr;
 	index_  = -1;
@@ -109,7 +109,7 @@ void RefFrame::set_r( const Vector3 & r )
 	se3_.set_r( r );
 }
 
-void RefFrame::set_q( const Quat & q )
+void RefFrame::set_q( const Quaternion & q )
 {
 	se3_.set_q( q );
 }
@@ -124,16 +124,16 @@ void RefFrame::set_w( const Vector3 & w )
 	se3_.set_w( w );
 }
 
-void RefFrame::set_t( const Transform & t )
+void RefFrame::set_t( const Transform3D & t )
 {
 	se3_.set_transform( t );
 }
 
-Transform RefFrame::t() const
+Transform3D RefFrame::t() const
 {
-	Transform t;
+	Transform3D t;
 	t.set_origin( se3_.r() );
-	const Quat q = se3_.q();
+	const Quaternion q = se3_.q();
 	const Basis b = q;
 	t.set_basis( b );
 
@@ -146,9 +146,9 @@ Vector3 RefFrame::r() const
 	return res;
 }
 
-Quat    RefFrame::q() const
+Quaternion RefFrame::q() const
 {
-	const Quat res = se3_.q();
+	const Quaternion res = se3_.q();
 	return res;
 }
 
@@ -170,9 +170,9 @@ Vector3 RefFrame::r_root() const
 	return res;
 }
 
-Quat    RefFrame::q_root() const
+Quaternion RefFrame::q_root() const
 {
-	const Quat res = se3_rel_to_root_.q();
+	const Quaternion res = se3_rel_to_root_.q();
 	return res;
 }
 
@@ -188,13 +188,13 @@ Vector3 RefFrame::w_root() const
 	return res;
 }
 
-Transform RefFrame::t_root() const
+Transform3D RefFrame::t_root() const
 {
-	const Transform t = se3_rel_to_root_.transform();
+	const Transform3D t = se3_rel_to_root_.transform();
 	return t;
 }
 
-void RefFrame::set_origin( Ref<Reference> parent )
+void RefFrame::set_origin( Ref<RefCounted> parent )
 {
 	if ( parent.is_null() )
 	{
@@ -210,7 +210,7 @@ void RefFrame::set_origin( Ref<Reference> parent )
 	origin_ = rf->index_;
 }
 
-Ref<Reference> RefFrame::origin() const
+Ref<RefCounted> RefFrame::origin() const
 {
 	if ( tree_.is_null() )
 		return nullptr;
@@ -218,11 +218,11 @@ Ref<Reference> RefFrame::origin() const
 	if ( origin_ < 0 )
 		return nullptr;
 
-	Ref<Reference> rf = tree_->frames_.ptr()[origin_];
+	Ref<RefCounted> rf = tree_->frames_.ptr()[origin_];
 	return rf;
 }
 
-void RefFrame::set_root( Ref<Reference> parent )
+void RefFrame::set_root( Ref<RefCounted> parent )
 {
 	if ( parent.is_null() )
 	{
@@ -238,7 +238,7 @@ void RefFrame::set_root( Ref<Reference> parent )
 	root_ = rf->index_;
 }
 
-Ref<Reference> RefFrame::root() const
+Ref<RefCounted> RefFrame::root() const
 {
 	if ( tree_.is_null() )
 		return nullptr;
@@ -246,7 +246,7 @@ Ref<Reference> RefFrame::root() const
 	if ( root_ < 0 )
 		return nullptr;
 
-	Ref<Reference> rf = tree_->frames_.ptr()[root_];
+	Ref<RefCounted> rf = tree_->frames_.ptr()[root_];
 	return rf;
 }
 
@@ -256,7 +256,7 @@ bool RefFrame::in_tree() const
 	return res;
 }
 
-void RefFrame::change_origin( Ref<Reference> origin )
+void RefFrame::change_origin( Ref<RefCounted> origin )
 {
 	int new_origin;
 	if ( origin.is_null() )
@@ -288,7 +288,7 @@ void RefFrame::set_jump_r( const Vector3 & r )
 	se3_jump_to_.set_r( r );
 }
 
-void RefFrame::set_jump_q( const Quat & q )
+void RefFrame::set_jump_q( const Quaternion & q )
 {
 	se3_jump_to_.set_q( q );
 }
@@ -303,7 +303,7 @@ void RefFrame::set_jump_w( const Vector3 & w )
 	se3_jump_to_.set_w( w );
 }
 
-void RefFrame::set_jump_transform( const Transform & t )
+void RefFrame::set_jump_transform( const Transform3D & t )
 {
 	se3_jump_to_.set_transform( t );
 }
@@ -313,7 +313,7 @@ void RefFrame::set_obj_r( const Vector3 & r )
 	se3_obj_cur_.set_r( r );
 }
 
-void RefFrame::set_obj_q( const Quat & q )
+void RefFrame::set_obj_q( const Quaternion & q )
 {
 	se3_obj_cur_.set_q( q );
 }
@@ -328,7 +328,7 @@ void RefFrame::set_obj_w( const Vector3 & w )
 	se3_obj_cur_.set_w( w );
 }
 
-void RefFrame::set_obj_t( const Transform & t )
+void RefFrame::set_obj_t( const Transform3D & t )
 {
 	se3_obj_cur_.set_transform( t );
 }
@@ -344,9 +344,9 @@ Vector3 RefFrame::obj_r() const
 	return res;
 }
 
-Quat    RefFrame::obj_q() const
+Quaternion RefFrame::obj_q() const
 {
-	Quat res = se3_obj_after_jump_.q();
+	Quaternion res = se3_obj_after_jump_.q();
 	return res;
 }
 
@@ -362,9 +362,9 @@ Vector3 RefFrame::obj_w() const
 	return res;
 }
 
-Transform RefFrame::obj_t() const
+Transform3D RefFrame::obj_t() const
 {
-	Transform res = se3_obj_after_jump_.transform();
+	Transform3D res = se3_obj_after_jump_.transform();
 	return res;
 }
 
@@ -384,9 +384,9 @@ Vector3 RefFrame::obj_root_r() const
 	return res;
 }
 
-Quat    RefFrame::obj_root_q() const
+Quaternion    RefFrame::obj_root_q() const
 {
-	const Quat res = se3_obj_rel_to_root_.q();
+	const Quaternion res = se3_obj_rel_to_root_.q();
 	return res;
 }
 
@@ -402,9 +402,9 @@ Vector3 RefFrame::obj_root_w() const
 	return res;
 }
 
-Transform RefFrame::obj_root_t() const
+Transform3D RefFrame::obj_root_t() const
 {
-	const Transform res = se3_obj_rel_to_root_.transform();
+	const Transform3D res = se3_obj_rel_to_root_.transform();
 	return res;
 }
 

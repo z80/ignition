@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CameraFeed" inherits="Reference" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CameraFeed" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A camera feed gives you access to a single physical camera attached to your device.
 	</brief_description>
@@ -10,6 +10,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_datatype" qualifiers="const">
+			<return type="int" enum="CameraFeed.FeedDataType" />
+			<description>
+				Returns feed image data type.
+			</description>
+		</method>
 		<method name="get_id" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -33,7 +39,7 @@
 		<member name="feed_is_active" type="bool" setter="set_active" getter="is_active" default="false">
 			If [code]true[/code], the feed is active.
 		</member>
-		<member name="feed_transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D( 1, 0, 0, -1, 0, 1 )">
+		<member name="feed_transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D(1, 0, 0, -1, 0, 1)">
 			The transform applied to the camera's image.
 		</member>
 	</members>

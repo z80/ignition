@@ -30,11 +30,54 @@
 
 #include "crypto_core.h"
 
+#include "core/os/os.h"
+
 #include <mbedtls/aes.h>
 #include <mbedtls/base64.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/entropy.h>
 #include <mbedtls/md5.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
+
+// RandomGenerator
+CryptoCore::RandomGenerator::RandomGenerator() {
+	entropy = memalloc(sizeof(mbedtls_entropy_context));
+	mbedtls_entropy_init((mbedtls_entropy_context *)entropy);
+	mbedtls_entropy_add_source((mbedtls_entropy_context *)entropy, &CryptoCore::RandomGenerator::_entropy_poll, nullptr, 256, MBEDTLS_ENTROPY_SOURCE_STRONG);
+	ctx = memalloc(sizeof(mbedtls_ctr_drbg_context));
+	mbedtls_ctr_drbg_init((mbedtls_ctr_drbg_context *)ctx);
+}
+
+CryptoCore::RandomGenerator::~RandomGenerator() {
+	mbedtls_ctr_drbg_free((mbedtls_ctr_drbg_context *)ctx);
+	memfree(ctx);
+	mbedtls_entropy_free((mbedtls_entropy_context *)entropy);
+	memfree(entropy);
+}
+
+int CryptoCore::RandomGenerator::_entropy_poll(void *p_data, unsigned char *r_buffer, size_t p_len, size_t *r_len) {
+	*r_len = 0;
+	Error err = OS::get_singleton()->get_entropy(r_buffer, p_len);
+	ERR_FAIL_COND_V(err, MBEDTLS_ERR_ENTROPY_SOURCE_FAILED);
+	*r_len = p_len;
+	return 0;
+}
+
+Error CryptoCore::RandomGenerator::init() {
+	int ret = mbedtls_ctr_drbg_seed((mbedtls_ctr_drbg_context *)ctx, mbedtls_entropy_func, (mbedtls_entropy_context *)entropy, nullptr, 0);
+	if (ret) {
+		ERR_FAIL_COND_V_MSG(ret, FAILED, " failed\n  ! mbedtls_ctr_drbg_seed returned an error" + itos(ret));
+	}
+	return OK;
+}
+
+Error CryptoCore::RandomGenerator::get_random_bytes(uint8_t *r_buffer, size_t p_bytes) {
+	ERR_FAIL_COND_V(!ctx, ERR_UNCONFIGURED);
+	int ret = mbedtls_ctr_drbg_random((mbedtls_ctr_drbg_context *)ctx, r_buffer, p_bytes);
+	ERR_FAIL_COND_V_MSG(ret, FAILED, " failed\n  ! mbedtls_ctr_drbg_seed returned an error" + itos(ret));
+	return OK;
+}
 
 // MD5
 CryptoCore::MD5Context::MD5Context() {
@@ -140,13 +183,19 @@ Error CryptoCore::AESContext::encrypt_ecb(const uint8_t p_src[16], uint8_t r_dst
 	return ret ? FAILED : OK;
 }
 
-Error CryptoCore::AESContext::decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]) {
-	int ret = mbedtls_aes_crypt_ecb((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_src, r_dst);
+Error CryptoCore::AESContext::encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_length, r_iv, p_src, r_dst);
 	return ret ? FAILED : OK;
 }
 
-Error CryptoCore::AESContext::encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
-	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_length, r_iv, p_src, r_dst);
+Error CryptoCore::AESContext::encrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	size_t iv_off = 0; // Ignore and assume 16-byte alignment.
+	int ret = mbedtls_aes_crypt_cfb128((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_length, &iv_off, p_iv, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::AESContext::decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]) {
+	int ret = mbedtls_aes_crypt_ecb((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_src, r_dst);
 	return ret ? FAILED : OK;
 }
 
@@ -155,12 +204,18 @@ Error CryptoCore::AESContext::decrypt_cbc(size_t p_length, uint8_t r_iv[16], con
 	return ret ? FAILED : OK;
 }
 
+Error CryptoCore::AESContext::decrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	size_t iv_off = 0; // Ignore and assume 16-byte alignment.
+	int ret = mbedtls_aes_crypt_cfb128((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_length, &iv_off, p_iv, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
 // CryptoCore
 String CryptoCore::b64_encode_str(const uint8_t *p_src, int p_src_len) {
 	int b64len = p_src_len / 3 * 4 + 4 + 1;
-	PoolVector<uint8_t> b64buff;
+	Vector<uint8_t> b64buff;
 	b64buff.resize(b64len);
-	PoolVector<uint8_t>::Write w64 = b64buff.write();
+	uint8_t *w64 = b64buff.ptrw();
 	size_t strlen = 0;
 	int ret = b64_encode(&w64[0], b64len, &strlen, p_src, p_src_len);
 	w64[strlen] = 0;

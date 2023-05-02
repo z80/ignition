@@ -1,56 +1,67 @@
 using System;
-using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
-    public class SignalAwaiter : IAwaiter<object[]>, IAwaitable<object[]>
+    public class SignalAwaiter : IAwaiter<Variant[]>, IAwaitable<Variant[]>
     {
         private bool _completed;
-        private object[] _result;
-        private Action _action;
+        private Variant[] _result;
+        private Action _continuation;
 
-        public SignalAwaiter(Object source, string signal, Object target)
+        public SignalAwaiter(GodotObject source, StringName signal, GodotObject target)
         {
-            godot_icall_SignalAwaiter_connect(Object.GetPtr(source), signal, Object.GetPtr(target), this);
+            var awaiterGcHandle = CustomGCHandle.AllocStrong(this);
+            using godot_string_name signalSrc = NativeFuncs.godotsharp_string_name_new_copy(
+                (godot_string_name)(signal?.NativeValue ?? default));
+            NativeFuncs.godotsharp_internal_signal_awaiter_connect(GodotObject.GetPtr(source), in signalSrc,
+                GodotObject.GetPtr(target), GCHandle.ToIntPtr(awaiterGcHandle));
         }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Error godot_icall_SignalAwaiter_connect(IntPtr source, string signal, IntPtr target, SignalAwaiter awaiter);
+        public bool IsCompleted => _completed;
 
-        public bool IsCompleted
+        public void OnCompleted(Action continuation)
         {
-            get
+            _continuation = continuation;
+        }
+
+        public Variant[] GetResult() => _result;
+
+        public IAwaiter<Variant[]> GetAwaiter() => this;
+
+        [UnmanagedCallersOnly]
+        internal static unsafe void SignalCallback(IntPtr awaiterGCHandlePtr, godot_variant** args, int argCount,
+            godot_bool* outAwaiterIsNull)
+        {
+            try
             {
-                return _completed;
+                var awaiter = (SignalAwaiter)GCHandle.FromIntPtr(awaiterGCHandlePtr).Target;
+
+                if (awaiter == null)
+                {
+                    *outAwaiterIsNull = godot_bool.True;
+                    return;
+                }
+
+                *outAwaiterIsNull = godot_bool.False;
+
+                awaiter._completed = true;
+
+                Variant[] signalArgs = new Variant[argCount];
+
+                for (int i = 0; i < argCount; i++)
+                    signalArgs[i] = Variant.CreateCopyingBorrowed(*args[i]);
+
+                awaiter._result = signalArgs;
+
+                awaiter._continuation?.Invoke();
             }
-        }
-
-        public void OnCompleted(Action action)
-        {
-            this._action = action;
-        }
-
-        public object[] GetResult()
-        {
-            return _result;
-        }
-
-        public IAwaiter<object[]> GetAwaiter()
-        {
-            return this;
-        }
-
-        internal void SignalCallback(object[] args)
-        {
-            _completed = true;
-            _result = args;
-            _action?.Invoke();
-        }
-
-        internal void FailureCallback()
-        {
-            _action = null;
-            _completed = true;
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outAwaiterIsNull = godot_bool.False;
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-extends Viewport
+extends SubViewport
 
 
 # Declare member variables here. Examples:
@@ -18,4 +18,4 @@ func _ready():
 #	pass
 
 func _physics_process(delta):
-	$RigidBody.add_central_force( Vector3( 0.0, -0.5, 0.0 ) )
+	$RigidBody3D.apply_central_force( Vector3( 0.0, -0.5, 0.0 ) )

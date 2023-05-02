@@ -3,7 +3,7 @@ extends StaticPhysicsBody
 
 
 func init():
-	.init()
+	super.init()
 
 
 
@@ -11,8 +11,8 @@ func init():
 
 
 func create_physical():
-	var ph = .create_physical()
+	var ph = super.create_physical()
 	if ph != null:
-		ph.mode = ph.MODE_STATIC
+		ph.mode = ph.FREEZE_MODE_STATIC
 
 

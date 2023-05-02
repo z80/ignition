@@ -6,7 +6,7 @@
 #include "math_defs.h"
 #include "core/math/vector3.h"
 #include "core/math/vector2.h"
-#include "core/ustring.h"
+#include "core/string/ustring.h"
 
 using namespace Urho3D;
 

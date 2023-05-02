@@ -55,24 +55,24 @@ protected:
 
 	struct bmp_header_s {
 		struct bmp_file_header_s {
-			uint16_t bmp_signature;
-			uint32_t bmp_file_size;
-			uint32_t bmp_file_padding;
-			uint32_t bmp_file_offset;
+			uint16_t bmp_signature = 0;
+			uint32_t bmp_file_size = 0;
+			uint32_t bmp_file_padding = 0;
+			uint32_t bmp_file_offset = 0;
 		} bmp_file_header;
 
 		struct bmp_info_header_s {
-			uint32_t bmp_header_size;
-			uint32_t bmp_width;
-			uint32_t bmp_height;
-			uint16_t bmp_planes;
-			uint16_t bmp_bit_count;
-			uint32_t bmp_compression;
-			uint32_t bmp_size_image;
-			uint32_t bmp_pixels_per_meter_x;
-			uint32_t bmp_pixels_per_meter_y;
-			uint32_t bmp_colors_used;
-			uint32_t bmp_important_colors;
+			uint32_t bmp_header_size = 0;
+			uint32_t bmp_width = 0;
+			uint32_t bmp_height = 0;
+			uint16_t bmp_planes = 0;
+			uint16_t bmp_bit_count = 0;
+			uint32_t bmp_compression = 0;
+			uint32_t bmp_size_image = 0;
+			uint32_t bmp_pixels_per_meter_x = 0;
+			uint32_t bmp_pixels_per_meter_y = 0;
+			uint32_t bmp_colors_used = 0;
+			uint32_t bmp_important_colors = 0;
 		} bmp_info_header;
 	};
 
@@ -83,8 +83,7 @@ protected:
 			const bmp_header_s &p_header);
 
 public:
-	virtual Error load_image(Ref<Image> p_image, FileAccess *f,
-			bool p_force_linear, float p_scale);
+	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderBMP();
 };

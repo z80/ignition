@@ -32,10 +32,14 @@
 #define BULLET_REGISTER_TYPES_H
 
 /**
-	@author AndreaCatania
+	@author FatherTedd
 */
 
-void register_bullet_types();
-void unregister_bullet_types();
+#include "modules/register_module_types.h"
+
+//void register_bullet_types();
+void initialize_bullet_module( ModuleInitializationLevel p_level );
+//void unregister_bullet_types();
+void uninitialize_bullet_module( ModuleInitializationLevel p_level );
 
 #endif // BULLET_REGISTER_TYPES_H

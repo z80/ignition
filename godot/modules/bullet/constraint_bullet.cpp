@@ -52,7 +52,8 @@ void ConstraintBullet::set_space(SpaceBullet *p_space) {
 }
 
 void ConstraintBullet::destroy_internal_constraint() {
-	space->remove_constraint(this);
+	if (space != nullptr)
+		space->remove_constraint(this);
 }
 
 void ConstraintBullet::disable_collisions_between_bodies(const bool p_disabled) {

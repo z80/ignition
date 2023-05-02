@@ -28,13 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/math/transform_2d.h" // Includes rect2.h but Rect2 needs Transform2D
+#include "rect2.h"
+
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/string/ustring.h"
 
 bool Rect2::is_equal_approx(const Rect2 &p_rect) const {
 	return position.is_equal_approx(p_rect.position) && size.is_equal_approx(p_rect.size);
 }
 
+bool Rect2::is_finite() const {
+	return position.is_finite() && size.is_finite();
+}
+
 bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos, Point2 *r_normal) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0)) {
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
 	real_t min = 0, max = 1;
 	int axis = 0;
 	real_t sign = 0;
@@ -95,6 +108,11 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 }
 
 bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
 	//SAT intersection between local and transformed rect2
 
 	Vector2 xf_points[4] = {
@@ -187,33 +205,33 @@ next4:
 		Vector2(position.x + size.x, position.y + size.y),
 	};
 
-	real_t maxa = p_xform.elements[0].dot(xf_points2[0]);
+	real_t maxa = p_xform.columns[0].dot(xf_points2[0]);
 	real_t mina = maxa;
 
-	real_t dp = p_xform.elements[0].dot(xf_points2[1]);
+	real_t dp = p_xform.columns[0].dot(xf_points2[1]);
 	maxa = MAX(dp, maxa);
 	mina = MIN(dp, mina);
 
-	dp = p_xform.elements[0].dot(xf_points2[2]);
+	dp = p_xform.columns[0].dot(xf_points2[2]);
 	maxa = MAX(dp, maxa);
 	mina = MIN(dp, mina);
 
-	dp = p_xform.elements[0].dot(xf_points2[3]);
+	dp = p_xform.columns[0].dot(xf_points2[3]);
 	maxa = MAX(dp, maxa);
 	mina = MIN(dp, mina);
 
-	real_t maxb = p_xform.elements[0].dot(xf_points[0]);
+	real_t maxb = p_xform.columns[0].dot(xf_points[0]);
 	real_t minb = maxb;
 
-	dp = p_xform.elements[0].dot(xf_points[1]);
+	dp = p_xform.columns[0].dot(xf_points[1]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	dp = p_xform.elements[0].dot(xf_points[2]);
+	dp = p_xform.columns[0].dot(xf_points[2]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	dp = p_xform.elements[0].dot(xf_points[3]);
+	dp = p_xform.columns[0].dot(xf_points[3]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
@@ -224,33 +242,33 @@ next4:
 		return false;
 	}
 
-	maxa = p_xform.elements[1].dot(xf_points2[0]);
+	maxa = p_xform.columns[1].dot(xf_points2[0]);
 	mina = maxa;
 
-	dp = p_xform.elements[1].dot(xf_points2[1]);
+	dp = p_xform.columns[1].dot(xf_points2[1]);
 	maxa = MAX(dp, maxa);
 	mina = MIN(dp, mina);
 
-	dp = p_xform.elements[1].dot(xf_points2[2]);
+	dp = p_xform.columns[1].dot(xf_points2[2]);
 	maxa = MAX(dp, maxa);
 	mina = MIN(dp, mina);
 
-	dp = p_xform.elements[1].dot(xf_points2[3]);
+	dp = p_xform.columns[1].dot(xf_points2[3]);
 	maxa = MAX(dp, maxa);
 	mina = MIN(dp, mina);
 
-	maxb = p_xform.elements[1].dot(xf_points[0]);
+	maxb = p_xform.columns[1].dot(xf_points[0]);
 	minb = maxb;
 
-	dp = p_xform.elements[1].dot(xf_points[1]);
+	dp = p_xform.columns[1].dot(xf_points[1]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	dp = p_xform.elements[1].dot(xf_points[2]);
+	dp = p_xform.columns[1].dot(xf_points[2]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
-	dp = p_xform.elements[1].dot(xf_points[3]);
+	dp = p_xform.columns[1].dot(xf_points[3]);
 	maxb = MAX(dp, maxb);
 	minb = MIN(dp, minb);
 
@@ -262,4 +280,12 @@ next4:
 	}
 
 	return true;
+}
+
+Rect2::operator String() const {
+	return "[P: " + position.operator String() + ", S: " + size + "]";
+}
+
+Rect2::operator Rect2i() const {
+	return Rect2i(position, size);
 }

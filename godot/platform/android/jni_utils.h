@@ -32,14 +32,14 @@
 #define JNI_UTILS_H
 
 #include "string_android.h"
-#include <core/engine.h>
-#include <core/variant.h>
+#include <core/config/engine.h>
+#include <core/variant/variant.h>
 #include <jni.h>
 
 struct jvalret {
 	jobject obj;
 	jvalue val;
-	jvalret() { obj = NULL; }
+	jvalret() { obj = nullptr; }
 };
 
 jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject = false);

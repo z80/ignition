@@ -2,7 +2,7 @@
 #ifndef __MARCHING_CUBE_OBJECT_GD_H_
 #define __MARCHING_CUBE_OBJECT_GD_H_
 
-#include "core/reference.h"
+#include "core/object/ref_counted.h"
 #include "marching_volume_object.h"
 #include "se3_ref.h"
 
@@ -10,9 +10,9 @@
 namespace Ign
 {
 
-class MarchingVolumeObjectGd: public Reference
+class MarchingVolumeObjectGd: public RefCounted
 {
-    GDCLASS( MarchingVolumeObjectGd, Reference );
+    GDCLASS( MarchingVolumeObjectGd, RefCounted );
 
 protected:
     static void _bind_methods();

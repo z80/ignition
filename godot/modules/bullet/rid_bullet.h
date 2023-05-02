@@ -31,15 +31,17 @@
 #ifndef RID_BULLET_H
 #define RID_BULLET_H
 
-#include "core/rid.h"
+#include "core/templates/rid.h"
 
 /**
-	@author AndreaCatania
+	@authod AndreaCatania
+	@author FatherTed
 */
 
 class BulletPhysicsServer;
 
-class RIDBullet : public RID_Data {
+class RIDBullet //: public RID_Data
+{
 	RID self;
 	BulletPhysicsServer *physicsServer;
 
@@ -52,3 +54,5 @@ public:
 };
 
 #endif // RID_BULLET_H
+
+

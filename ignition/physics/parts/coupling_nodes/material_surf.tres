@@ -1,11 +1,11 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://dgx7k5wbjoqcd"]
 
-[sub_resource type="Shader" id=1]
+[sub_resource type="Shader" id="1"]
 code = "shader_type spatial;
 render_mode unshaded;
 
-uniform vec4 color_a: hint_color = vec4( 0.81, 0.81,  0.0, 0.4 );
-uniform vec4 color_b: hint_color = vec4( 0.36, 0.36, 0.36, 0.2 );
+uniform vec4 color_a: source_color = vec4( 0.81, 0.81,  0.0, 0.4 );
+uniform vec4 color_b: source_color = vec4( 0.36, 0.36, 0.36, 0.2 );
 
 varying vec3 point3d;
 
@@ -33,6 +33,7 @@ void fragment()
 "
 
 [resource]
-shader = SubResource( 1 )
-shader_param/color_a = Color( 0, 0.0509804, 0.811765, 0.219608 )
-shader_param/color_b = Color( 0.36, 0.36, 0.36, 0.22 )
+render_priority = 0
+shader = SubResource("1")
+shader_parameter/color_a = Color(0, 0.0509804, 0.811765, 0.219608)
+shader_parameter/color_b = Color(0.36, 0.36, 0.36, 0.22)
