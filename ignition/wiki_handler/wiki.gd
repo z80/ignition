@@ -34,7 +34,7 @@ func open_global( full_path: String, title_path: String ):
 
 func open_internal( full_path: String, path: String, update_history: bool = true ):
 	var file: FileAccess = FileAccess.open( full_path, FileAccess.READ )
-	if file != null:
+	if file == null:
 		return
 	
 	var text: String = file.get_as_text()
