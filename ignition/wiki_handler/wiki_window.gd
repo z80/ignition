@@ -51,6 +51,8 @@ func _ready():
 
 
 
+
+
 func _on_TitleBar_mouse_entered():
 	_mouse.in_title = true
 
@@ -87,6 +89,8 @@ func _input(event):
 			size = new_size
 			_mouse.down_pos = new_mouse_down_pos
 			_pre_maximize_rect = get_rect()
+
+
 
 
 
