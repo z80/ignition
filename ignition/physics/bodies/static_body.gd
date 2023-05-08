@@ -50,7 +50,7 @@ func _update_position():
 
 
 func activate( _root_call: bool = true ):
-	body_state = BodyState.DYNAMIC
+	body_state = BodyState.ACTIVE
 
 	update_physics_from_state()
 	if _physical != null:
@@ -64,7 +64,7 @@ func activate( _root_call: bool = true ):
 
 
 func deactivate( _root_call: bool = true ):
-	body_state = BodyState.KINEMATIC
+	body_state = BodyState.PASSIVE
 	
 	remove_physical()
 

@@ -3,12 +3,12 @@ extends RefFrameBodyNode
 class_name PhysicsBodyBase
 
 enum BodyState {
-	KINEMATIC=0, 
-	DYNAMIC=1, 
+	PASSIVE=0,  # Means notdriven by physical state.
+	ACTIVE=1,   # Means driven by physical state.
 	CONSTRUCTION=2
 }
 
-@export var body_state: BodyState         = BodyState.DYNAMIC
+@export var body_state: BodyState         = BodyState.ACTIVE
 
 # When inheriting need to redefine these two.
 @export var VisualScene: PackedScene   = null
@@ -495,9 +495,9 @@ func set_local_up( up: Vector3 ):
 # being dynamic.
 # These two should be overwritten.
 func activate( root_call: bool = true ):
-	#if body_state == BodyState.DYNAMIC:
+	#if body_state == BodyState.ACTIVE:
 	#	return
-	body_state = BodyState.DYNAMIC
+	body_state = BodyState.ACTIVE
 
 	update_physics_from_state()
 	if _physical != null:
@@ -511,9 +511,9 @@ func activate( root_call: bool = true ):
 
 
 func deactivate( root_call: bool = true ):
-	#if body_state == BodyState.KINEMATIC:
+	#if body_state == BodyState.PASSIVE:
 	#	return
-	body_state = BodyState.KINEMATIC
+	body_state = BodyState.PASSIVE
 	
 	remove_physical()
 

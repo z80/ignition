@@ -84,7 +84,7 @@ func _traverse_coupling_nodes_recursive( p: Node ):
 func process_inner( _delta ):
 	super.process_inner( _delta )
 	
-	if (body_state == BodyState.CONSTRUCTION) or (body_state == BodyState.KINEMATIC):
+	if (body_state == BodyState.CONSTRUCTION) or (body_state == BodyState.PASSIVE):
 		_process_coupling_nodes()
 		_process_attachments()
 	
@@ -145,7 +145,7 @@ func _parent_jumped():
 # being dynamic.
 # These two should be overwritten.
 func activate( root_call: bool = true ):
-	var is_activated: bool = (body_state == BodyState.DYNAMIC)
+	var is_activated: bool = (body_state == BodyState.ACTIVE)
 	if is_activated:
 		return
 	
@@ -156,7 +156,7 @@ func activate( root_call: bool = true ):
 		_physical.mass = mass
 	
 	# If activated, body state should be dynamic.
-	body_state = BodyState.DYNAMIC
+	body_state = BodyState.ACTIVE
 	
 	activate_nodes( true )
 	

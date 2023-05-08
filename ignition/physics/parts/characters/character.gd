@@ -55,14 +55,14 @@ func set_boarding_mode( new_mode ):
 func set_boarding_mode_inside():
 	remove_physical()
 	_visual.visible = false
-	body_state = BodyState.KINEMATIC
+	body_state = BodyState.PASSIVE
 	_boarding_mode = BoardingMode.INSIDE
 
 
 func set_boarding_mode_outside():
 	_visual.visible = true
 	# First set modes.
-	body_state    = BodyState.DYNAMIC
+	body_state    = BodyState.ACTIVE
 	_boarding_mode = BoardingMode.OUTSIDE
 	# After that update/create physical body as the result depends on 
 	# the states provided.
