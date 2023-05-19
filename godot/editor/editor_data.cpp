@@ -293,6 +293,13 @@ Dictionary EditorData::get_scene_editor_states(int p_idx) const {
 }
 
 void EditorData::set_editor_states(const Dictionary &p_states) {
+	if (p_states.is_empty()) {
+		for (EditorPlugin *ep : editor_plugins) {
+			ep->clear();
+		}
+		return;
+	}
+
 	List<Variant> keys;
 	p_states.get_key_list(&keys);
 
@@ -588,7 +595,7 @@ void EditorData::remove_scene(int p_idx) {
 	}
 
 	if (!edited_scene[p_idx].path.is_empty()) {
-		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(edited_scene[p_idx].path);
+		EditorNode::get_singleton()->emit_signal("scene_closed", edited_scene[p_idx].path);
 	}
 
 	undo_redo_manager->discard_history(edited_scene[p_idx].history_id);

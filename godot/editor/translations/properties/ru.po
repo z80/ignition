@@ -127,12 +127,22 @@
 # Vladimir Kirillovskiy <vladimir.kirillovskiy@gmail.com>, 2022.
 # Evgeniy Khramov <thejenjagamertjg@gmail.com>, 2022.
 # kirill blaze <kirillblaze2@gmail.com>, 2022.
+# Yunis Nabiyev <yunisnabiyev2@gmail.com>, 2023.
+# Usow Maxim <usow.maxim2016@yandex.ru>, 2023.
+# Noky Socket <lollysimbart@gmail.com>, 2023.
+# Melairz1237 <mr.artem.snegov@mail.ru>, 2023.
+# Aleksey Smirnov <debugger94@gmail.com>, 2023.
+# Animaliss <Zernon001@mail.ru>, 2023.
+# Pyotr <pitmysterio@mail.ru>, 2023.
+# Aleksey Shilovskiy <alekseyshilovskiy@yandex.ru>, 2023.
+# Eugene One <elevencupoftea@gmail.com>, 2023.
+# Lost Net <pc.mirkn@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-04-01 06:10+0000\n"
+"PO-Revision-Date: 2023-05-19 06:49+0000\n"
 "Last-Translator: Lost Net <pc.mirkn@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
@@ -142,7 +152,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -225,6 +235,9 @@ msgstr "Всегда сверху"
 msgid "Transparent"
 msgstr "Прозрачный"
 
+msgid "Extend to Title"
+msgstr "Расширить до названия"
+
 msgid "No Focus"
 msgstr "Не фокусировать"
 
@@ -246,6 +259,12 @@ msgstr "Аудио"
 msgid "General"
 msgstr "Основное"
 
+msgid "2D Panning Strength"
+msgstr "Сила панорамирования 2D"
+
+msgid "3D Panning Strength"
+msgstr "Сила панорамирования 3D"
+
 msgid "Editor"
 msgstr "Редактор"
 
@@ -258,23 +277,32 @@ msgstr "Физика"
 msgid "2D"
 msgstr "2D"
 
+msgid "Run on Separate Thread"
+msgstr "Запуск в отдельном потоке"
+
 msgid "3D"
 msgstr "3D"
 
 msgid "Stretch"
-msgstr "Растяжение"
+msgstr "Растягивание"
 
 msgid "Aspect"
 msgstr "Соотношение"
 
 msgid "Scale"
-msgstr "Масштабировать"
+msgstr "Масштаб"
 
 msgid "Debug"
 msgstr "Отладка"
 
 msgid "Settings"
 msgstr "Настройки"
+
+msgid "Profiler"
+msgstr "Профилировщик"
+
+msgid "Max Functions"
+msgstr "Лимит функций"
 
 msgid "Compression"
 msgstr "Сжатие"
@@ -297,8 +325,11 @@ msgstr "Память"
 msgid "Limits"
 msgstr "Лимиты"
 
+msgid "Internationalization"
+msgstr "Интернационализация"
+
 msgid "GUI"
-msgstr "GUI"
+msgstr "ГПИ"
 
 msgid "Common"
 msgstr "Общий"
@@ -326,6 +357,9 @@ msgstr "Задержка в режиме низкой нагрузки проц�
 
 msgid "Print Error Messages"
 msgstr "Печатать сообщения об ошибках"
+
+msgid "Physics Ticks per Second"
+msgstr "Частота обновления физических кадров"
 
 msgid "Time Scale"
 msgstr "Масштаб времени"
@@ -1402,7 +1436,7 @@ msgid "Root Scale"
 msgstr "Расширение ветки"
 
 msgid "Meshes"
-msgstr "Сетка"
+msgstr "Меши"
 
 msgid "Ensure Tangents"
 msgstr "Проверить соприкосновение"
@@ -1486,7 +1520,7 @@ msgid "Loop End"
 msgstr "Конец цикла"
 
 msgid "Asset Library"
-msgstr "Библиотека ресурсов"
+msgstr "Библиотека ассетов"
 
 msgid "Use Threads"
 msgstr "Использовать потоки"
@@ -1496,6 +1530,9 @@ msgstr "Доступные URL"
 
 msgid "Unset"
 msgstr "Не задано"
+
+msgid "Set"
+msgstr "Задать, установить, настроить, набор, комплект"
 
 msgid "Error"
 msgstr "Ошибка"
@@ -1514,6 +1551,9 @@ msgstr "Частицы"
 
 msgid "Reflection Probe"
 msgstr "Проба отражения"
+
+msgid "Decal"
+msgstr "Декаль"
 
 msgid "Joint Body A"
 msgstr "Сустав тела A"
@@ -1906,7 +1946,7 @@ msgid "Animations"
 msgstr "Анимации"
 
 msgid "FBX"
-msgstr "ФБХ"
+msgstr "FBX"
 
 msgid "Buffer View"
 msgstr "Просмотр буфера"
@@ -2361,6 +2401,9 @@ msgstr "Файлы фильмов"
 msgid "Custom Options"
 msgstr "Пользовательские параметры"
 
+msgid "Notarization"
+msgstr "Заверение"
+
 msgid "Apple ID Password"
 msgstr "Пароль Apple ID"
 
@@ -2414,6 +2457,9 @@ msgstr "Алгоритм"
 
 msgid "Build"
 msgstr "Сборка"
+
+msgid "Landscape"
+msgstr "Пейзаж"
 
 msgid "Portrait"
 msgstr "Портрет"
@@ -2798,6 +2844,9 @@ msgstr "Г смещение"
 
 msgid "V Offset"
 msgstr "В смещение"
+
+msgid "Physics Material Override"
+msgstr "Переопределение физического материала"
 
 msgid "Constant Linear Velocity"
 msgstr "Постоянная линейная скорость"
@@ -3561,6 +3610,9 @@ msgstr "Z-индекс"
 msgid "Repeat"
 msgstr "Повторить"
 
+msgid "NormalMap"
+msgstr "Карта Нормалей"
+
 msgid "Download File"
 msgstr "Загрузить файл"
 
@@ -4218,6 +4270,9 @@ msgstr "Атлас теней"
 msgid "Reflections"
 msgstr "Отражения"
 
+msgid "GI"
+msgstr "GI"
+
 msgid "Overrides"
 msgstr "Переопределить"
 
@@ -4239,6 +4294,9 @@ msgstr "Шкала глубины подповерхностного рассе�
 msgid "Buffer Size"
 msgstr "Размер буфера"
 
+msgid "OpenGL"
+msgstr "OpenGL"
+
 msgid "Shaders"
 msgstr "Шейдеры"
 
@@ -4249,4 +4307,4 @@ msgid "Primary Interface"
 msgstr "Основной интерфейс"
 
 msgid "Property"
-msgstr "Параметр"
+msgstr "Свойство"

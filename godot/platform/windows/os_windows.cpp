@@ -195,7 +195,6 @@ void OS_Windows::initialize() {
 	IPUnix::make_default();
 	main_loop = nullptr;
 
-	CoInitialize(nullptr);
 	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory));
 	if (SUCCEEDED(hr)) {
 		hr = dwrite_factory->GetSystemFontCollection(&font_collection, false);
@@ -340,8 +339,6 @@ String OS_Windows::get_distribution_name() const {
 }
 
 String OS_Windows::get_version() const {
-	typedef LONG NTSTATUS;
-	typedef NTSTATUS(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOW fow;
@@ -372,8 +369,6 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	if (device_name.is_empty()) {
 		return Vector<String>();
 	}
-
-	CoInitialize(nullptr);
 
 	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
 	if (hr != S_OK) {
@@ -461,9 +456,9 @@ OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 
 	//Get DST information from Windows, but only if p_utc is false.
 	TIME_ZONE_INFORMATION info;
-	bool daylight = false;
+	bool is_daylight = false;
 	if (!p_utc && GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
-		daylight = true;
+		is_daylight = true;
 	}
 
 	DateTime dt;
@@ -474,20 +469,20 @@ OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 	dt.hour = systemtime.wHour;
 	dt.minute = systemtime.wMinute;
 	dt.second = systemtime.wSecond;
-	dt.dst = daylight;
+	dt.dst = is_daylight;
 	return dt;
 }
 
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
-	bool daylight = false;
+	bool is_daylight = false;
 	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
-		daylight = true;
+		is_daylight = true;
 	}
 
 	// Daylight Bias needs to be added to the bias if DST is in effect, or else it will not properly update.
 	TimeZoneInfo ret;
-	if (daylight) {
+	if (is_daylight) {
 		ret.name = info.DaylightName;
 		ret.bias = info.Bias + info.DaylightBias;
 	} else {
@@ -1505,6 +1500,8 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
 
+	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);
 #endif
@@ -1532,4 +1529,5 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 }
 
 OS_Windows::~OS_Windows() {
+	CoUninitialize();
 }

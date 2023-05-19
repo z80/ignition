@@ -402,8 +402,8 @@ private:
 	Camera3D *previewing = nullptr;
 	Camera3D *preview = nullptr;
 
-	bool previewing_camera;
-	bool previewing_cinema;
+	bool previewing_camera = false;
+	bool previewing_cinema = false;
 	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
@@ -441,7 +441,7 @@ private:
 	void update_transform(Point2 p_mousepos, bool p_shift);
 	void finish_transform();
 
-	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode);
+	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
 
 protected:
@@ -580,8 +580,8 @@ private:
 	bool origin_enabled = false;
 	RID grid[3];
 	RID grid_instance[3];
-	bool grid_visible[3]; //currently visible
-	bool grid_enable[3]; //should be always visible if true
+	bool grid_visible[3] = { false, false, false }; //currently visible
+	bool grid_enable[3] = { false, false, false }; //should be always visible if true
 	bool grid_enabled = false;
 	bool grid_init_draw = false;
 	Camera3D::ProjectionType grid_camera_last_update_perspective = Camera3D::PROJECTION_PERSPECTIVE;

@@ -92,12 +92,14 @@
 # Luis Miguel Soto Sánchez <luismiguelsoto@jerez.es>, 2022.
 # Victor Stancioiu <victorstancioiu@gmail.com>, 2022, 2023.
 # Daniel Miranda <danmiranda@gmail.com>, 2023.
+# Sebas Echazú <sebastianechazu@outlook.com>, 2023.
+# Pedro Zebenzui Ortega Diaz <pipo.tf@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-31 00:19+0000\n"
+"PO-Revision-Date: 2023-05-17 00:52+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
@@ -106,7 +108,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -152,6 +154,9 @@ msgstr "Tipo de Bucle Principal"
 
 msgid "Auto Accept Quit"
 msgstr "Aceptar Cierre Del Programa Automáticamente"
+
+msgid "Quit on Go Back"
+msgstr "Salir y volver"
 
 msgid "Display"
 msgstr "Monitor"
@@ -5307,6 +5312,9 @@ msgstr "Influencia de la Luz"
 msgid "AO Channel Affect"
 msgstr "Influencia del Canal AO"
 
+msgid "SSIL"
+msgstr "SSIL"
+
 msgid "Glow"
 msgstr "Brillo"
 
@@ -5732,6 +5740,9 @@ msgstr "Cámara Activa"
 
 msgid "Default Font"
 msgstr "Fuente Predeterminada"
+
+msgid "Terrains"
+msgstr "Terrenos"
 
 msgid "Custom Data"
 msgstr "Datos Personalizados"

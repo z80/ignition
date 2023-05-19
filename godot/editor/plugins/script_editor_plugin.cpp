@@ -1060,7 +1060,7 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
 			script_editor->reload_scripts();
 			need_reload = false;
 		} else {
-			disk_changed->call_deferred(SNAME("popup_centered_ratio"), 0.5);
+			disk_changed->call_deferred(SNAME("popup_centered_ratio"), 0.3);
 		}
 	}
 
@@ -1561,6 +1561,30 @@ void ScriptEditor::_prepare_file_menu() {
 	menu->set_item_disabled(menu->get_item_index(FILE_RUN), current_is_doc);
 }
 
+void ScriptEditor::_file_menu_closed() {
+	PopupMenu *menu = file_menu->get_popup();
+
+	menu->set_item_disabled(menu->get_item_index(FILE_REOPEN_CLOSED), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE), false);
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_AS), false);
+	menu->set_item_disabled(menu->get_item_index(FILE_SAVE_ALL), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_TOOL_RELOAD_SOFT), false);
+	menu->set_item_disabled(menu->get_item_index(FILE_COPY_PATH), false);
+	menu->set_item_disabled(menu->get_item_index(SHOW_IN_FILE_SYSTEM), false);
+
+	menu->set_item_disabled(menu->get_item_index(WINDOW_PREV), false);
+	menu->set_item_disabled(menu->get_item_index(WINDOW_NEXT), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_CLOSE), false);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_ALL), false);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_OTHER_TABS), false);
+	menu->set_item_disabled(menu->get_item_index(CLOSE_DOCS), false);
+
+	menu->set_item_disabled(menu->get_item_index(FILE_RUN), false);
+}
+
 void ScriptEditor::_tab_changed(int p_which) {
 	ensure_select_current();
 }
@@ -1619,6 +1643,7 @@ void ScriptEditor::_notification(int p_what) {
 			get_tree()->connect("tree_changed", callable_mp(this, &ScriptEditor::_tree_changed));
 			InspectorDock::get_singleton()->connect("request_help", callable_mp(this, &ScriptEditor::_help_class_open));
 			EditorNode::get_singleton()->connect("request_help_search", callable_mp(this, &ScriptEditor::_help_search));
+			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ScriptEditor::_close_builtin_scripts_from_scene));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1653,7 +1678,7 @@ bool ScriptEditor::can_take_away_focus() const {
 	}
 }
 
-void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
+void ScriptEditor::_close_builtin_scripts_from_scene(const String &p_scene) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 
@@ -1663,7 +1688,7 @@ void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
 				continue;
 			}
 
-			if (scr->is_built_in() && scr->get_path().begins_with(p_scene)) { //is an internal script and belongs to scene being closed
+			if (scr->is_built_in() && scr->get_path().begins_with(p_scene)) { // Is an internal script and belongs to scene being closed.
 				_close_tab(i, false);
 				i--;
 			}
@@ -3916,6 +3941,7 @@ ScriptEditor::ScriptEditor() {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/toggle_scripts_panel", TTR("Toggle Scripts Panel"), KeyModifierMask::CMD_OR_CTRL | Key::BACKSLASH), TOGGLE_SCRIPTS_PANEL);
 	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ScriptEditor::_menu_option));
 	file_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ScriptEditor::_prepare_file_menu));
+	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &ScriptEditor::_file_menu_closed));
 
 	script_search_menu = memnew(MenuButton);
 	script_search_menu->set_text(TTR("Search"));

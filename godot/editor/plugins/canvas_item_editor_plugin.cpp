@@ -895,6 +895,14 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 
 void CanvasItemEditor::_snap_changed() {
 	static_cast<SnapDialog *>(snap_dialog)->get_fields(grid_offset, grid_step, primary_grid_steps, snap_rotation_offset, snap_rotation_step, snap_scale_step);
+
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_offset", grid_offset);
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "grid_step", grid_step);
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "primary_grid_steps", primary_grid_steps);
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_offset", snap_rotation_offset);
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_rotation_step", snap_rotation_step);
+	EditorSettings::get_singleton()->set_project_metadata("2d_editor", "snap_scale_step", snap_scale_step);
+
 	grid_step_multiplier = 0;
 	viewport->queue_redraw();
 }
@@ -1231,6 +1239,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 	bool panner_active = panner->gui_input(p_event, warped_panning ? viewport->get_global_rect() : Rect2());
 	if (panner->is_panning() != pan_pressed) {
 		pan_pressed = panner->is_panning();
+		_update_cursor();
 	}
 
 	if (panner_active) {
@@ -4585,6 +4594,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
 			for (const KeyValue<Node *, Object *> &E : selection) {
 				Node2D *n2d = Object::cast_to<Node2D>(E.key);
+				if (!n2d) {
+					continue;
+				}
 
 				Bone2D *new_bone = memnew(Bone2D);
 				String new_bone_name = n2d->get_name();
@@ -4683,7 +4695,6 @@ void CanvasItemEditor::_reset_drag() {
 void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
 
-	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
 	ClassDB::bind_method(D_METHOD("update_viewport"), &CanvasItemEditor::update_viewport);
 	ClassDB::bind_method(D_METHOD("center_at", "position"), &CanvasItemEditor::center_at);
 
@@ -4896,6 +4907,22 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	viewport->queue_redraw();
 }
 
+void CanvasItemEditor::clear() {
+	zoom = 1.0 / MAX(1, EDSCALE);
+	zoom_widget->set_zoom(zoom);
+
+	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
+	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen.
+	_update_scrollbars();
+
+	grid_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_offset", Vector2());
+	grid_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "grid_step", Vector2(8, 8));
+	primary_grid_steps = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "primary_grid_steps", 8);
+	snap_rotation_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_step", Math::deg_to_rad(15.0));
+	snap_rotation_offset = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_rotation_offset", 0.0);
+	snap_scale_step = EditorSettings::get_singleton()->get_project_metadata("2d_editor", "snap_scale_step", 0.1);
+}
+
 void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
 	ERR_FAIL_COND(!p_control);
 
@@ -4939,10 +4966,6 @@ void CanvasItemEditor::center_at(const Point2 &p_pos) {
 }
 
 CanvasItemEditor::CanvasItemEditor() {
-	zoom = 1.0 / MAX(1, EDSCALE);
-	view_offset = Point2(-150 - RULER_WIDTH, -95 - RULER_WIDTH);
-	previous_update_view_offset = view_offset; // Moves the view a little bit to the left so that (0,0) is visible. The values a relative to a 16/10 screen
-
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
@@ -5073,7 +5096,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	select_button->set_pressed(true);
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTR("Select Mode"), Key::Q));
 	select_button->set_shortcut_context(this);
-	select_button->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+Drag: Move selected node.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Alt+Drag: Scale selected node.") + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("RMB: Add node at position clicked."));
+	select_button->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+Drag: Move selected node.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Alt+Drag: Scale selected node.") + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("RMB: Add node at position clicked."));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5388,9 +5411,10 @@ CanvasItemEditor::CanvasItemEditor() {
 	singleton = this;
 
 	set_process_shortcut_input(true);
+	clear(); // Make sure values are initialized.
 
-	// Update the menus' checkboxes
-	call_deferred(SNAME("set_state"), get_state());
+	// Update the menus' checkboxes.
+	callable_mp(this, &CanvasItemEditor::set_state).bind(get_state()).call_deferred();
 }
 
 CanvasItemEditor *CanvasItemEditor::singleton = nullptr;
@@ -5424,6 +5448,10 @@ Dictionary CanvasItemEditorPlugin::get_state() const {
 
 void CanvasItemEditorPlugin::set_state(const Dictionary &p_state) {
 	canvas_item_editor->set_state(p_state);
+}
+
+void CanvasItemEditorPlugin::clear() {
+	canvas_item_editor->clear();
 }
 
 void CanvasItemEditorPlugin::_notification(int p_what) {

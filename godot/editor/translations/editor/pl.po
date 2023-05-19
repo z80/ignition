@@ -82,7 +82,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-03-28 01:38+0000\n"
+"PO-Revision-Date: 2023-05-15 13:55+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -92,7 +92,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.17-dev\n"
+"X-Generator: Weblate 4.18-dev\n"
 
 msgid "Unset"
 msgstr "Wymaż"
@@ -2923,6 +2923,9 @@ msgstr "Skopiuj ścieżkę właściwości"
 msgid "Select existing layout:"
 msgstr "Wybierz istniejący układ:"
 
+msgid "Or enter new layout name"
+msgstr "Lub podaj nazwę nowego układu"
+
 msgid "Changed Locale Language Filter"
 msgstr "Zmieniono filtr lokalizacji języka"
 
@@ -3480,7 +3483,7 @@ msgid "Dock Position"
 msgstr "Pozycja doku"
 
 msgid "Make Floating"
-msgstr "Zrób ruchomy"
+msgstr "Zrób pływający"
 
 msgid "Add a new scene."
 msgstr "Dodaj nową scenę."
@@ -4479,6 +4482,12 @@ msgstr ""
 "Wszystkie ustawienia wstępne muszą mieć zdefiniowaną ścieżkę eksportu, aby "
 "fukcja Eksportuj wszystko działała."
 
+msgid "Resources to exclude:"
+msgstr "Zasoby do wykluczenia:"
+
+msgid "Resources to export:"
+msgstr "Zasoby do eksportu:"
+
 msgid "Delete preset '%s'?"
 msgstr "Usunąć profil \"%s\"?"
 
@@ -4534,9 +4543,6 @@ msgstr "Eksportuj jako serwer dedykowany"
 
 msgid "Export Mode:"
 msgstr "Tryb eksportu:"
-
-msgid "Resources to export:"
-msgstr "Zasoby do eksportu:"
 
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
@@ -5253,8 +5259,17 @@ msgstr "Wybierz folder, gdzie zasoby siatek zapiszą się przy imporcie"
 msgid "Select folder where animations will save on import"
 msgstr "Wybierz folder, gdzie animacje zapiszą się przy imporcie"
 
+msgid "Warning: File exists"
+msgstr "Uwaga: Plik istnieje"
+
 msgid "Existing file with the same name will be replaced."
 msgstr "Istniejący plik o tej samej nazwie zostanie zastąpiony."
+
+msgid "Will create new file"
+msgstr "Utworzy nowy plik"
+
+msgid "Already External"
+msgstr "Jest już zewnętrzny"
 
 msgid ""
 "This material already references an external file, no action will be taken.\n"
@@ -5263,6 +5278,9 @@ msgstr ""
 "Ten materiał już odwołuje się do zewnętrznego pliku, żadna akcja nie będzie "
 "podjęta.\n"
 "Wyłącz zewnętrzną właściwość, żeby został wyciągnięty ponownie."
+
+msgid "No import ID"
+msgstr "Brak ID importu"
 
 msgid ""
 "Material has no name nor any other way to identify on re-import.\n"
@@ -5278,6 +5296,9 @@ msgstr "Wyciągnij materiały do plików zasobów"
 msgid "Extract"
 msgstr "Wypakuj"
 
+msgid "Already Saving"
+msgstr "Już zapisuje"
+
 msgid ""
 "This mesh already saves to an external resource, no action will be taken."
 msgstr ""
@@ -5286,6 +5307,9 @@ msgstr ""
 
 msgid "Existing file with the same name will be replaced on import."
 msgstr "Istniejący plik o tej samej nazwie zostanie nadpisany przy imporcie."
+
+msgid "Will save to new file"
+msgstr "Zapisze się do nowego pliku"
 
 msgid ""
 "Mesh has no name nor any other way to identify on re-import.\n"
@@ -6656,7 +6680,7 @@ msgstr ""
 "zablokowane."
 
 msgid "RMB: Add node at position clicked."
-msgstr "Ctrl+PPM: Dodaj węzeł na klikniętej pozycji."
+msgstr "PPM: Dodaj węzeł na klikniętej pozycji."
 
 msgid "Move Mode"
 msgstr "Tryb przesuwania"
@@ -6944,7 +6968,7 @@ msgid "Shrink End"
 msgstr "Skurcz koniec"
 
 msgid "Custom"
-msgstr "Niestandardowe"
+msgstr "Własny"
 
 msgid "Expand"
 msgstr "Rozszerz"
@@ -10125,6 +10149,9 @@ msgstr "Kafelek z nieprawidłową sceną"
 msgid "Delete tiles"
 msgstr "Usuń kafelki"
 
+msgid "Drawing Rect:"
+msgstr "Rysowanie prostokąta:"
+
 msgid "Change selection"
 msgstr "Zmień zaznaczenie"
 
@@ -10374,10 +10401,10 @@ msgid "Physics"
 msgstr "Fizyka"
 
 msgid "Physics Layer %d"
-msgstr "Warstwa fizyki %"
+msgstr "Warstwa fizyki %d"
 
 msgid "Navigation Layer %d"
-msgstr "Warstwa nawigacji %"
+msgstr "Warstwa nawigacji %d"
 
 msgid "Custom Data"
 msgstr "Własne dane"
@@ -11908,6 +11935,13 @@ msgid "This directory already contains a Godot project."
 msgstr "Ten folder już zawiera projekt Godota."
 
 msgid ""
+"You cannot save a project in the selected path. Please make a new folder or "
+"choose a new path."
+msgstr ""
+"Nie możesz zapisać projektu do wybranej ścieżki. Proszę utworzyć nowy folder "
+"lub wybrać nową ścieżkę."
+
+msgid ""
 "The selected path is not empty. Choosing an empty folder is highly "
 "recommended."
 msgstr ""
@@ -12788,7 +12822,7 @@ msgid "Instantiate Script"
 msgstr "Instancjonuj skrypt"
 
 msgid "Sub-Resources"
-msgstr "Zasoby"
+msgstr "Podzasoby"
 
 msgid "Revoke Unique Name"
 msgstr "Odwołaj unikalną nazwę"
@@ -13929,10 +13963,10 @@ msgstr ""
 "folderze narzędzi SDK Androida. Wynikowy %s jest niepodpisany."
 
 msgid "Signing debug %s..."
-msgstr "Podpisywanie debugu %s..."
+msgstr "Podpisywanie debugowego %s..."
 
 msgid "Signing release %s..."
-msgstr "Podpisywanie wydania %s..."
+msgstr "Podpisywanie wydaniowego %s..."
 
 msgid "Could not find keystore, unable to export."
 msgstr "Nie udało się znaleźć keystore, nie można eksportować."
@@ -15506,6 +15540,12 @@ msgstr ""
 "ButtonGroup jest przeznaczone do użycia tylko z przyciskami, które mają "
 "toggle_mode ustawione na true."
 
+msgid "Copy this constructor in a script."
+msgstr "Skopiuj ten konstruktor w skrypcie."
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "Wprowadź kod szesnastkowy (\"#ff0000\") lub nazwany kolor (\"red\")."
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -15533,6 +15573,9 @@ msgstr "Wybierz tryb próbnika."
 
 msgid "Switch between hexadecimal and code values."
 msgstr "Przełącz między szesnastkowymi i kodowymi wartościami."
+
+msgid "Hex code or named color"
+msgstr "Kod szesnastkowy lub nazwany kolor"
 
 msgid "Add current color as a preset."
 msgstr "Dodaj bieżący kolor do zapisanych."

@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" path="res://tryouts/camera_plane/camera_plane.gd" id="1"]
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_r4e61"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_xasy6"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3cxwj"]
 resource_local_to_scene = true
 shading_mode = 0
-albedo_texture = SubResource("ViewportTexture_r4e61")
+albedo_texture = SubResource("ViewportTexture_xasy6")
 
 [sub_resource type="PlaneMesh" id="1"]
 size = Vector2(1, 1)
