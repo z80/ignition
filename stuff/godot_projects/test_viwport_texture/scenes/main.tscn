@@ -60,6 +60,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_y2wgk")
 own_world_3d = true
 handle_input_locally = false
 size = Vector2i(1024, 768)
+size_2d_override = Vector2i(1024, 768)
 render_target_update_mode = 4
 
 [node name="viewport_scene" parent="SubViewport" instance=ExtResource("1_of2b3")]
