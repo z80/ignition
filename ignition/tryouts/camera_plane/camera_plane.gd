@@ -8,10 +8,12 @@ var plane: Node3D = null
 
 func setup_viewport( vp: SubViewport ):
 	var mi: MeshInstance3D = plane
-	var m: StandardMaterial3D = mi.material_override
+	var m: StandardMaterial3D = mi.get_surface_override_material(0).duplicate()
 	var tex: ViewportTexture = m.albedo_texture
-	tex.viewport_path = vp.get_path()
+	var path: NodePath = vp.get_path()
+	tex.viewport_path = path
 	m.albedo_texture = tex
+	mi.set_surface_override_material( 0, m )
 
 
 # Called when the node enters the scene tree for the first time.

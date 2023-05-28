@@ -2,15 +2,15 @@
 
 [ext_resource type="Script" path="res://tryouts/camera_plane/camera_plane.gd" id="1"]
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_xasy6"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3cxwj"]
-resource_local_to_scene = true
-shading_mode = 0
-albedo_texture = SubResource("ViewportTexture_xasy6")
-
 [sub_resource type="PlaneMesh" id="1"]
 size = Vector2(1, 1)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_ebdyc"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p5b8f"]
+resource_local_to_scene = true
+shading_mode = 0
+albedo_texture = SubResource("ViewportTexture_ebdyc")
 
 [node name="Camera3D" type="Camera3D"]
 current = true
@@ -20,5 +20,5 @@ dr = 10.0
 
 [node name="Plane" type="MeshInstance3D" parent="."]
 transform = Transform3D(5, 0, 0, 0, -4.37114e-08, -5, 0, 1, -2.18557e-07, 0, 0, -10)
-material_override = SubResource("StandardMaterial3D_3cxwj")
 mesh = SubResource("1")
+surface_material_override/0 = SubResource("StandardMaterial3D_p5b8f")
