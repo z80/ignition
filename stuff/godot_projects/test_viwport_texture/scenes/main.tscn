@@ -1,0 +1,65 @@
+[gd_scene load_steps=11 format=3 uid="uid://b3w6p4852t6lr"]
+
+[ext_resource type="PackedScene" uid="uid://clhjldbu4vwcx" path="res://scenes/viewport_scene.tscn" id="1_of2b3"]
+[ext_resource type="Script" path="res://scenes/main.gd" id="1_xquev"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_qns3y"]
+frequency = 0.105
+fractal_type = 3
+fractal_octaves = 3
+fractal_lacunarity = 5.0
+fractal_gain = 0.7
+fractal_weighted_strength = 1.0
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_qsm4f"]
+seamless = true
+noise = SubResource("FastNoiseLite_qns3y")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_boa8t"]
+albedo_texture = SubResource("NoiseTexture2D_qsm4f")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_kn1i2"]
+material = SubResource("StandardMaterial3D_boa8t")
+size = Vector2(100, 100)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_oqn0e"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_klttf"]
+size = Vector2(4, 3)
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_8q6y4"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y2wgk"]
+resource_local_to_scene = true
+shading_mode = 0
+albedo_texture = SubResource("ViewportTexture_8q6y4")
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_xquev")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 2, 5)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_kn1i2")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.701855, 0.71232, 0, -0.71232, 0.701855, 0, 0, 0, 1, 0, 0.67936, 0)
+mesh = SubResource("CapsuleMesh_oqn0e")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.0726638, 0.997357, 0, -0.997357, -0.0726638, 0, 3.54786, 0)
+shadow_enabled = true
+
+[node name="Plane" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.93393, 1.65795, 0)
+mesh = SubResource("QuadMesh_klttf")
+surface_material_override/0 = SubResource("StandardMaterial3D_y2wgk")
+
+[node name="SubViewport" type="SubViewport" parent="."]
+own_world_3d = true
+handle_input_locally = false
+size = Vector2i(1024, 768)
+render_target_update_mode = 4
+
+[node name="viewport_scene" parent="SubViewport" instance=ExtResource("1_of2b3")]
