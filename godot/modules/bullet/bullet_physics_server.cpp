@@ -2004,6 +2004,10 @@ void BulletPhysicsServer::end_sync()
 
 void BulletPhysicsServer::flush_queries()
 {
+	// The code below constantly updates transform.
+	// In the editor it doesn't allow moving objects.
+	if ( Engine::get_singleton()->is_editor_hint() )
+		return;
 	// Need to trigger callbacks in all rigid bodies in order to
 	// update their transform.
 	body_rids.clear();
