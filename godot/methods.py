@@ -72,7 +72,8 @@ def get_version_info(module_version_string="", silent=False):
     #build_name = "custom_build"
     #build_name = "commit_7aca0f70"
     #build_name = "commit_b49f801f3"
-    build_name = "commit_9839e80cd"
+    #build_name = "commit_9839e80cd"
+    build_name = "commit_cd4f85694"
     if os.getenv("BUILD_NAME") != None:
         build_name = str(os.getenv("BUILD_NAME"))
         if not silent:
