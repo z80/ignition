@@ -4,6 +4,7 @@
 [ext_resource type="ArrayMesh" uid="uid://384nmo5bfgcn" path="res://convex_shape/assets/plane.tres" id="2_cqoon"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_4k36r"]
+radius = 0.635407
 
 [sub_resource type="SphereMesh" id="SphereMesh_l6sd3"]
 
@@ -13,11 +14,12 @@ mesh = ExtResource("2_cqoon")
 shape_path = NodePath("StaticBody3D/CollisionShape3D")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.00807798)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
 
 [node name="RigidBody3D" type="RigidBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.11099, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.240847, 1.11099, 0.189972)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBody3D"]
 shape = SubResource("SphereShape3D_4k36r")
