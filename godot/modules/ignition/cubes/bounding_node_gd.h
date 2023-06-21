@@ -33,7 +33,7 @@ public:
 	real_t      get_size( const Ref<MarchingCubesDualGd> & surface ) const;
 	String      get_hash() const;
 
-
+	static Array split_into_clusters( const Array & bounding_nodes );
 public:
 	MarchingCubesDualNode node;
 };
