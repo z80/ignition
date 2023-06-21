@@ -67,6 +67,12 @@ func _create_cells():
 		collision_cells[i] = cell
 
 
+func _create_cell():
+	var ref_frame_physics: RefFramePhysics = get_parent();
+	var cell: Node = CollisionSurfaceOne.instantiate()
+	ref_frame_physics.add_child( cell )
+	return cell
+
 
 
 
@@ -78,11 +84,27 @@ func rebuild_surface( surface_source: Resource, synchronous: bool = true ):
 		return
 	
 	var view_point_se3: Se3Ref = ref_frame_physics.relative_to( rotation_node )
+	
+	var dist: float = view_point_se3.r.length()
+	var max_dist: float = surface_source.bounding_radius * 1.3
+	var too_far: bool = dist >= max_dist
+	# If it is too far (potentially on a different planet), do nothing.
+	if too_far:
+		return
+	
 	var source_se3: Se3Ref = view_point_se3.inverse()
+	
+	var view_point_se3s: Array = [view_point_se3]
+	var bodies: Array = ref_frame_physics.root_most_child_bodies()
+	var qty: int = bodies.size()
+	for i in range(qty):
+		var body: RefFrameNode = bodies[i]
+		var body_se3: Se3Ref = body.relative_to( rotation_node )
+		view_point_se3s.push_back( body_se3 )
 	
 	_initialize( surface_source )
 	
-	_rebuild_start( surface_source, source_se3, view_point_se3, synchronous )
+	_rebuild_start( surface_source, source_se3, view_point_se3s, synchronous )
 
 
 # When leaving the rotation node need to remove collision surface.
@@ -125,8 +147,8 @@ func clone_surface( other_surface ):
 
 
 
-func _rebuild_start( surface_source: Resource, source_se3: Se3Ref, view_point_se3: Se3Ref, synchronous: bool = false ):
-	var nodes_to_rebuild: Array = _pick_nodes_to_rebuild( view_point_se3 )
+func _rebuild_start( surface_source: Resource, source_se3: Se3Ref, view_point_se3s: Array, synchronous: bool = false ):
+	var nodes_to_rebuild: Array = _pick_nodes_to_rebuild( view_point_se3s )
 	var empty: bool = nodes_to_rebuild.is_empty()
 	if empty:
 		return
@@ -139,6 +161,8 @@ func _rebuild_start( surface_source: Resource, source_se3: Se3Ref, view_point_se
 		var id: String = data.id
 		ids.push_back( id )
 	#print( "ids: ", ids )
+	
+	var view_point_se3: Se3Ref = view_point_se3s[0]
 	
 	for data in nodes_to_rebuild:
 		var node: BoundingNodeGd = data.node
@@ -181,27 +205,35 @@ func _rebuild_finished( args ):
 
 
 
-func _pick_nodes_to_rebuild( view_point_se3: Se3Ref ):
+func _pick_nodes_to_rebuild( view_point_se3s: Array ):
 	var sz: float = layer_config.surface_node_size
 	#print( "view_point_origin: ", view_point_se3.r )
-	var bounding_node: BoundingNodeGd = _voxel_surface.create_bounding_node( view_point_se3, sz )
-	var id0: String = bounding_node.get_node_id()
-	#print( "central node: ", id0, ", at: ", view_point_se3.r )
-	var ids_needed: Array = []
-	var nodes_needed: Array = []
-	for x in range(3):
-		for y in range(3):
-			for z in range(3):
-				var node: BoundingNodeGd = bounding_node.create_adjacent_node( x-1, y-1, z-1 )
-				#var node: BoundingNodeGd = bounding_node.create_adjacent_node( x, y, z )
-				var id: String = node.get_node_id()
-				nodes_needed.push_back( node )
-				ids_needed.push_back( id )
+	var id_node_needed: Dictionary = {}
+	for view_point_se3 in view_point_se3s:
+		var bounding_node: BoundingNodeGd = _voxel_surface.create_bounding_node( view_point_se3, sz )
+		var empty: bool = id_node_needed.is_empty()
+		if empty:
+			var id0: String = bounding_node.get_node_id()
+			id_node_needed[id0] = bounding_node
+		#print( "central node: ", id0, ", at: ", view_point_se3.r )
+		for x in range(3):
+			for y in range(3):
+				for z in range(3):
+					var dx: int = x-1
+					var dy: int = y-1
+					var dz: int = z-1
+					var id: String = bounding_node.get_adjacent_node_id( dx, dy, dz )
+					var has: bool = id_node_needed.has( id )
+					if has:
+						continue
+					
+					var node: BoundingNodeGd = bounding_node.create_adjacent_node( dx, dy, dz )
+					id_node_needed[id] = node
 	
 	var collisions_free: Array = []
 	var ids_to_erase: Array = []
 	for id in collision_cells.keys():
-		var has: bool = ids_needed.has( id )
+		var has: bool = id_node_needed.has( id )
 		if not has:
 			collisions_free.push_back( collision_cells[id] )
 			ids_to_erase.push_back( id )
@@ -210,14 +242,17 @@ func _pick_nodes_to_rebuild( view_point_se3: Se3Ref ):
 		collision_cells.erase( id )
 	
 	var collisions_to_be_rebuilt: Array = []
-	var qty: int = ids_needed.size()
+	var qty: int = id_node_needed.size()
 	var ind: int = 0
-	for i in range(qty):
-		var id: String = ids_needed[i]
+	for id in id_node_needed:
 		var has: bool  = collision_cells.has( id )
 		if not has:
-			var node: BoundingNodeGd = nodes_needed[i]
-			var collision: Node = collisions_free[ind]
+			var node: BoundingNodeGd = id_node_needed[id]
+			var collision: Node
+			if collisions_free.is_empty():
+				collision = _create_cell()
+			else:
+				collision = collisions_free.pop_back()
 			ind += 1
 			collisions_to_be_rebuilt.push_back( { "node": node, "collision": collision, "id": id } )
 			collision_cells[id] = collision

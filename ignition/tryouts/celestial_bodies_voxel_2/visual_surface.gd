@@ -27,6 +27,8 @@ var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 func _ready():
 	_is_ready = false
 	
+	return
+	
 	_initialize_strategy()
 	_create_volume_surface()
 	# It says it is busy setting up children and 
@@ -68,6 +70,8 @@ func _create_cells():
 
 
 func update_source_se3( source_se3: Se3Ref, view_point_se3: Se3Ref ):
+	return
+	
 	var rebuild_needed: bool = true
 	if _running:
 		if rebuild_needed:
