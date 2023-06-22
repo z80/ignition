@@ -17,7 +17,7 @@ void BoundingNodeGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_size", "surface"),                    &BoundingNodeGd::get_size );
 	ClassDB::bind_method( D_METHOD("get_hash"),                               &BoundingNodeGd::get_hash );
 
-	ClassDB::bind_static_method( "split_into_clusters", D_METHOD("split_into_clusters", "nodes"),    &BoundingNodeGd::split_into_clusters );
+	ClassDB::bind_static_method( "BoundingNodeGd", D_METHOD("split_into_clusters", "nodes"),    &BoundingNodeGd::split_into_clusters );
 }
 
 BoundingNodeGd::BoundingNodeGd()
