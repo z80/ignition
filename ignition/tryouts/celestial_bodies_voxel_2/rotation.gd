@@ -2,7 +2,7 @@
 extends RefFrameRotationNode
 
 var _visual_surface: Node = null
-
+var _ref_frame_index: int = 0
 
 
 # Called when the node enters the scene tree for the first time.
@@ -87,6 +87,36 @@ func _get_visual_surface():
 
 
 
+
+func _ign_pre_process(delta):
+	# Update collision surfaces for physics ref. frames 
+	# one at a time.
+	
+	var qty: int = self.get_child_count()
+	if _ref_frame_index >= qty:
+		_ref_frame_index = 0
+	
+	var ch: Node = self.get_child( _ref_frame_index )
+	_ref_frame_index += 1
+	var ref_frame_physics: RefFramePhysics = ch as RefFramePhysics
+	if ref_frame_physics == null:
+		return
+	
+	var visual_surface: Node     = _get_visual_surface()
+	var surface_source: Resource = visual_surface.surface_source
+	var foliage_sources: Array   = visual_surface.foliage_sources
+	
+	var collision_surface: Node = ref_frame_physics.get_collision_surface()
+	collision_surface.rebuild_surface( surface_source, foliage_sources, true )
+
+
+
+
 func on_deserialize():
 	call_deferred( "_create_collision_surfaces" )
+
+
+
+
+
 
