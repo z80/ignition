@@ -113,7 +113,9 @@ Array BoundingNodeGd::split_into_clusters( const Array & bounding_nodes )
 		const Ref<BoundingNodeGd> node_ref = v;
 		const BoundingNodeGd * node = node_ref.ptr();
 		const String id = node->get_node_id();
-		remaining_nodes.insert( id, &node_ref );
+		const bool has = remaining_nodes.has( id );
+		if ( !has )
+			remaining_nodes.insert( id, &node_ref );
 	}
 
 	while ( !remaining_nodes.is_empty() )
