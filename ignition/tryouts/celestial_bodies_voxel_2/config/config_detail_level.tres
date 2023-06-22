@@ -11,4 +11,4 @@ precision = 0.01
 max_nodes_qty = 200000
 min_relative_focal_depth = 0.05
 relative_rebuild_dist = 0.3
-surface_node_size = 20.0
+surface_node_size = 5.0

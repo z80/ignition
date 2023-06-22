@@ -1,9 +1,8 @@
-[gd_scene load_steps=13 format=3 uid="uid://b5ljlddno6gt5"]
+[gd_scene load_steps=12 format=3 uid="uid://b5ljlddno6gt5"]
 
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://4qxv1iovjiyw" path="res://physics/parts/characters/central/central.tscn" id="2"]
 [ext_resource type="PackedScene" uid="uid://b6oksm4adx8ax" path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.tscn" id="3"]
-[ext_resource type="PackedScene" uid="uid://b716hij8htvor" path="res://physics/bodies/construction_new/construction.tscn" id="4"]
 [ext_resource type="PackedScene" uid="uid://d164mxaj5h5it" path="res://physics/ui/root_ui.tscn" id="5"]
 [ext_resource type="PackedScene" uid="uid://d27mad85dvoyx" path="res://physics/celestial_bodies/sun/sun.tscn" id="6"]
 [ext_resource type="PackedScene" uid="uid://chonhgqhxgjxr" path="res://physics/camera_ctrl/player_camera.tscn" id="7"]
@@ -44,9 +43,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 102, 0, 0)
 
 [node name="PlayerCamera" parent="Sun/Translation/Rotation/RefFramePhysics/Character" instance=ExtResource("7")]
 map_mode = true
-
-[node name="Construction" parent="Sun/Translation/Rotation" index="2" instance=ExtResource("4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, 0)
 
 [node name="RootUi" parent="." instance=ExtResource("5")]
 offset_right = 0.0

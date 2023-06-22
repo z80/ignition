@@ -4,6 +4,8 @@ extends RefFrameNode
 @export var CollisionCell: PackedScene = null
 @export var VisualCell: PackedScene    = null
 
+var bounding_node: BoundingNodeGd = null
+
 var _collision_body: StaticBody3D      = null
 var _visual: Node3D = null
 
@@ -102,7 +104,7 @@ func build_surface_prepare_collision( source_se3: Se3Ref, view_point_se3: Se3Ref
 
 # DEPRECATE
 func build_surface_process_collision( args ):
-	var node: BoundingNodeGd = args.node
+	bounding_node = args.node
 	var source_se3: Se3Ref = args.source_se3
 	var view_point_se3: Se3Ref = args.view_point_se3
 	var node_size_strategy: VolumeNodeSizeStrategyGd = args.node_size_strategy
@@ -113,7 +115,7 @@ func build_surface_process_collision( args ):
 	voxel_surface.split_precision = 0.01
 	
 	var _step: float = voxel_surface.init_min_step( source_surface )
-	var _ok: bool = voxel_surface.subdivide_source( node, source_surface, null )
+	var _ok: bool = voxel_surface.subdivide_source( bounding_node, source_surface, null )
 	args.ok = _ok
 	var _qty: int = voxel_surface.precompute_scaled_values( source_se3, 0, 1.0, Vector3.ZERO )
 	args.ok = args.ok and (_qty > 0)

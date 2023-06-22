@@ -4,7 +4,8 @@ extends Node
 @export var CollisionSurfaceOne: PackedScene = null
 @export var layer_config: Resource   = null
 
-var collision_cells: Dictionary = {}
+var _collision_cells: Dictionary = {}
+var _collision_cells_free: Array = []
 
 #var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
@@ -56,7 +57,7 @@ func _create_volume_surface( surface_source: Resource ):
 
 
 func _create_cells():
-	var full: bool = not collision_cells.is_empty()
+	var full: bool = not _collision_cells.is_empty()
 	if full:
 		return
 	
@@ -64,7 +65,7 @@ func _create_cells():
 	for i in range(27):
 		var cell: Node = CollisionSurfaceOne.instantiate()
 		ref_frame_physics.add_child( cell )
-		collision_cells[i] = cell
+		_collision_cells[i] = cell
 
 
 func _create_cell():
@@ -112,7 +113,7 @@ func remove_surface():
 	if _running:
 		return
 	
-	for cell in collision_cells:
+	for cell in _collision_cells:
 		cell.remove_surface()
 
 
@@ -123,10 +124,10 @@ func clone_surface( other_surface ):
 	
 	_create_cells()
 	var own_cells: Array = []
-	for key in collision_cells:
-		var cell: Node = collision_cells[key]
+	for key in _collision_cells:
+		var cell: Node = _collision_cells[key]
 		own_cells.push_back( cell )
-	collision_cells.clear()
+	_collision_cells.clear()
 	
 	var ref_frame_physics: RefFrameNonInertialNode = get_parent()
 	
@@ -140,7 +141,7 @@ func clone_surface( other_surface ):
 		own_cell.set_se3( se3 )
 		own_cell.clone_surface( other_cell )
 		
-		collision_cells[key] = own_cell
+		_collision_cells[key] = own_cell
 		
 		ind += 1
 		
@@ -230,34 +231,74 @@ func _pick_nodes_to_rebuild( view_point_se3s: Array ):
 					var node: BoundingNodeGd = bounding_node.create_adjacent_node( dx, dy, dz )
 					id_node_needed[id] = node
 	
-	var collisions_free: Array = []
 	var ids_to_erase: Array = []
-	for id in collision_cells.keys():
+	for id in _collision_cells.keys():
 		var has: bool = id_node_needed.has( id )
 		if not has:
-			collisions_free.push_back( collision_cells[id] )
+			_collision_cells_free.push_back( _collision_cells[id] )
 			ids_to_erase.push_back( id )
 	
 	for id in ids_to_erase:
-		collision_cells.erase( id )
+		_collision_cells.erase( id )
 	
 	var collisions_to_be_rebuilt: Array = []
 	var qty: int = id_node_needed.size()
 	var ind: int = 0
 	for id in id_node_needed:
-		var has: bool  = collision_cells.has( id )
+		var has: bool  = _collision_cells.has( id )
 		if not has:
 			var node: BoundingNodeGd = id_node_needed[id]
 			var collision: Node
-			if collisions_free.is_empty():
+			if _collision_cells_free.is_empty():
 				collision = _create_cell()
 			else:
-				collision = collisions_free.pop_back()
+				collision = _collision_cells_free.pop_back()
 			ind += 1
 			collisions_to_be_rebuilt.push_back( { "node": node, "collision": collision, "id": id } )
-			collision_cells[id] = collision
+			_collision_cells[id] = collision
 	
 	return collisions_to_be_rebuilt
+
+
+
+func get_bounding_nodes():
+	if _running:
+		return []
+	
+	var nodes: Array = []
+	for id in _collision_cells:
+		var collision: Node = _collision_cells[id]
+		var node: BoundingNodeGd = collision.bounding_node
+		nodes.push_back( node )
+	
+	return nodes
+
+
+
+func get_bounding_node_clusters( other_bounding_nodes = null ):
+	if _running:
+		return []
+	
+	var nodes: Array = []
+	for id in _collision_cells:
+		var collision: Node = _collision_cells[id]
+		var node: BoundingNodeGd = collision.bounding_node
+		nodes.push_back( node )
+	
+	if other_bounding_nodes == null:
+		var clusters: Array = BoundingNodeGd.split_into_clusters( nodes )
+		return clusters
+	
+	var other_qty: int = other_bounding_nodes.size()
+	for i in range(other_qty):
+		var node: BoundingNodeGd = other_bounding_nodes[i]
+		nodes.push_back( node )
+	
+	var clusters: Array = BoundingNodeGd.split_into_clusters( nodes )
+	return clusters
+
+
+
 
 
 

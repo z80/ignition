@@ -61,13 +61,19 @@ func process_children():
 	#print( "******************** include close enough bodies" )
 	include_close_enough_bodies()
 	#print( "******************** split if needed" )
-	var has_split: bool = split_if_needed()
-	debug_has_split = has_split
-	if has_split:
-		return true
-	#print( "******************** merge if needed" )
-	if ( merge_if_needed() ):
-		return true
+	var orbiting: bool = is_orbiting()
+	if orbiting:
+		var has_split: bool = split_if_needed_space()
+		debug_has_split = has_split
+		if has_split:
+			return true
+		#print( "******************** merge if needed" )
+		if ( merge_if_needed_space() ):
+			return true
+	
+	else:
+		pass
+	
 	#print( "******************** self delete if unused" )
 	if ( self_delete_if_unused() ):
 		return true
@@ -326,7 +332,7 @@ func print_all_ref_frames():
 			DDD.print( name + ": " + str(se3.r) )
 
 
-func split_if_needed() -> bool:
+func split_if_needed_space() -> bool:
 	var bodies: Array = root_most_child_bodies()
 	if ( bodies.size() < 2 ):
 		return false
@@ -402,7 +408,7 @@ func split_if_needed() -> bool:
 #	# Assign SE3.
 #	rf.set_se3( se3_b )
 	
-	rf.call_deferred( "clone_collision_surface", self )
+	#rf.call_deferred( "clone_collision_surface", self )
 	
 	for body in bodies_b:
 		body.call_deferred( "change_parent", rf, false )
@@ -420,8 +426,16 @@ func split_if_needed() -> bool:
 	return true 
 
 
+func split_if_needed_surface() -> bool:
+	var collision_surf: Node = get_collision_surface()
+	var node_clusters: Array = collision_surf.get_collision_cell_clusters()
+	
+	
+	return false
 
-func merge_if_needed():
+
+
+func merge_if_needed_space():
 	var root: RefFrameRoot = get_ref_frame_root()
 	var ref_frames: Array = root.physics_ref_frames()
 	for rf in ref_frames:
