@@ -1,12 +1,14 @@
-[gd_resource type="Resource" load_steps=2 format=2]
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://njea4s77g8hd"]
 
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.gd" id="1"]
 
 [resource]
-script = ExtResource( 1 )
-scale_divider = 1000.0
+script = ExtResource("1")
+scale_divider = 10.0
 event_horizon = 2000.0
 max_level = 6.0
+precision = 0.01
+max_nodes_qty = 200000
 min_relative_focal_depth = 0.05
 relative_rebuild_dist = 0.3
-surface_node_size = 90.0
+surface_node_size = 20.0

@@ -1,18 +1,18 @@
-[gd_resource type="Resource" load_steps=5 format=2]
+[gd_resource type="Resource" load_steps=5 format=3 uid="uid://c44jyrx6lphvk"]
 
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_water_triplanar/water_material.tres" type="Material" id=2]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" type="Material" id=3]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/material_surface.tres" type="Material" id=4]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="1"]
+[ext_resource type="Material" uid="uid://d4musr40ihxb4" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_water_triplanar/water_material.tres" id="2"]
+[ext_resource type="Material" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" id="3"]
+[ext_resource type="Material" uid="uid://i8lpqeb5hkf6" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/material_surface.tres" id="4"]
 
 [resource]
-script = ExtResource( 1 )
-bounding_radius = 50050.0
-source_radius = 50000.0
-radius_km = 50.0
-orbiting_velocity = 632.456
-g = 8.0
+script = ExtResource("1")
+override_material = ExtResource("3")
+bounding_radius = 110.0
+source_radius = 100.0
+radius_km = 0.1
+orbiting_velocity = 30.0
+g = 9.0
 focus_depth = 40.0
-materials_solid = [ ExtResource( 4 ) ]
-materials_liquid = [ ExtResource( 2 ) ]
-override_material = ExtResource( 3 )
+materials_solid = [ExtResource("4")]
+materials_liquid = [ExtResource("2")]

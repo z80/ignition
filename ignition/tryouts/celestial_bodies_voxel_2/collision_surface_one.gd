@@ -18,6 +18,9 @@ func _ready():
 	call_deferred( "_create_visual" )
 
 func _create_visual():
+	if _visual != null:
+		return
+	
 	var root: Node3D = RootScene.get_visual_layer_near()
 	#var root: Spatial = RootScene.get_visual_layer_space()
 	_visual = VisualCell.instantiate()
@@ -169,6 +172,8 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 	if collision_body == null:
 		return null
 
+	if _visual == null:
+		_create_visual()
 	_visual.solid.visible  = false
 	_visual.liquid.visible = false
 	
@@ -176,7 +181,7 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 	
 	#view_point_se3.q = Quat.IDENTITY
 	#source_se3 = view_point_se3.inverse()
-	self.set_se3( view_point_se3 )
+	#self.set_se3( view_point_se3 )
 	#self.set_se3( center_se3 )
 	
 	var args: BuildArgsVisual = BuildArgsVisual.new()
@@ -308,7 +313,10 @@ func _populate_foliage( volume_surface: MarchingCubesDualGd, bounding_node: Boun
 	var rand: IgnRandomGd = IgnRandomGd.new()
 	rand.seed = s
 	
-	var rotation: RefFrameRotationNode = get_parent()
+	# Direct parent is always a ref. frame.
+	var ref_frame: RefFrameNode = get_parent()
+	# Ref. frame's parent should be the roation when it is on the surface.
+	var rotation: RefFrameRotationNode = ref_frame.get_parent()
 	
 	var center_se3: Se3Ref = bounding_node.get_center( volume_surface )
 	var center: Vector3 = center_se3.r

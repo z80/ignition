@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/collision_surface.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://bycysqsfk3oal" path="res://tryouts/celestial_bodies_voxel_2/collision_surface_one.tscn" id="2"]
-[ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" id="3"]
+[ext_resource type="Resource" uid="uid://njea4s77g8hd" path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" id="3"]
 
 [node name="CollisionSurface" type="Node"]
 script = ExtResource("1")

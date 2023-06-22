@@ -1,8 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://bycysqsfk3oal"]
+[gd_scene load_steps=4 format=3 uid="uid://bycysqsfk3oal"]
 
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/collision_surface_one.gd" id="1"]
 [ext_resource type="PackedScene" path="res://tryouts/celestial_bodies_voxel_2/visual_cells/collision_cell.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://dwflonn6fuwnf" path="res://tryouts/celestial_bodies_voxel_2/visual_cells/visual_cell.tscn" id="3_shf1c"]
 
 [node name="CollisionSurfaceOne" type="RefFrameNode"]
 script = ExtResource("1")
 CollisionCell = ExtResource("2")
+VisualCell = ExtResource("3_shf1c")

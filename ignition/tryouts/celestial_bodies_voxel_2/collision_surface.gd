@@ -60,7 +60,7 @@ func _create_cells():
 	if full:
 		return
 	
-	var ref_frame_physics: RefFramePhysics = get_parent();
+	var ref_frame_physics: RefFramePhysics = get_parent()
 	for i in range(27):
 		var cell: Node = CollisionSurfaceOne.instantiate()
 		ref_frame_physics.add_child( cell )
@@ -77,7 +77,7 @@ func _create_cell():
 
 
 # This thing should be called externally by a rotational part of a planet.
-func rebuild_surface( surface_source: Resource, synchronous: bool = true ):
+func rebuild_surface( surface_source: Resource, foliage_sources: Array, synchronous: bool = true ):
 	var ref_frame_physics: RefFramePhysics = get_parent()
 	var rotation_node: RefFrameRotationNode = ref_frame_physics.get_parent()
 	if rotation_node == null:
@@ -104,7 +104,7 @@ func rebuild_surface( surface_source: Resource, synchronous: bool = true ):
 	
 	_initialize( surface_source )
 	
-	_rebuild_start( surface_source, source_se3, view_point_se3s, synchronous )
+	_rebuild_start( surface_source, foliage_sources, source_se3, view_point_se3s, synchronous )
 
 
 # When leaving the rotation node need to remove collision surface.
@@ -147,7 +147,7 @@ func clone_surface( other_surface ):
 
 
 
-func _rebuild_start( surface_source: Resource, source_se3: Se3Ref, view_point_se3s: Array, synchronous: bool = false ):
+func _rebuild_start( surface_source: Resource, foliage_sources: Array, source_se3: Se3Ref, view_point_se3s: Array, synchronous: bool = false ):
 	var nodes_to_rebuild: Array = _pick_nodes_to_rebuild( view_point_se3s )
 	var empty: bool = nodes_to_rebuild.is_empty()
 	if empty:
@@ -167,7 +167,7 @@ func _rebuild_start( surface_source: Resource, source_se3: Se3Ref, view_point_se
 	for data in nodes_to_rebuild:
 		var node: BoundingNodeGd = data.node
 		var collision: Node      = data.collision
-		var surface_args         = collision.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source )
+		var surface_args         = collision.build_surface_prepare( source_se3, view_point_se3, _node_size_strategy, surface_source, foliage_sources )
 		surface_args.node        = node
 		
 		var args: Dictionary = {}
