@@ -17,7 +17,10 @@ void BoundingNodeGd::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_size", "surface"),                    &BoundingNodeGd::get_size );
 	ClassDB::bind_method( D_METHOD("get_hash"),                               &BoundingNodeGd::get_hash );
 
+	ClassDB::bind_method( D_METHOD("contains_point", "surface", "s3"),        &BoundingNodeGd::contains_point );
+
 	ClassDB::bind_static_method( "BoundingNodeGd", D_METHOD("split_into_clusters", "nodes"),    &BoundingNodeGd::split_into_clusters );
+	ClassDB::bind_static_method( "BoundingNodeGd", D_METHOD("cluster_contains_point", "surface", "bounding_nodes"), &BoundingNodeGd::cluster_contains_point );
 }
 
 BoundingNodeGd::BoundingNodeGd()
@@ -97,6 +100,14 @@ String BoundingNodeGd::get_hash() const
 	const uint64_t h = node.hash.state();
 	const String s_hash = uitos( h );
 	return s_hash;
+}
+
+bool BoundingNodeGd::contains_point( const Ref<MarchingCubesDualGd> & surface, const Ref<Se3Ref> & se3 ) const
+{
+	const MarchingCubesDual * surf = &(surface.ptr()->cubes);
+	const Vector3d & r = se3.ptr()->se3.r();
+	const bool ret = node.contains_point( surf, r );
+	return ret;
 }
 
 Array BoundingNodeGd::split_into_clusters( const Array & bounding_nodes )
@@ -190,6 +201,23 @@ Array BoundingNodeGd::split_into_clusters( const Array & bounding_nodes )
 	}
 
 	return result;
+}
+
+bool BoundingNodeGd::cluster_contains_point( const Ref<MarchingCubesDualGd> & surface, const Array & bounding_nodes, const Ref<Se3Ref> & se3 )
+{
+	const int qty = bounding_nodes.size();
+	for ( int i=0; i<qty; i++ )
+	{
+		const Variant & v = bounding_nodes.get( i );
+		const Ref<BoundingNodeGd> node_ref = v;
+		const BoundingNodeGd * node = node_ref.ptr();
+
+		const bool contains = node->contains_point( surface, se3 );
+		if ( contains )
+			return true;
+	}
+
+	return false;
 }
 
 

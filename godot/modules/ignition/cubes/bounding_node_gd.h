@@ -33,7 +33,9 @@ public:
 	real_t      get_size( const Ref<MarchingCubesDualGd> & surface ) const;
 	String      get_hash() const;
 
+	bool contains_point( const Ref<MarchingCubesDualGd> & surface, const Ref<Se3Ref> & se3 ) const;
 	static Array split_into_clusters( const Array & bounding_nodes );
+	static bool  cluster_contains_point( const Ref<MarchingCubesDualGd> & surface, const Array & bounding_nodes, const Ref<Se3Ref> & se3 );
 public:
 	MarchingCubesDualNode node;
 };
