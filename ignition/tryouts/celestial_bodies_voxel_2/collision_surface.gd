@@ -285,18 +285,33 @@ func get_bounding_node_clusters( other_bounding_nodes = null ):
 		var node: BoundingNodeGd = collision.bounding_node
 		nodes.push_back( node )
 	
-	if other_bounding_nodes == null:
-		var clusters: Array = BoundingNodeGd.split_into_clusters( nodes )
-		return clusters
-	
-	var other_qty: int = other_bounding_nodes.size()
-	for i in range(other_qty):
-		var node: BoundingNodeGd = other_bounding_nodes[i]
-		nodes.push_back( node )
+	if other_bounding_nodes != null:
+		var other_qty: int = other_bounding_nodes.size()
+		for i in range(other_qty):
+			var node: BoundingNodeGd = other_bounding_nodes[i]
+			nodes.push_back( node )
 	
 	var clusters: Array = BoundingNodeGd.split_into_clusters( nodes )
 	return clusters
 
+
+
+func move_cells_to_other_ref_frame( nodes: Array, destination_ref_frame: RefFrameNode ):
+	var other_collision_surface: Node = destination_ref_frame.get_collision_surface()
+	var qty: int = nodes.size()
+	for i in range(qty):
+		var node: BoundingNodeGd = nodes[i]
+		var id: String = node.get_node_id()
+		var cell: RefFrameNode = _collision_cells[id]
+		_collision_cells.erase( id )
+		cell.change_parent( destination_ref_frame, false )
+		other_collision_surface._collision_cells[id] = cell
+		
+
+
+
+func get_surface():
+	return _voxel_surface
 
 
 

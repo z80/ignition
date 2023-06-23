@@ -428,10 +428,45 @@ func split_if_needed_space() -> bool:
 
 func split_if_needed_surface() -> bool:
 	var collision_surf: Node = get_collision_surface()
-	var node_clusters: Array = collision_surf.get_collision_cell_clusters()
+	var node_clusters: Array = collision_surf.get_bounding_node_clusters()
+	var qty: int = node_clusters.size()
+	if qty < 2:
+		return false
 	
+	var bodies: Array = root_most_child_bodies()
+	if ( bodies.size() < 2 ):
+		return false
 	
-	return false
+	var last_cluster: Array = node_clusters.back()
+	var clusters_qty: int   = last_cluster.size()
+	
+	var rot: RefFrameRotationNode = get_parent()
+	var collision_surface: Node   = get_collision_surface()
+	var surface: MarchingCubesDualGd = collision_surface.gt_surface()
+	
+	var bodies_b: Array = []
+	
+	qty = bodies.size()
+	for i in range(qty):
+		var body: RefFrameBodyNode = bodies[i]
+		var se3: Se3Ref = body.relative_to( rot )
+		var inside: bool = BoundingNodeGd.cluster_contains_point( surface, last_cluster, se3 )
+		bodies_b.push_back( i )
+	
+	var root: RefFrameRoot = get_ref_frame_root()
+	var rf: RefFramePhysics = root.create_ref_frame_physics()
+	rf.change_parent( rot, false )
+	
+	call_deferred( "_post_split_surface", rf, last_cluster, bodies_b )
+	
+	return true
+
+
+func _post_split_surface( new_rf: RefFrameNode, nodes: Array, bodies: Array ):
+	var surf: Node = get_collision_surface()
+	surf.move_cells_to_other_ref_frame( nodes, new_rf )
+	for body in bodies:
+		body.call_deferred( "change_parent", new_rf, false )
 
 
 
