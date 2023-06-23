@@ -283,12 +283,16 @@ func get_bounding_node_clusters( other_bounding_nodes = null ):
 	for id in _collision_cells:
 		var collision: Node = _collision_cells[id]
 		var node: BoundingNodeGd = collision.bounding_node
+		if node == null:
+			continue
 		nodes.push_back( node )
 	
 	if other_bounding_nodes != null:
 		var other_qty: int = other_bounding_nodes.size()
 		for i in range(other_qty):
 			var node: BoundingNodeGd = other_bounding_nodes[i]
+			if node == null:
+				continue
 			nodes.push_back( node )
 	
 	var clusters: Array = BoundingNodeGd.split_into_clusters( nodes )
@@ -314,6 +318,8 @@ func get_surface():
 	return _voxel_surface
 
 
+func is_running():
+	return _running
 
 
 

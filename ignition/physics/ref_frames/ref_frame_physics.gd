@@ -444,6 +444,10 @@ func split_if_needed_space() -> bool:
 
 func split_if_needed_surface() -> bool:
 	var collision_surf: Node = get_collision_surface()
+	var running: bool = collision_surf.is_running()
+	if running:
+		return false
+	
 	var node_clusters: Array = collision_surf.get_bounding_node_clusters()
 	var qty: int = node_clusters.size()
 	if qty < 2:
@@ -457,8 +461,7 @@ func split_if_needed_surface() -> bool:
 	var clusters_qty: int   = last_cluster.size()
 	
 	var rot: RefFrameRotationNode = get_parent()
-	var collision_surface: Node   = get_collision_surface()
-	var surface: MarchingCubesDualGd = collision_surface.gt_surface()
+	var surface: MarchingCubesDualGd = collision_surf.gt_surface()
 	
 	var bodies_b: Array = []
 	
@@ -531,9 +534,17 @@ func merge_if_needed_space():
 
 func merge_if_needed_surface( other_rf: RefFramePhysics ):
 	var collision_surf_other: Node  = other_rf.get_collision_surface()
+	var running: bool = collision_surf_other.is_running()
+	if running:
+		return false
+	
 	var bounding_nodes_other: Array = collision_surf_other.get_bounding_nodes()
 
 	var collision_surf_own: Node  = get_collision_surface()
+	running = collision_surf_own.is_running()
+	if running:
+		return false
+	
 	var clusters: Array = collision_surf_own.get_bounding_node_clusters( bounding_nodes_other )
 	
 	var clusters_qty: int = clusters.size()

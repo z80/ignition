@@ -93,7 +93,12 @@ func _get_visual_surface():
 func _ign_pre_process(delta):
 	# Update collision surfaces for physics ref. frames 
 	# one at a time.
-	
+	_update_surface()
+	_process_ref_frames()
+
+
+
+func _update_surface():
 	var qty: int = self.get_child_count()
 	if _ref_frame_rebuild_index >= qty:
 		_ref_frame_rebuild_index = 0
@@ -114,8 +119,38 @@ func _ign_pre_process(delta):
 
 
 
-func _process_ref_frame( rf: RefFramePhysics ):
-	rf.process_children_surface()
+
+
+func _process_ref_frames():
+	var qty: int = self.get_child_count()
+	
+	if _ref_frame_other_index >= qty:
+		_ref_frame_process_index += 1
+		_ref_frame_other_index = _ref_frame_process_index + 1
+	
+	if _ref_frame_process_index >= qty:
+		_ref_frame_process_index = 0
+		_ref_frame_other_index = 1
+	
+	var other_index: int = _ref_frame_other_index
+	_ref_frame_other_index += 1
+	
+	var ch: Node = self.get_child( _ref_frame_process_index )
+	var ref_frame_a: RefFramePhysics = ch as RefFramePhysics
+	
+	if ref_frame_a == null:
+		return false
+	
+	ref_frame_a.process_children_surface()
+	
+	ch = self.get_child( other_index )
+	var ref_frame_b: RefFramePhysics = ch as RefFramePhysics
+	
+	if ref_frame_b == null:
+		return false
+	
+	var ret: bool = ref_frame_a.merge_if_needed_surface( ref_frame_b )
+	return ret
 
 
 
