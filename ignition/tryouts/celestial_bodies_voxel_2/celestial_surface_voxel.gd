@@ -10,7 +10,7 @@ class_name CelestialSurfaceVoxel
 var _visual_space: Node3D = null
 var _visual_surface: Node  = null
 
-
+var _ref_frame_index: int = 0
 
 # Radius is taken from
 #var radius_km = 1.0
@@ -438,6 +438,33 @@ func process_ref_frames_orbiting_change_parent( celestial_bodies: Array ):
 		print( "orbiting -> another orbiting" )
 		print( "biggest influence obj: ", biggest_influence_body.name )
 		print( "biggest influence gm: ", biggest_influence_body.own_gm )
+
+
+
+
+func _ign_physics_process( delta ):
+	var qty: int = get_child_count()
+	var ref_frames: Array = []
+	for i in range(qty):
+		var ch: Node = get_child(i)
+		var rf: RefFramePhysics = ch as RefFramePhysics
+		if rf != null:
+			ref_frames.push_back( rf )
+	
+	qty = ref_frames.size()
+	if _ref_frame_index >= qty:
+		_ref_frame_index = 0
+	
+	if qty > 0:
+		var rf: RefFramePhysics = ref_frames[_ref_frame_index]
+		var deleted: bool =  rf.is_queued_for_deletion()
+		if not deleted:
+			rf.process_children_space()
+	
+	_ref_frame_index += 1
+
+
+
 
 
 func _create_orbit_visualizer():

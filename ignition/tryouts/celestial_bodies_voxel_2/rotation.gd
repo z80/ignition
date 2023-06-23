@@ -2,7 +2,9 @@
 extends RefFrameRotationNode
 
 var _visual_surface: Node = null
-var _ref_frame_index: int = 0
+var _ref_frame_rebuild_index: int = 0
+var _ref_frame_process_index: int = 0
+var _ref_frame_other_index: int = 0
 
 
 # Called when the node enters the scene tree for the first time.
@@ -93,11 +95,11 @@ func _ign_pre_process(delta):
 	# one at a time.
 	
 	var qty: int = self.get_child_count()
-	if _ref_frame_index >= qty:
-		_ref_frame_index = 0
+	if _ref_frame_rebuild_index >= qty:
+		_ref_frame_rebuild_index = 0
 	
-	var ch: Node = self.get_child( _ref_frame_index )
-	_ref_frame_index += 1
+	var ch: Node = self.get_child( _ref_frame_rebuild_index )
+	_ref_frame_rebuild_index += 1
 	var ref_frame_physics: RefFramePhysics = ch as RefFramePhysics
 	if ref_frame_physics == null:
 		return
@@ -108,6 +110,13 @@ func _ign_pre_process(delta):
 	
 	var collision_surface: Node = ref_frame_physics.get_collision_surface()
 	collision_surface.rebuild_surface( surface_source, foliage_sources, true )
+
+
+
+
+func _process_ref_frame( rf: RefFramePhysics ):
+	rf.process_children_surface()
+
 
 
 

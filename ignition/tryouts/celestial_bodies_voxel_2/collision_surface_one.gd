@@ -14,10 +14,16 @@ var _created_instances: Array = []
 
 var _source_se3: Se3Ref = null
 
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	_source_se3 = Se3Ref.new()
+	if _source_se3 == null:
+		_source_se3 = Se3Ref.new()
+	
+	_get_collision_body()
+	
 	call_deferred( "_create_visual" )
+
 
 func _create_visual():
 	if _visual != null:
@@ -56,8 +62,9 @@ func _get_collision_body():
 	# Here it should be for ref frame physical space.
 	if _collision_body == null:
 		_collision_body = CollisionCell.instantiate()
-		var phys_env: Node = ref_frame_physics.get_physics_environment()
-		phys_env.add_physics_body( _collision_body )
+	
+	var phys_env: Node = ref_frame_physics.get_physics_environment()
+	phys_env.add_physics_body( _collision_body )
 	
 	return _collision_body
 

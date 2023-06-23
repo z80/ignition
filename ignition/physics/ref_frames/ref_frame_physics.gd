@@ -54,31 +54,47 @@ func get_broad_tree():
 	return _broad_tree
 
 
-func process_children():
-	#print( "******************** apply forces" )
-	#if not debug_has_split:
-	#exclude_too_far_bodies()
-	#print( "******************** include close enough bodies" )
+func process_children_space():
 	include_close_enough_bodies()
-	#print( "******************** split if needed" )
-	var orbiting: bool = is_orbiting()
-	if orbiting:
-		var has_split: bool = split_if_needed_space()
-		debug_has_split = has_split
-		if has_split:
-			return true
-		#print( "******************** merge if needed" )
-		if ( merge_if_needed_space() ):
-			return true
-	
-	else:
-		pass
+	var has_split: bool = split_if_needed_space()
+	debug_has_split = has_split
+	if has_split:
+		return true
+	#print( "******************** merge if needed" )
+	if ( merge_if_needed_space() ):
+		return true
 	
 	#print( "******************** self delete if unused" )
 	if ( self_delete_if_unused() ):
 		return true
 	
 	return false
+
+
+
+func process_children_surface():
+	#print( "******************** apply forces" )
+	#if not debug_has_split:
+	#exclude_too_far_bodies()
+	#print( "******************** include close enough bodies" )
+	include_close_enough_bodies()
+	#print( "******************** split if needed" )
+	var has_split: bool = split_if_needed_surface()
+	debug_has_split = has_split
+	if has_split:
+		return true
+	#print( "******************** merge if needed" )
+	# Merge on surface uses pairs.
+	#if ( merge_if_needed_surface() ):
+	#	return true
+	
+	#print( "******************** self delete if unused" )
+	if ( self_delete_if_unused() ):
+		return true
+	
+	return false
+
+
 
 
 
@@ -508,7 +524,38 @@ func merge_if_needed_space():
 			print_all_ref_frames()
 			
 			return true
+	
 	return false
+
+
+
+func merge_if_needed_surface( other_rf: RefFramePhysics ):
+	var collision_surf_other: Node  = other_rf.get_collision_surface()
+	var bounding_nodes_other: Array = collision_surf_other.get_bounding_nodes()
+
+	var collision_surf_own: Node  = get_collision_surface()
+	var clusters: Array = collision_surf_own.get_bounding_node_clusters( bounding_nodes_other )
+	
+	var clusters_qty: int = clusters.size()
+	if clusters_qty > 1:
+		return false
+	
+	# Bounding node clusters touch each other. So we merge the other ref. frame into this one.
+	var bodies: Array = other_rf.root_most_child_bodies()
+	for body in bodies:
+		body.change_parent( self )
+	
+	# Here the origins of individual cells of other_rf are different compared to 
+	# the current ref. frame. Besides of just reparenting eed to relocate them.
+	# Or may be not because they are RefFrameNode derivatives which is supposed 
+	# to do relocation automatically.
+	var surf_other: Node = other_rf.get_collision_surface()
+	surf_other.move_cells_to_other_ref_frame( bounding_nodes_other, self )
+	
+	# Queue the other ref. frame for deletion.
+	other_rf.queue_free()
+	
+
 
 
 # Need to be removed if returned "true".
