@@ -210,7 +210,7 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 
 
 func build_surface_process( args ):
-	var node: BoundingNodeGd = args.node
+	bounding_node = args.node
 	var source_se3: Se3Ref = args.source_se3
 	var view_point_se3: Se3Ref = args.view_point_se3
 	var node_size_strategy: VolumeNodeSizeStrategyGd = args.node_size_strategy
@@ -224,7 +224,7 @@ func build_surface_process( args ):
 	var common_point: Vector3 = args.view_point_se3.r
 	
 	var _step: float = voxel_surface_solid.init_min_step( source_solid )
-	var _ok: bool = voxel_surface_solid.subdivide_source( node, source_solid, null )
+	var _ok: bool = voxel_surface_solid.subdivide_source( bounding_node, source_solid, null )
 	args.solid_ok = _ok
 	var _qty: int = voxel_surface_solid.precompute_scaled_values( source_se3, 0, 1.0, common_point )
 	args.solid_ok = args.solid_ok and (_qty > 0)
@@ -237,7 +237,7 @@ func build_surface_process( args ):
 		voxel_surface_liquid.split_precision = 0.01
 		
 		_step = voxel_surface_liquid.init_min_step( source_liquid )
-		_ok = voxel_surface_liquid.subdivide_source( node, source_liquid, null )
+		_ok = voxel_surface_liquid.subdivide_source( bounding_node, source_liquid, null )
 		args.liquid_ok = _ok
 		_qty = voxel_surface_liquid.precompute_scaled_values( source_se3, 0, 1.0, common_point )
 		args.liquid_ok = args.liquid_ok and (_qty > 0)
