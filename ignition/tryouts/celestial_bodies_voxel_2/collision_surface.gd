@@ -5,7 +5,6 @@ extends Node
 @export var layer_config: Resource   = null
 
 var _collision_cells: Dictionary = {}
-var _collision_cells_free: Array = []
 
 #var _node_size_strategy: VolumeNodeSizeStrategyGd = null
 
@@ -212,10 +211,6 @@ func _pick_nodes_to_rebuild( view_point_se3s: Array ):
 	var id_node_needed: Dictionary = {}
 	for view_point_se3 in view_point_se3s:
 		var bounding_node: BoundingNodeGd = _voxel_surface.create_bounding_node( view_point_se3, sz )
-		var empty: bool = id_node_needed.is_empty()
-		if empty:
-			var id0: String = bounding_node.get_node_id()
-			id_node_needed[id0] = bounding_node
 		#print( "central node: ", id0, ", at: ", view_point_se3.r )
 		for x in range(3):
 			for y in range(3):
@@ -235,7 +230,7 @@ func _pick_nodes_to_rebuild( view_point_se3s: Array ):
 	for id in _collision_cells.keys():
 		var has: bool = id_node_needed.has( id )
 		if not has:
-			_collision_cells_free.push_back( _collision_cells[id] )
+			_collision_cells[id].queue_free()
 			ids_to_erase.push_back( id )
 	
 	for id in ids_to_erase:
@@ -248,11 +243,7 @@ func _pick_nodes_to_rebuild( view_point_se3s: Array ):
 		var has: bool  = _collision_cells.has( id )
 		if not has:
 			var node: BoundingNodeGd = id_node_needed[id]
-			var collision: Node
-			if _collision_cells_free.is_empty():
-				collision = _create_cell()
-			else:
-				collision = _collision_cells_free.pop_back()
+			var collision: Node = _create_cell()
 			ind += 1
 			collisions_to_be_rebuilt.push_back( { "node": node, "collision": collision, "id": id } )
 			_collision_cells[id] = collision

@@ -25,6 +25,22 @@ func _ready():
 	call_deferred( "_create_visual" )
 
 
+func _exit_tree():
+	var to_be_deleted: bool = is_queued_for_deletion()
+	if to_be_deleted:
+		_delete_data()
+
+
+
+func _delete_data():
+	_cleanup_foliage()
+	if (_visual != null) and (is_instance_valid(_visual)):
+		_visual.queue_free()
+	if (_collision_body != null) and (is_instance_valid(_collision_body)):
+		_collision_body.queue_free()
+
+
+
 func _create_visual():
 	if _visual != null:
 		return
