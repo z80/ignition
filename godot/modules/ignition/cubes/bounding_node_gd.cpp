@@ -110,11 +110,38 @@ bool BoundingNodeGd::contains_point( const Ref<MarchingCubesDualGd> & surface, c
 	return ret;
 }
 
+//static void print_map( const String & header, const RBMap<String, Ref<BoundingNodeGd> > & map )
+//{
+//	print_line( header );
+//	String stri;
+//	for (const KeyValue<String, Ref<BoundingNodeGd> > & E : map)
+//	{
+//		const Ref<BoundingNodeGd> & node_ref = E.value;
+//		const String id = node_ref.ptr()->get_node_id();
+//		stri += "(" + id + "), ";
+//	}
+//	print_line( stri );
+//}
+//
+//static void print_vector( const String & header, const Vector<Ref<BoundingNodeGd> > & vec )
+//{
+//	print_line( header );
+//	String stri;
+//	const int qty = vec.size();
+//	for ( int i=0; i<qty; i++ )
+//	{
+//		const Ref<BoundingNodeGd> & node_ref = vec[i];
+//		const String id = node_ref.ptr()->get_node_id();
+//		stri += "(" + id + "), ";
+//	}
+//	print_line( stri );
+//}
+
 Array BoundingNodeGd::split_into_clusters( const Array & bounding_nodes )
 {
-	RBMap<String, const Ref<BoundingNodeGd> *>  remaining_nodes;
-	RBMap<String, const Ref<BoundingNodeGd> *>  destination_nodes;
-	Vector<const Ref<BoundingNodeGd> *> last_added, newly_added;
+	RBMap<String, Ref<BoundingNodeGd> >  remaining_nodes;
+	RBMap<String, Ref<BoundingNodeGd> >  destination_nodes;
+	Vector<Ref<BoundingNodeGd> > last_added, newly_added;
 	Array destination_array, result;
 
 	const int total_qty = bounding_nodes.size();
@@ -126,14 +153,16 @@ Array BoundingNodeGd::split_into_clusters( const Array & bounding_nodes )
 		const String id = node->get_node_id();
 		const bool has = remaining_nodes.has( id );
 		if ( !has )
-			remaining_nodes.insert( id, &node_ref );
+			remaining_nodes.insert( id, node_ref );
 	}
+
+	//print_line( "entered clusters" );
 
 	while ( !remaining_nodes.is_empty() )
 	{
 		// First step prime destination_nodes and last_added.
-		const Ref<BoundingNodeGd> * node_ref = remaining_nodes.back()->get();
-		const BoundingNodeGd * node = node_ref->ptr();
+		const Ref<BoundingNodeGd> node_ref = remaining_nodes.back()->get();
+		const BoundingNodeGd * node = node_ref.ptr();
 		const String id = node->get_node_id();
 		remaining_nodes.erase( id );
 
@@ -141,14 +170,21 @@ Array BoundingNodeGd::split_into_clusters( const Array & bounding_nodes )
 		destination_nodes.clear();
 		last_added.push_back( node_ref );
 		destination_nodes.insert( id, node_ref );
+
+		//print_line( "Initial id: ", id );
+
 		while ( !last_added.is_empty() )
 		{
+			//print_map( "destination: ", destination_nodes );
+			//print_vector( "last_added: ", last_added );
+			//print_map( "remaining: ", remaining_nodes );
+
 			newly_added.clear();
 			const int qty = last_added.size();
 			for ( int i=0; i<qty; i++ )
 			{
-				const Ref<BoundingNodeGd> * node_ref = last_added[i];
-				const BoundingNodeGd * node = node_ref->ptr();
+				const Ref<BoundingNodeGd> node_ref = last_added[i];
+				const BoundingNodeGd * node = node_ref.ptr();
 				// Check front, back, top, bottom, left, right.
 				for ( int x=0; x<3; x++ )
 				{
@@ -169,11 +205,18 @@ Array BoundingNodeGd::split_into_clusters( const Array & bounding_nodes )
 							if (sum != 1)
 								continue;
 							const String id = node->get_adjacent_node_id( dx, dy, dz );
-							const bool has = destination_nodes.has( id );
-							if ( !has )
+							const bool remaining_has   = remaining_nodes.has( id );
+							const bool destination_has = destination_nodes.has( id );
+							//print_line( "(" + id + "): in_remaining: " +
+							//	        (remaining_has ? "true" : "false") + "; in_dest: " +
+							//            (destination_has ? "true" : "false" ) );
+
+							if ( remaining_has && (!destination_has) )
 							{
-								destination_nodes.insert( id, node_ref );
-								newly_added.push_back( node_ref );
+								const Ref<BoundingNodeGd> node_ref_to_add = remaining_nodes[id];
+								remaining_nodes.erase( id );
+								destination_nodes.insert( id, node_ref_to_add );
+								newly_added.push_back( node_ref_to_add );
 							}
 						}
 					}
@@ -183,11 +226,13 @@ Array BoundingNodeGd::split_into_clusters( const Array & bounding_nodes )
 			last_added = newly_added;
 		}
 
+		//print_map( "final_destination: ", destination_nodes );
+
 		destination_array.clear();
-		for (const KeyValue<String, const Ref<BoundingNodeGd> *> & E : destination_nodes)
+		for (const KeyValue<String, Ref<BoundingNodeGd> > & E : destination_nodes)
 		{
-			const Ref<BoundingNodeGd> * node_ref = E.value;
-			destination_array.push_back( &node_ref );
+			const Ref<BoundingNodeGd> node_ref = E.value;
+			destination_array.push_back( node_ref );
 		}
 
 		//for ( RBMap<String, const Ref<BoundingNodeGd> *>::Iterator it = destination_nodes.begin();
