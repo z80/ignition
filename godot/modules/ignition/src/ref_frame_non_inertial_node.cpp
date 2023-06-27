@@ -84,26 +84,26 @@ real_t RefFrameNonInertialNode::get_time_step() const
 
 Dictionary RefFrameNonInertialNode::serialize()
 {
-	Dictionary data = RefFrameMotionNode::serialize();
+	Dictionary ret_data = RefFrameMotionNode::serialize();
 
-	data["physics_mode"]     = physics_mode;
-	data["numerical_motion"] = nm.serialize();
+	ret_data["physics_mode"]     = physics_mode;
+	ret_data["numerical_motion"] = nm.serialize();
 
-	return data;
+	return ret_data;
 }
 
-bool RefFrameNonInertialNode::deserialize( const Dictionary & data )
+bool RefFrameNonInertialNode::deserialize( const Dictionary & new_data )
 {
 	{
-		const bool ok = RefFrameMotionNode::deserialize( data );
+		const bool ok = RefFrameMotionNode::deserialize( new_data );
 		if ( !ok )
 			return false;
 	}
 
-	physics_mode = data["physics_mode"];
+	physics_mode = new_data["physics_mode"];
 
 	{
-		const Dictionary & nm_data = data["numerical_motion"];
+		const Dictionary & nm_data = new_data["numerical_motion"];
 		const bool ok = nm.deserialize( nm_data );
 		if ( !ok )
 			return false;
