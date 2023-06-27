@@ -15,16 +15,6 @@ offset_bottom = -1.0
 mouse_filter = 2
 script = ExtResource("1")
 
-[node name="CtrlGroups" type="Button" parent="."]
-layout_mode = 0
-offset_left = 106.526
-offset_top = 5.41895
-offset_right = 201.526
-offset_bottom = 30.4189
-tooltip_text = "Toggle control groups visibility."
-toggle_mode = true
-text = "Ctrl groups"
-
 [node name="NavBall" type="Button" parent="."]
 layout_mode = 0
 offset_left = 209.454
@@ -35,16 +25,4 @@ tooltip_text = "Toggle nav. ball visibility on/off."
 toggle_mode = true
 text = "Nav ball"
 
-[node name="TrajParams" type="Button" parent="."]
-layout_mode = 0
-offset_left = 3.65462
-offset_top = 4.63229
-offset_right = 99.6546
-offset_bottom = 29.6323
-tooltip_text = "Trajectory parameters on/off."
-toggle_mode = true
-text = "Traj params"
-
-[connection signal="pressed" from="CtrlGroups" to="." method="_on_CtrlGroups_pressed"]
 [connection signal="pressed" from="NavBall" to="." method="_on_NavBall_pressed"]
-[connection signal="pressed" from="TrajParams" to="." method="_on_TrajParams_pressed"]

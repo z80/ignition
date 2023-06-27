@@ -1,8 +1,6 @@
-[gd_scene load_steps=11 format=3 uid="uid://d164mxaj5h5it"]
+[gd_scene load_steps=9 format=3 uid="uid://d164mxaj5h5it"]
 
-[ext_resource type="PackedScene" uid="uid://bgnnh21a30uf4" path="res://physics/ui/trajectory_summary.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://bga668jgke041" path="res://physics/ui/navigation/navigation.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://physics/ui/control_groups/control_groups.tscn" id="3"]
 [ext_resource type="PackedScene" uid="uid://cth8j6w265f3c" path="res://physics/ui/save_load/ui_save_load.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://physics/ui/time_dilation/time_dilation.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://physics/ui/esc_menu/esc_menu.tscn" id="6"]
@@ -32,14 +30,6 @@ offset_top = -48.0
 offset_right = 156.312
 offset_bottom = -7.0
 
-[node name="TrajParams" parent="." instance=ExtResource("1")]
-layout_mode = 1
-anchors_preset = -1
-offset_left = 8.0
-offset_top = -176.0
-offset_right = 194.0
-offset_bottom = -3.0
-
 [node name="NavBall" parent="." instance=ExtResource("2")]
 layout_mode = 1
 anchors_preset = -1
@@ -49,16 +39,6 @@ offset_left = -197.064
 offset_right = 2.9364
 grow_horizontal = 1
 grow_vertical = 1
-
-[node name="CtrlGroups" parent="." instance=ExtResource("3")]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.992
-anchor_right = 0.992
-offset_left = -122.752
-offset_top = 56.0
-offset_right = 0.247437
-offset_bottom = 314.999
 
 [node name="UiSaveLoad" parent="." instance=ExtResource("4")]
 visible = false

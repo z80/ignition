@@ -15,28 +15,6 @@ func _get_root_ui():
 	return _root_ui 
 
 
-func _on_TrajParams_pressed():
-	UiSound.play( Constants.ButtonClick )
-
-	var b: Button = get_node( "TrajParams" )
-	var v: bool = b.button_pressed
-	
-	var r: Node = _get_root_ui()
-	var tp: Node = r.get_node( "TrajParams" )
-	tp.visible = v
-
-
-func _on_CtrlGroups_pressed():
-	UiSound.play( Constants.ButtonClick )
-
-	var b: Button = get_node( "CtrlGroups" )
-	var v: bool = b.button_pressed
-	
-	var r: Node = _get_root_ui()
-	var tp: Node = r.get_node( "CtrlGroups" )
-	tp.visible = v
-
-
 func _on_NavBall_pressed():
 	UiSound.play( Constants.ButtonClick )
 

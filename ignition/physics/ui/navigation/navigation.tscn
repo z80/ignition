@@ -1,8 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://bga668jgke041"]
+[gd_scene load_steps=5 format=3 uid="uid://bga668jgke041"]
 
 [ext_resource type="PackedScene" uid="uid://db7i0y7lbr1h" path="res://physics/ui/navigation/navball.tscn" id="1"]
 [ext_resource type="Texture2D" uid="uid://djd8cym0g1wuj" path="res://physics/ui/navigation/assets/level_indicator.png" id="2"]
-[ext_resource type="FontFile" uid="uid://brwfhqldys5m5" path="res://assets/font_digital.tres" id="3"]
 [ext_resource type="Script" path="res://physics/ui/navigation/navigation.gd" id="4"]
 
 [sub_resource type="World3D" id="World3D_8absw"]
@@ -49,159 +48,8 @@ position = Vector2(102.233, 99.5334)
 scale = Vector2(1.52957, 1.5435)
 texture = ExtResource("2")
 
-[node name="Mode" type="Label" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -158.284
-offset_top = -285.523
-offset_right = -47.2842
-offset_bottom = -261.523
-theme_override_fonts/font = ExtResource("3")
-text = "mode: surface"
-
-[node name="Speed" type="Label" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -158.162
-offset_top = -260.914
-offset_right = -47.1617
-offset_bottom = -236.914
-theme_override_fonts/font = ExtResource("3")
-text = "Speed: 0 m/s"
-
-[node name="GeoidDist" type="Label" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -158.162
-offset_top = -238.914
-offset_right = -47.1617
-offset_bottom = -214.914
-theme_override_fonts/font = ExtResource("3")
-text = "Distance: 0 km"
-
-[node name="AirPressure" type="Label" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -158.162
-offset_top = -218.914
-offset_right = -47.1617
-offset_bottom = -194.914
-theme_override_fonts/font = ExtResource("3")
-text = "Air pressure: 0 kPa"
-
 [node name="Timer" type="Timer" parent="."]
 wait_time = 0.2
 autostart = true
 
-[node name="ModeMap" type="Button" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -259.646
-offset_top = -114.538
-offset_right = -194.646
-offset_bottom = -91.5383
-tooltip_text = "Toggles camera map mode. In map mode it is possible to zoom out to see an entire solar system."
-focus_mode = 0
-theme_override_fonts/font = ExtResource("3")
-toggle_mode = true
-text = "map"
-
-[node name="ModeOrbit" type="Button" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -259.646
-offset_top = -85.5383
-offset_right = -194.646
-offset_bottom = -65.5383
-tooltip_text = "Orbit mode
-Speed is relative to not rotating planet center."
-focus_mode = 0
-theme_override_fonts/font = ExtResource("3")
-text = "orbit"
-
-[node name="ModeSurface" type="Button" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -259.051
-offset_top = -59.9704
-offset_right = -194.051
-offset_bottom = -39.9704
-tooltip_text = "Surface mode
-Speed is relative to rotating planet surface."
-focus_mode = 0
-theme_override_fonts/font = ExtResource("3")
-text = "surface"
-
-[node name="ModeTarget" type="Button" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -259.051
-offset_top = -33.9704
-offset_right = -194.051
-offset_bottom = -13.9704
-tooltip_text = "Target mode
-Speed is relative to selected target."
-focus_mode = 0
-theme_override_fonts/font = ExtResource("3")
-text = "target"
-
-[node name="Sas" type="CheckBox" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -265.766
-offset_top = -208.362
-offset_right = -200.766
-offset_bottom = -184.362
-tooltip_text = "Stability Augmentation System (S.A.S.)
-When vehicle rotation is not under control actively zeroes angular velocity. "
-focus_mode = 0
-text = "SAS"
-
-[node name="ShowOrbits" type="CheckBox" parent="."]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -265.766
-offset_top = -190.249
-offset_right = -158.766
-offset_bottom = -166.249
-tooltip_text = "Visualize orbits"
-focus_mode = 0
-text = "Show orbits"
-
 [connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
-[connection signal="pressed" from="ModeMap" to="." method="_on_Map_pressed"]
-[connection signal="pressed" from="ModeOrbit" to="." method="_on_ModeOrbit_pressed"]
-[connection signal="pressed" from="ModeSurface" to="." method="_on_ModeSurface_pressed"]
-[connection signal="pressed" from="ModeTarget" to="." method="_on_ModeTarget_pressed"]
-[connection signal="pressed" from="Sas" to="." method="_on_Sas_pressed"]
-[connection signal="pressed" from="ShowOrbits" to="." method="_on_ShowOrbits_pressed"]

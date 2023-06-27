@@ -7,7 +7,7 @@ var mode: int = NavigationMode.ORBIT
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	set_mode_orbit()
+	pass
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -145,24 +145,7 @@ func _recompute_mode_orbit():
 	navball.set_anti_normal( -n )
 	navball.set_radial_out( r )
 	navball.set_radial_in( -r )
-	
-	var speed: float = se3.v.length()
-	var speed_lbl = get_node( "Speed" )
-	speed_lbl.text = "Speed: " + str( speed ) + "m/s"
-	
-	var dist_km: float = se3.r.length()* 0.001 - cb.radius_km
-	var dist_lbl: Label = get_node( "GeoidDist" )
-	dist_lbl.text  = "Geoid dist: " + str(dist_km) + "km"
-	
-	var P: float
-	if cs != null:
-		P = cs.air_pressure( se3 ) * 0.001
-	
-	else:
-		P = 0.0
-		
-	var air_pressure_lbl: Label = get_node( "AirPressure" )
-	air_pressure_lbl.text  = "Air pressure: " + str(P) + "kPa"
+
 
 
 
@@ -203,69 +186,6 @@ func _compute_yaw_pitch_roll( q: Quaternion ):
 	var yaw: float = atan2(siny_cosp, cosy_cosp);
 	
 	return [yaw, pitch, roll]
-
-
-func set_mode_surface():
-	mode = NavigationMode.SURFACE
-	var l: Label = get_node( "Mode" )
-	l.text = "Mode: surface"
-	_recompute_mode_surface()
-
-
-func set_mode_orbit():
-	mode = NavigationMode.ORBIT
-	var l: Label = get_node( "Mode" )
-	l.text = "Mode: orbit"
-	_recompute_mode_orbit()
-
-
-func set_mode_target():
-	mode = NavigationMode.TARGET
-	var l: Label = get_node( "Mode" )
-	l.text = "Mode: target"
-	_recompute_mode_target()
-
-
-func _on_ModeSurface_pressed():
-	UiSound.play( Constants.ButtonClick )
-	set_mode_surface()
-
-
-func _on_ModeOrbit_pressed():
-	UiSound.play( Constants.ButtonClick )
-	set_mode_orbit()
-
-
-func _on_ModeTarget_pressed():
-	UiSound.play( Constants.ButtonClick )
-	set_mode_target()
-
-
-func _on_Sas_pressed():
-	UiSound.play( Constants.ButtonClick )
-	var check = get_node( "Sas" )
-	var down: bool = check.button_pressed
-	UserInput.gui_control_bool( "gui_sas", true, down, not down )
-
-
-
-
-
-
-
-func _on_ShowOrbits_pressed():
-	UiSound.play( Constants.ButtonClick )
-	var check = get_node( "ShowOrbits" )
-	var down: bool = check.button_pressed
-	RootScene.ref_frame_root.visualize_orbits = down
-
-
-
-func _on_Map_pressed():
-	UiSound.play( Constants.ButtonClick )
-	var btn: Button = get_node( "ModeMap" )
-	var pressed: bool = btn.button_pressed
-	UserInput.gui_control_bool( "ui_map", pressed, pressed, not pressed )
 
 
 
