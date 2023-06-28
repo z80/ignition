@@ -10,7 +10,7 @@ var _collision_body: StaticBody3D      = null
 var _visual: Node3D = null
 
 var _created_instances: Array = []
-
+var _bodies_inside: Array = []
 
 var _source_se3: Se3Ref = null
 
@@ -303,5 +303,58 @@ class BuildArgsVisual:
 	var voxel_surface_solid: MarchingCubesDualGd
 	var voxel_surface_liquid: MarchingCubesDualGd
 	var foliage_sources: Array
+
+
+
+func add_body( body: RefFrameBodyNode ):
+	_bodies_inside.push_back( body )
+
+
+
+func _serialize( data: Dictionary ):
+	super( data )
+	var bodies: Array = []
+	var qty: int = _bodies_inside.size()
+	for i in range(qty):
+		var body: RefFrameBodyNode = _bodies_inside[i]
+		var file: String = body.scene_file_path
+		var body_data: Dictionary = body.serialize()
+		var body_dict: Dictionary = { "file": file, "data": body_data }
+		bodies.append( body_dict )
+	
+	data["bodies"] = bodies
+	return true
+
+
+
+func _deserialize( data: Dictionary ):
+	var qty = _bodies_inside.size()
+	for i in range(qty):
+		var body: RefFrameBodyNode = _bodies_inside[i]
+		if (body != null) and (is_instance_valid(body)):
+			body.queue_free()
+	_bodies_inside.clear()
+	
+	super( data )
+	
+	var rf: RefFramePhysics = get_parent()
+	
+	var bodies: Array = data["bodies"]
+	qty = bodies.size()
+	for i in range(qty):
+		var body_dict: Dictionary = bodies[i]
+		var file: String = body_dict["file"]
+		var body_data: Dictionary = body_dict["data"]
+		var Body: PackedScene = load( file )
+		var body: RefFrameBodyNode = Body.instantiate() 
+		body.change_parent( rf, false )
+		body.deserialize( body_data )
+		
+		_bodies_inside.push_back( body )
+	return true
+
+
+
+
 
 

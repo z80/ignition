@@ -1,7 +1,7 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://bijn827ghhlgy"]
 
-[ext_resource path="res://physics/ref_frames/physics_body_base.tscn" type="PackedScene" id=1]
-[ext_resource path="res://physics/bodies/static_body.gd" type="Script" id=2]
+[ext_resource type="PackedScene" path="res://physics/ref_frames/physics_body_base.tscn" id="1"]
+[ext_resource type="Script" path="res://physics/bodies/static_body.gd" id="2"]
 
-[node name="RefFrameBodyNode" instance=ExtResource( 1 )]
-script = ExtResource( 2 )
+[node name="RefFrameBodyNode" instance=ExtResource("1")]
+script = ExtResource("2")

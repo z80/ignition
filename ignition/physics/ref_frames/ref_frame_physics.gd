@@ -461,7 +461,7 @@ func split_if_needed_surface() -> bool:
 	var clusters_qty: int   = last_cluster.size()
 	
 	var rot: RefFrameRotationNode = get_parent()
-	var surface: MarchingCubesDualGd = collision_surf.gt_surface()
+	var surface: MarchingCubesDualGd = collision_surf.get_surface()
 	
 	var bodies_b: Array = []
 	
@@ -862,4 +862,29 @@ func _force_source_recursive( n: Node ):
 func get_ref_frame_root():
 	var rf: RefFrameNode = RootScene.ref_frame_root
 	return rf
+
+
+
+
+func register_in_node( body: RefFrameBodyNode ):
+	var rot: RefFrameRotationNode = get_parent()
+	if rot == null:
+		return false
+
+	var collision_surf: Node = get_collision_surface()
+	var surface: MarchingCubesDualGd = collision_surf.gt_surface()
+	var node_cluster: Array = collision_surf.get_bounding_nodes()
+	
+	var se3: Se3Ref = body.relative_to( rot )
+	var qty: int = node_cluster.size()
+	for i in range(qty):
+		var node: BoundingNodeGd = node_cluster[i]
+		var inside: bool = node.contains_point( surface, se3 )
+		if not inside:
+			continue
+		
+		# Bind the point and the volume node.
+	
+	return false
+
 
