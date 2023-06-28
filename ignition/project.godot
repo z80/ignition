@@ -24,6 +24,7 @@ UserInput="*res://physics/user_unput/user_input.gd"
 UiSound="*res://physics/singletons/sound/ui_sound.tscn"
 DDD="*res://debug/ddd.gd"
 WorkersPool="*res://addons/exec_pool/exec_pool.tscn"
+DataStorage="*res://tryouts/data_storage/data_storage.tscn"
 
 [display]
 

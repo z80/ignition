@@ -33,6 +33,8 @@ func _exit_tree():
 
 
 func _delete_data():
+	_serialize_bodies()
+	_cleanup_bodies()
 	_cleanup_foliage()
 	if (_visual != null) and (is_instance_valid(_visual)):
 		_visual.queue_free()
@@ -101,6 +103,7 @@ func build_surface_prepare( source_se3: Se3Ref, view_point_se3: Se3Ref, node_siz
 	_visual.liquid.visible = false
 	
 	_cleanup_foliage()
+	_cleanup_bodies()
 	
 	#view_point_se3.q = Quat.IDENTITY
 	#source_se3 = view_point_se3.inverse()
@@ -221,6 +224,9 @@ func build_surface_finished( args ):
 	
 	_cleanup_foliage()
 	_populate_foliage( voxel_surface_solid, bounding_node, foliage_sources )
+	var se3: Se3Ref = self.get_se3()
+	_deserialize_bodies()
+	self.set_se3( se3 )
 	
 
 
@@ -290,6 +296,14 @@ func _cleanup_foliage():
 	_created_instances.clear()
 
 
+func _cleanup_bodies():
+	var qty: int = _bodies_inside.size()
+	for i in range(qty):
+		var body: RefFrameBodyNode = _bodies_inside[i]
+		if (body != null) and (is_instance_valid(body)):
+			body.queue_free()
+	
+	_bodies_inside.clear()
 
 
 class BuildArgsVisual:
@@ -312,7 +326,6 @@ func add_body( body: RefFrameBodyNode ):
 
 
 func _serialize( data: Dictionary ):
-	super( data )
 	var bodies: Array = []
 	var qty: int = _bodies_inside.size()
 	for i in range(qty):
@@ -335,8 +348,6 @@ func _deserialize( data: Dictionary ):
 			body.queue_free()
 	_bodies_inside.clear()
 	
-	super( data )
-	
 	var rf: RefFramePhysics = get_parent()
 	
 	var bodies: Array = data["bodies"]
@@ -352,6 +363,21 @@ func _deserialize( data: Dictionary ):
 		
 		_bodies_inside.push_back( body )
 	return true
+
+
+
+func _serialize_bodies():
+	var data: Dictionary = self.serialize()
+	DataStorage.serialize( self, data )
+
+
+func _deserialize_bodies():
+	var data = DataStorage.deserialize( self )
+	if data != null:
+		deserialize( data )
+
+
+
 
 
 
