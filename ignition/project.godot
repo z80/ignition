@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Ignition"
+config/name="Experiments"
 run/main_scene="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.tscn"
 config/features=PackedStringArray("4.0")
 config/icon="res://icon.png"

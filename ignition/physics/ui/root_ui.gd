@@ -1,9 +1,6 @@
 extends Control
 
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+@export var BuildGui: PackedScene = null
 
 
 # Called when the node enters the scene tree for the first time.
@@ -11,9 +8,8 @@ func _ready():
 	pass # Replace with function body.
 
 
-func _on_help_pressed():
-	var Wiki: PackedScene = preload( "res://wiki_handler/wiki_window.tscn" )
-	var wiki: Control = Wiki.instantiate()
+func _on_build_pressed():
+	var wiki: Control = BuildGui.instantiate()
 	add_child( wiki )
 
 
@@ -25,4 +21,4 @@ func _input(event):
 			return
 		var key_code: int = event.keycode
 		if key_code == KEY_F1:
-			_on_help_pressed()
+			_on_build_pressed()

@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://c5ygsyd6vywnw"]
+
+[ext_resource type="Script" path="res://physics/camera_ctrl/gui_blocks_list/blocks_list.gd" id="1_ap5v5"]
+[ext_resource type="PackedScene" uid="uid://b0s5xfo33a5tc" path="res://physics/camera_ctrl/gui_blocks_list/item_block.tscn" id="2_nmdgw"]
+
+[node name="blocks_list" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ap5v5")
+ButtonScene = ExtResource("2_nmdgw")
+
+[node name="Container" type="HFlowContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.131
+anchor_top = 0.2
+anchor_right = 0.871
+anchor_bottom = 0.821
+offset_left = -0.912018
+offset_top = -5.60001
+offset_right = 5.60791
+offset_bottom = 3.992
