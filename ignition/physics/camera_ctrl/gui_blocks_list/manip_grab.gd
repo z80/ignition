@@ -258,7 +258,7 @@ func _need_redraw( draw ):
 func _compute_draw_params():
 	if target == null:
 		return null
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport = get_viewport()
 	if vp == null:
 		return null
 	var cam = vp.get_camera_3d()

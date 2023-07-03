@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://c5ygsyd6vywnw"]
+[gd_scene load_steps=4 format=3 uid="uid://c5ygsyd6vywnw"]
 
 [ext_resource type="Script" path="res://physics/camera_ctrl/gui_blocks_list/blocks_list.gd" id="1_ap5v5"]
 [ext_resource type="PackedScene" uid="uid://b0s5xfo33a5tc" path="res://physics/camera_ctrl/gui_blocks_list/item_block.tscn" id="2_nmdgw"]
+[ext_resource type="PackedScene" uid="uid://dbt7hoced377b" path="res://physics/camera_ctrl/gui_blocks_list/manip_grab.tscn" id="3_4mpsg"]
 
 [node name="blocks_list" type="Control"]
 layout_mode = 3
@@ -12,6 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ap5v5")
 ButtonScene = ExtResource("2_nmdgw")
+Grab = ExtResource("3_4mpsg")
 
 [node name="Container" type="HFlowContainer" parent="."]
 layout_mode = 1

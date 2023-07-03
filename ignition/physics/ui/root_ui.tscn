@@ -24,6 +24,7 @@ script = ExtResource("9")
 BuildGui = ExtResource("2_ncv8a")
 
 [node name="EdgeButtons" parent="." instance=ExtResource("7")]
+visible = false
 layout_mode = 1
 anchor_left = 0.498
 anchor_right = 0.498
@@ -33,6 +34,7 @@ offset_right = 156.312
 offset_bottom = -7.0
 
 [node name="NavBall" parent="." instance=ExtResource("2")]
+visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.994
@@ -82,6 +84,7 @@ grow_vertical = 1
 layout_mode = 0
 offset_right = 73.0
 offset_bottom = 17.0
+tooltip_text = "Build"
 shortcut = SubResource("1")
 texture_normal = ExtResource("8")
 texture_pressed = ExtResource("8")

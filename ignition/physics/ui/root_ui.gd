@@ -9,8 +9,8 @@ func _ready():
 
 
 func _on_build_pressed():
-	var wiki: Control = BuildGui.instantiate()
-	add_child( wiki )
+	var build_window: Control = BuildGui.instantiate()
+	add_child( build_window )
 
 
 func _input(event):

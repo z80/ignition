@@ -13,7 +13,8 @@ var _first_se3: Se3Ref          = null
 func _notification( what ):
 	if (what == NOTIFICATION_PARENTED) or (what == NOTIFICATION_PATH_RENAMED):
 		if (_first_se3 == null) or ( not is_instance_valid(_first_parent) ):
-			_init_first_parent()
+			#_init_first_parent()
+			pass
 		
 		else:
 			_update_position()

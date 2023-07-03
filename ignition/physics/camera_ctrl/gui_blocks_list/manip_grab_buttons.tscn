@@ -13,6 +13,8 @@ offset_left = -25.9763
 offset_top = 29.4611
 offset_right = -25.9763
 offset_bottom = 29.4611
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_u1uld")
 
 [node name="World" type="Button" parent="."]

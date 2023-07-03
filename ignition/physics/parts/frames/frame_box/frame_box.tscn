@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://c2wtjxbxwwunf"]
 
 [ext_resource type="Script" path="res://physics/parts/frames/frame_box/frame_box.gd" id="1"]
-[ext_resource type="PackedScene" path="res://physics/parts/frames/frame_box/visual.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://fecjfioplp1u" path="res://physics/parts/frames/frame_box/visual.tscn" id="2"]
 
 [node name="FrameBox" type="RefFrameBodyNode"]
 script = ExtResource("1")

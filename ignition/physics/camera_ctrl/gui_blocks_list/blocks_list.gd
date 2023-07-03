@@ -1,13 +1,15 @@
+
 extends Control
 
 @export var ButtonScene: PackedScene = null
+@export var Grab: PackedScene        = null
 
-var _container: FlowContainer = null
+var _container: FlowContainer        = null
 
 # Target being edited.
-var _edited_target: RefFrameNode = null
+var _edited_target: RefFrameNode     = null
 # Widget editing the target above.
-var _editing_widget: Node = null
+var _editing_widget: Node            = null
 
 var _activated_mode = null
 
@@ -17,10 +19,6 @@ func _ready():
 	_activated_mode = "construction_menu"
 	_fill_blocks()
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	pass
 
 func _input(event):
 	if (event is InputEventKey) and (not event.echo):
@@ -40,7 +38,7 @@ func _get_container():
 
 
 func _clear():
-	var vb: VBoxContainer = _get_container()
+	var vb: FlowContainer = _get_container()
 	var qty: int = vb.get_child_count()
 	for i in range(qty):
 		var n: Node = vb.get_child( i )
@@ -59,7 +57,7 @@ func _fill_blocks():
 
 
 func _create_button( block_desc: Resource ):
-	var vb: VBoxContainer = _get_container()
+	var vb: FlowContainer = _get_container()
 	var btn: Control      = ButtonScene.instantiate()
 	btn.block_desc = block_desc
 	vb.add_child( btn )
@@ -80,34 +78,34 @@ func on_block_picked( block_desc: Resource ):
 	se3.v = Vector3.ZERO
 	se3.w = Vector3.ZERO
 	
-	var p: Node = self.get_parent()
+	var ref_frame: RefFrameNonInertialNode = player.get_parent()
 	
-	se3 = p.relative_to_se3( player, se3 )
+	se3 = ref_frame.relative_to_se3( player, se3 )
 	se3 = se3.inverse()
-
-	var block: PhysicsBodyBase = block_desc.create( p, se3 )
+	
+	
+	var block: PhysicsBodyBase = block_desc.create( ref_frame, se3 )
 	if block == null:
 		return
 	
-	var is_static_block: bool = block_desc.is_static()
+	queue_free()
+	return
+	
+#	var is_static_block: bool = block_desc.is_static()
 	
 	# This one makes it not delete superbody on activation.
-	block.body_state         = PhysicsBodyBase.BodyState.CONSTRUCTION
+#	block.body_state         = PhysicsBodyBase.BodyState.CONSTRUCTION
 	
-	block.set_se3( se3 )
+#	block.set_se3( se3 )
 	
-	# Make it selected to be able to move it.
-	#RootScene.ref_frame_root.player_select = block
+	#_activate_grab( block )
 	
-	_activate_grab( block )
-	
-	self.visible = false
+#	self.visible = false
 
 
 func _activate_grab( body ):
 	if not is_instance_valid( body ):
 		return
-	var Grab = load( "res://physics/bodies/construction_new/manip_grab/manip_grab.tscn" )
 	var grab = Grab.instantiate()
 	RootScene.get_root_for_gui_popups().add_child( grab )
 	_edited_target  = body

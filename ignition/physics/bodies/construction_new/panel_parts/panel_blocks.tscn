@@ -1,18 +1,20 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://b4v827vehvdgo"]
 
-[ext_resource path="res://physics/bodies/construction_new/panel_parts/panel_blocks.gd" type="Script" id=1]
-[ext_resource path="res://physics/bodies/construction_new/panel_parts/item_block.tscn" type="PackedScene" id=2]
+[ext_resource type="Script" path="res://physics/bodies/construction_new/panel_parts/panel_blocks.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://c12c456y2yl74" path="res://physics/bodies/construction_new/panel_parts/item_block.tscn" id="2"]
 
 [node name="PanelBlocks" type="Panel"]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-script = ExtResource( 1 )
-button_scene = ExtResource( 2 )
+script = ExtResource("1")
+button_scene = ExtResource("2")
 
 [node name="Scroll" type="ScrollContainer" parent="."]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 4.0
@@ -21,8 +23,7 @@ offset_right = 4.0
 offset_bottom = 4.0
 
 [node name="Container" type="GridContainer" parent="Scroll"]
-offset_right = 1023.0
-offset_bottom = 192.0
-custom_minimum_size = Vector2( 192, 192 )
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
 size_flags_horizontal = 3
 columns = 3
