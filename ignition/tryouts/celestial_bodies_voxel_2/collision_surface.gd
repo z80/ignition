@@ -94,7 +94,7 @@ func rebuild_surface( surface_source: Resource, foliage_sources: Array, synchron
 	
 	var source_se3: Se3Ref = view_point_se3.inverse()
 	
-	var view_point_se3s: Array = [view_point_se3]
+	var view_point_se3s: Array = []
 	var bodies: Array = ref_frame_physics.root_most_child_bodies()
 	var qty: int = bodies.size()
 	for i in range(qty):
