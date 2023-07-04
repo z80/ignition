@@ -93,6 +93,11 @@ func _parent_jumped():
 		update_physics_from_state()
 
 
+func _set_se3( se3 ):
+	if (_physical != null) and (is_instance_valid(_physical)):
+		_physical.transform        = se3.transform
+		_physical.linear_velocity  = se3.v
+		_physical.angular_velocity = se3.w
 
 
 func init():
@@ -298,6 +303,8 @@ func _ign_physics_pre_process( delta ):
 # To make it overridable.
 func update_state_from_physics( delta ):
 	if _physical != null:
+		#if _physical.freeze:
+		#	return
 		var t: Transform3D = _physical.transform
 		var v: Vector3   = _physical.linear_velocity
 		var w: Vector3   = _physical.angular_velocity
