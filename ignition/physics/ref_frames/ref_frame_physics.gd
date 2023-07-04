@@ -460,7 +460,7 @@ func split_if_needed_surface() -> bool:
 		return false
 	
 	var last_cluster: Array = node_clusters.back()
-	var clusters_qty: int   = last_cluster.size()
+	var cells_in_last_cluster_qty: int = last_cluster.size()
 	
 	var rot: RefFrameRotationNode = get_parent()
 	var surface: MarchingCubesDualGd = collision_surf.get_surface()
@@ -472,7 +472,8 @@ func split_if_needed_surface() -> bool:
 		var body: RefFrameBodyNode = bodies[i]
 		var se3: Se3Ref = body.relative_to( rot )
 		var inside: bool = BoundingNodeGd.cluster_contains_point( surface, last_cluster, se3 )
-		bodies_b.push_back( i )
+		if inside:
+			bodies_b.push_back( body )
 	
 	var root: RefFrameRoot = get_ref_frame_root()
 	var rf: RefFramePhysics = root.create_ref_frame_physics()

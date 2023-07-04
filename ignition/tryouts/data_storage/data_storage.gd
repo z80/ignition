@@ -51,7 +51,7 @@ func deserialize( collision_surface_one: Node ):
 	
 	var file: FileAccess = FileAccess.open( file_name, FileAccess.READ )
 	var data_string: String = file.get_as_text()
-	var data: Dictionary = JSON.parse_string( data_string )
+	var data = JSON.parse_string( data_string )
 	return data
 
 
