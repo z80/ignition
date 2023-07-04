@@ -44,6 +44,7 @@ public:
 
 	virtual void set_se3_raw( const SE3 & se3 );
 	void set_se3( const Ref<Se3Ref> & se3 );
+	GDVIRTUAL1(_set_se3, const Ref<Se3Ref> &);
 	Ref<Se3Ref> get_se3() const;
 
 	Ref<Se3Ref> relative_to( Node * origin );
