@@ -109,7 +109,8 @@ func update():
 
 
 func _change_parent( node, recursive ):
-	super( node, recursive )
+	#super( node, recursive )
+	pass
 
 
 # Override ready. Added surface provider creation.

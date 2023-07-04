@@ -94,7 +94,10 @@ func _parent_jumped():
 
 
 func _set_se3( se3 ):
-	update_physics_from_state()
+	if (_physical != null) and (is_instance_valid(_physical)):
+		_physical.transform        = se3.transform
+		_physical.linear_velocity  = se3.v
+		_physical.angular_velocity = se3.w
 
 
 func init():
