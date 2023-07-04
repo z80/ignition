@@ -93,6 +93,8 @@ func _parent_jumped():
 		update_physics_from_state()
 
 
+func _set_se3( se3 ):
+	update_physics_from_state()
 
 
 func init():
