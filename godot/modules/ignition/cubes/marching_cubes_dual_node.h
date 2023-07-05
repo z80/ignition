@@ -54,7 +54,7 @@ public:
 
 	bool intersects( const MarchingCubesDualNode & other ) const;
 
-	bool contains_point( const MarchingCubesDual * tree, const Vector3d & at ) const;
+	bool contains_point( const MarchingCubesDual * tree, const Vector3d & point ) const;
 	Vector3d center_vector( const MarchingCubesDual * tree ) const;
 	Float    node_size( const MarchingCubesDual * tree ) const;
 	//SE3      se3_in_point( MarchingCubesDual * tree, const Vector3d & at, bool in_source ) const;

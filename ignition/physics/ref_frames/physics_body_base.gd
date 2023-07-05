@@ -438,6 +438,8 @@ func remove_physical():
 
 
 func _change_parent( p: Node, recursive_call: bool ):
+	return
+	
 	if recursive_call:
 		return
 	var assembly: Node = get_assembly_raw()

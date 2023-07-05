@@ -188,7 +188,7 @@ func process_ref_frames( celestial_bodies: Array ):
 	# rotational ref. frame.
 	# (-2*m * w x v); (-m * w x (w x r)); (-m*e x r)
 	_apply_forces()
-	_draw_all_shock_waves()
+	#_draw_all_shock_waves()
 	
 	process_ref_frames_rotating_to_orbiting()
 	process_ref_frames_orbiting_to_rotating()

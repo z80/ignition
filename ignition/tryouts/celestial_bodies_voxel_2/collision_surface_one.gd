@@ -16,7 +16,7 @@ var _source_se3: Se3Ref = null
 
 
 # Called when the node enters the scene tree for the first time.
-func _ready():
+func _enter_tree():
 	if _source_se3 == null:
 		_source_se3 = Se3Ref.new()
 	
@@ -54,20 +54,19 @@ func _create_visual():
 
 
 func _ign_post_process( _delta ):
-	if _collision_body == null:
-		return
-	
-	# Collision body placement.
-	var ref_frame: RefFrameNode = get_parent()
-	var se3: Se3Ref = self.relative_to( ref_frame )
-	var t: Transform3D = se3.transform
-	_collision_body.transform = t
-	
-	# Visual body placement.
-	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
-	se3 = self.relative_to( cam )
-	t = se3.transform
-	_visual.transform = t
+	if _collision_body != null:
+		# Collision body placement.
+		var ref_frame: RefFrameNode = get_parent()
+		var se3: Se3Ref = self.relative_to( ref_frame )
+		var t: Transform3D = se3.transform
+		_collision_body.transform = t
+		
+		if _visual != null:
+			# Visual body placement.
+			var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
+			se3 = self.relative_to( cam )
+			t = se3.transform
+			_visual.transform = t
 
 
 

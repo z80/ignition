@@ -140,9 +140,10 @@ void RefFrameNode::set_se3( const Ref<Se3Ref> & se3 )
 {
 	const SE3 & se3_raw = se3.ptr()->se3;
 	set_se3_raw( se3_raw );
-	if ( GDVIRTUAL_IS_OVERRIDDEN(_set_se3) )
+	if ( GDVIRTUAL_IS_OVERRIDDEN( _set_se3 ) )
+	{
 		GDVIRTUAL_CALL( _set_se3, se3 );
-
+	}
 }
 
 Ref<Se3Ref> RefFrameNode::get_se3() const

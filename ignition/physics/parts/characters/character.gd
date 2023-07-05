@@ -9,7 +9,7 @@ class_name Character
 
 @export var ang_vel: float        = 1.0
 @export var max_ang_vel: float    = 2.0
-@export var gain_angular: float   = 400.0
+@export var gain_angular: float   = 900.0
 @export var gain_d_angular: float = 100.0
 @export var max_torque: float     = 50.0
 
