@@ -356,18 +356,18 @@ bool MarchingCubesDualNode::contains_point( const MarchingCubesDual * tree, cons
 	const VectorInt point_int = tree->vector_int( point );
 	//const bool ret = aabb.has_point( at );
 
-	if ( point_int.x < this->at.x )
+	if ( point_int.x < at.x )
 		return false;
-	if ( point_int.y < this->at.y )
+	if ( point_int.y < at.y )
 		return false;
-	if ( point_int.z < this->at.z )
+	if ( point_int.z < at.z )
 		return false;
 
-	if ( (point_int.x + size) >= this->at.x )
+	if ( point_int.x >= (at.x+size) )
 		return false;
-	if ( (point_int.y + size) >= this->at.y )
+	if ( point_int.y >= (at.y+size) )
 		return false;
-	if ( (point_int.z + size) >= this->at.z )
+	if ( point_int.z >= (at.z+size) )
 		return false;
 
 	return true;
