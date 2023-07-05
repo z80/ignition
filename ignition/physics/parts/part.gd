@@ -634,6 +634,8 @@ func process_user_input_group( _input: Dictionary ):
 # This one is supposed to override the dummy one 
 # declared in "PhysicsBodyBase".
 func create_assembly():
+	return self
+	
 	var p = self.get_parent()
 	var sb = PartAssembly.new()
 #	sb.debug = true
