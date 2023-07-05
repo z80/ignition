@@ -459,7 +459,7 @@ func split_if_needed_surface() -> bool:
 	if ( bodies.size() < 2 ):
 		return false
 	
-	var last_cluster: Array = node_clusters.back()
+	var last_cluster: Array = node_clusters.front()
 	var cells_in_last_cluster_qty: int = last_cluster.size()
 	
 	var rot: RefFrameRotationNode = get_parent()
@@ -478,6 +478,8 @@ func split_if_needed_surface() -> bool:
 	var root: RefFrameRoot = get_ref_frame_root()
 	var rf: RefFramePhysics = root.create_ref_frame_physics()
 	rf.change_parent( rot, false )
+	var current_rf_se3: Se3Ref = self.get_se3()
+	rf.set_se3( current_rf_se3 )
 	
 	call_deferred( "_post_split_surface", rf, last_cluster, bodies_b )
 	
@@ -488,7 +490,7 @@ func _post_split_surface( new_rf: RefFrameNode, nodes: Array, bodies: Array ):
 	var surf: Node = get_collision_surface()
 	surf.move_cells_to_other_ref_frame( nodes, new_rf )
 	for body in bodies:
-		body.call_deferred( "change_parent", new_rf, false )
+		body.change_parent( new_rf, false )
 
 
 
@@ -557,7 +559,7 @@ func merge_if_needed_surface( other_rf: RefFramePhysics ):
 	# Bounding node clusters touch each other. So we merge the other ref. frame into this one.
 	var bodies: Array = other_rf.root_most_child_bodies()
 	for body in bodies:
-		body.change_parent( self )
+		body.change_parent( self, false )
 	
 	# Here the origins of individual cells of other_rf are different compared to 
 	# the current ref. frame. Besides of just reparenting eed to relocate them.
@@ -569,6 +571,7 @@ func merge_if_needed_surface( other_rf: RefFramePhysics ):
 	# Queue the other ref. frame for deletion.
 	other_rf.queue_free()
 	
+	return true
 
 
 
@@ -665,7 +668,7 @@ func root_most_child_bodies():
 			continue
 		
 		if (b != null):
-			var root_most_body: RefFrameNode = b.root_most_body()
+			var root_most_body: RefFrameNode = b #.root_most_body()
 			var append: bool = not (root_most_body in bodies)
 			if append:
 				bodies.push_back( root_most_body )
