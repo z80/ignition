@@ -89,7 +89,7 @@ func on_block_picked( block_desc: Resource ):
 		return
 	
 	queue_free()
-	return
+	#return
 	
 #	var is_static_block: bool = block_desc.is_static()
 	
@@ -98,7 +98,7 @@ func on_block_picked( block_desc: Resource ):
 	
 #	block.set_se3( se3 )
 	
-	#_activate_grab( block )
+	_activate_grab( block )
 	
 #	self.visible = false
 

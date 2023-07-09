@@ -203,6 +203,7 @@ func _process(_delta):
 	if do_redraw:
 		_draw_params = draw
 		#update()
+		queue_redraw()
 
 
 
@@ -383,9 +384,13 @@ func _process_dragging():
 	# Here probably need to convert back to local 
 	# first as all vectors are in global ref frame
 	var to: Vector3 = Vector3( x, y, z )
-	target.set_r( to )
-	target.set_v( Vector3.ZERO )
-	target.set_w( Vector3.ZERO )
+	var se3: Se3Ref = target.get_se3()
+	se3.r = to
+	target.set_se3( se3 )
+	#target.set_r( to )
+	#target.set_v( Vector3.ZERO )
+	#target.set_w( Vector3.ZERO )
+	print( "draggong: ", to )
 	
 	if r != _dragging.position:
 		_dragging.position = r
@@ -417,7 +422,7 @@ func _init_rotating( axis: Vector3 ):
 	
 	
 	
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
 	var camera: Camera3D = vp.get_camera_3d()
@@ -472,10 +477,12 @@ func _process_rotating():
 
 	#print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
 	
-	
-	target.set_q( q )
-	target.set_v( Vector3.ZERO )
-	target.set_w( Vector3.ZERO )
+	var se3: Se3Ref = target.get_se3()
+	se3.q = q
+	target.set_se3( se3 )
+	#target.set_q( q )
+	#target.set_v( Vector3.ZERO )
+	#target.set_w( Vector3.ZERO )
 	
 	if euler != _dragging.euler:
 		_dragging.euler = euler
@@ -498,7 +505,7 @@ func _mouse_on_axis( mouse_start: Vector3, drag_axis: Vector3 ):
 
 
 func _mouse_intersection_line( axis_a: Vector3, axis_r: Vector3 ):
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
 	var camera: Camera3D = vp.get_camera_3d()
@@ -523,7 +530,7 @@ func _mouse_intersection_line( axis_a: Vector3, axis_r: Vector3 ):
 
 
 func _mouse_intersection_plane( plane_a: Vector3, plane_r: Vector3 ):
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
 	var camera: Camera3D = vp.get_camera_3d()

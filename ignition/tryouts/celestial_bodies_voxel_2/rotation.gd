@@ -128,7 +128,7 @@ func _process_ref_frames():
 		_ref_frame_process_index += 1
 		_ref_frame_other_index = _ref_frame_process_index + 1
 	
-	if _ref_frame_process_index >= qty:
+	if (_ref_frame_process_index >= qty) or (_ref_frame_other_index >= qty):
 		_ref_frame_process_index = 0
 		_ref_frame_other_index = 1
 	
