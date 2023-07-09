@@ -6,6 +6,7 @@
 
 [node name="PlayerCamera" type="RefFrameNode"]
 script = ExtResource("2")
+dist_max = 10000.0
 
 [node name="BroadTreeVisualization" parent="." instance=ExtResource("3")]
 

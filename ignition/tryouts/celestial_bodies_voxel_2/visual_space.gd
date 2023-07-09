@@ -132,7 +132,8 @@ func _rebuild_finished( args ):
 	var voxel_surface_liquid: MarchingCubesDualGd = args.voxel_surface_liquid
 	var qty: int = voxel_surface_solid.get_nodes_qty()
 	print( "rebuild done, nodes qty: ", qty )
-	voxel_surface_solid.apply_to_mesh_only( solid )
+	#voxel_surface_solid.apply_to_mesh_only( solid )
+	voxel_surface_solid.apply_to_mesh_only_wireframe( solid )
 	
 	var sm: ShaderMaterial = solid.material_override
 	if sm == null:
@@ -145,7 +146,8 @@ func _rebuild_finished( args ):
 	
 	
 	if voxel_surface_liquid != null:
-		voxel_surface_liquid.apply_to_mesh_only( liquid )
+		#voxel_surface_liquid.apply_to_mesh_only( liquid )
+		voxel_surface_solid.apply_to_mesh_only_wireframe( solid )
 		
 		sm = liquid.material_override
 		if sm == null:
