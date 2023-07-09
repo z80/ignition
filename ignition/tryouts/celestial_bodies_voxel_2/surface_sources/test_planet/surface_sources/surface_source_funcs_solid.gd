@@ -11,14 +11,14 @@ var node_sz_min: float      = 0.25
 var radius: float           = 100.0
 var bounding_radius: float  = 100.0
 var noise: FastNoiseLite = null
-var height: float           = 3000.0
+var height: float           = 3.0
 
 
 
 func _init():
 	noise = FastNoiseLite.new()
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
-	noise.seed = 2
+	noise.seed = 8
 	#noise.fractal_octaves = 8
 	noise.frequency = 2.0
 	#noise.persistence = 0.8
