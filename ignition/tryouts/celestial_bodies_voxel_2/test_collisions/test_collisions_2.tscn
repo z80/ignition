@@ -37,7 +37,7 @@ rotation_period_hrs = 1.0
 orbital_period_hrs = 20.0
 
 [node name="RefFramePhysics" parent="Sun/Translation/Rotation" index="1" instance=ExtResource("9")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 112, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1020, 0, 0)
 
 [node name="Character" parent="Sun/Translation/Rotation/RefFramePhysics" instance=ExtResource("2")]
 

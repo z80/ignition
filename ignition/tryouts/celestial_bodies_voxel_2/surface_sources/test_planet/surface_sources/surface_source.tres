@@ -8,9 +8,9 @@
 [resource]
 script = ExtResource("1")
 override_material = ExtResource("3")
-bounding_radius = 110.0
-source_radius = 100.0
-radius_km = 0.1
+bounding_radius = 1100.0
+source_radius = 1000.0
+radius_km = 1.0
 orbiting_velocity = 30.0
 g = 9.0
 focus_depth = 40.0
