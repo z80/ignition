@@ -11,15 +11,16 @@ var node_sz_min: float      = 0.25
 var radius: float           = 100.0
 var bounding_radius: float  = 100.0
 var noise: FastNoiseLite = null
-var height: float           = 3000.0
+var height: float           = 3.0
 
 
 
 func _init():
 	noise = FastNoiseLite.new()
-	noise.seed = 2
-	noise.fractal_octaves = 8
-	#noise.period = 3.0
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	#noise.seed = 2
+	#noise.fractal_octaves = 8
+	noise.frequency = 2.0
 	#noise.persistence = 0.8
 
 
@@ -30,7 +31,7 @@ func init_seed( v ):
 
 func value( at: Vector3 ):
 	var unit: Vector3 = at / radius
-	var n: float      = 0.0 #noise.get_noise_3dv( unit )
+	var n: float      = noise.get_noise_3dv( unit )
 	n  *= height/radius
 	var r: float = radius * (1.0 + n)
 	
