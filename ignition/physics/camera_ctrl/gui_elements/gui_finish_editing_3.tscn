@@ -1,0 +1,27 @@
+[gd_scene load_steps=2 format=3 uid="uid://cpokk8arq4bm0"]
+
+[ext_resource type="Script" path="res://physics/camera_ctrl/gui_elements/gui_finish_editing_3.gd" id="1_21c42"]
+
+[node name="FinishEditing" type="Control"]
+custom_minimum_size = Vector2(80, 32)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_21c42")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+custom_minimum_size = Vector2(80, 32)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1.0
+
+[node name="FinishEditing" type="Button" parent="CenterContainer"]
+layout_mode = 2
+tooltip_text = "Finish editing a block."
+text = "Finish editing"
+
+[connection signal="pressed" from="CenterContainer/FinishEditing" to="." method="_on_FinishEditing_pressed"]

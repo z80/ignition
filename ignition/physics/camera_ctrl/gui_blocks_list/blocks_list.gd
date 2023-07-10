@@ -98,7 +98,7 @@ func on_block_picked( block_desc: Resource ):
 	
 #	block.set_se3( se3 )
 	
-	_activate_grab( block )
+	#_activate_grab( block )
 	
 #	self.visible = false
 
@@ -113,8 +113,18 @@ func _activate_grab( body ):
 	grab.target = body
 	_activated_mode = "construction_editing"
 	
-	grab.connect("drag_started", Callable(self, "_on_drag_started"))
-	grab.connect("drag_finished", Callable(self, "_on_drag_finished"))
+	body.set_meta( "grab", grab )
+
+
+
+
+func finish_editing():
+	if is_instance_valid( _editing_widget ):
+		_editing_widget.queue_free()
+		_edited_target  = null
+	
+	_activated_mode = "construction_menu"
+	self.queue_free()
 
 
 func _on_drag_started( grab: Node ):
@@ -130,13 +140,6 @@ func _on_drag_finished( grab: Node ):
 	pass
 
 
-func finish_editing():
-	if is_instance_valid( _editing_widget ):
-		_editing_widget.queue_free()
-		_edited_target  = null
-	
-	_activated_mode = "construction_menu"
-	self.queue_free()
 
 
 
