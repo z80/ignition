@@ -617,11 +617,13 @@ func self_delete_if_unused():
 		for i in range(qty):
 			var b: RefFrameBodyNode = bodies[i]
 			var se3: Se3Ref = b.get_se3()
-			var v: float = se3.v.length()
-			var w: float = se3.w.length()
-			v = max(v, w)
-			if v > Constants.IDLE_SPEED_THRESHOLD:
-				moving_qty += 1
+			#var v: float = se3.v.length()
+			#var w: float = se3.w.length()
+			#v = max(v, w)
+			#if v > Constants.IDLE_SPEED_THRESHOLD:
+			#	moving_qty += 1
+		
+		register_bodies_in_nodes( bodies )
 		
 		if moving_qty == 0:
 			on_delete()
@@ -750,13 +752,19 @@ func _exit_tree():
 
 
 func on_delete():
-	_re_parent_children_on_delete()
+	# These days serialize children. No need to re-parent them.
+	#_re_parent_children_on_delete()
 	# Just in case if camera is parented to this rf directly.
 	_on_delete_rescue_camera()
+	_delete_collision_surface()
 	_destroy_physics_environment()
-	
 
 
+
+func _delete_collision_surface():
+	var surf: Node = get_collision_surface()
+	if surf != null:
+		surf.queue_free()
 
 
 
@@ -790,7 +798,7 @@ func _re_parent_children_on_delete():
 	var children: Array = root_most_child_bodies()
 	for ch in children:
 		if (ch != null) and is_instance_valid(ch):
-			ch.change_parent( p )
+			ch.change_parent( p, false )
 
 
 
@@ -872,24 +880,37 @@ func get_ref_frame_root():
 
 
 
-func register_in_node( body: RefFrameBodyNode ):
+func register_bodies_in_nodes( bodies: Array ):
 	var rot: RefFrameRotationNode = get_parent()
 	if rot == null:
 		return false
+	
+	var bodies_qty: int = bodies.size()
 
 	var collision_surf: Node = get_collision_surface()
-	var surface: MarchingCubesDualGd = collision_surf.gt_surface()
+	var surface: MarchingCubesDualGd = collision_surf.get_surface()
 	var node_cluster: Array = collision_surf.get_bounding_nodes()
-	
-	var se3: Se3Ref = body.relative_to( rot )
+	var cells: Array = collision_surf.get_collision_cells()
 	var qty: int = node_cluster.size()
+	
+	# Clear registered bodies.
 	for i in range(qty):
-		var node: BoundingNodeGd = node_cluster[i]
-		var inside: bool = node.contains_point( surface, se3 )
-		if not inside:
-			continue
-		
-		# Bind the point and the volume node.
+		var cell: Node = cells[i]
+		cell.clear_bodies()
+	
+	# Add registered bodies.
+	for body_ind in range(bodies_qty):
+		var body: RefFrameBodyNode = bodies[body_ind]
+		var se3: Se3Ref = body.relative_to( rot )
+		for i in range(qty):
+			var node: BoundingNodeGd = node_cluster[i]
+			var inside: bool = node.contains_point( surface, se3 )
+			if not inside:
+				continue
+			
+			# Bind the point and the volume node.
+			var cell: Node = cells[i]
+			cell.add_body( body )
 	
 	return false
 

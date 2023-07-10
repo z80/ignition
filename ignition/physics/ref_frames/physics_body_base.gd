@@ -588,9 +588,12 @@ func _serialize( data: Dictionary ):
 # When this thing is called all objects are created.
 # So can assume that all saved paths should be valid.
 func _deserialize( data: Dictionary ):
-	var ok: bool = super.deserialize( data )
-	if not ok:
-		return false
+#	var ok: bool = super.deserialize( data )
+#	if not ok:
+#		return false
+	var has_name: bool = data.has( "visual_name" )
+	if has_name and (_visual != null):
+		_visual.name = data["visual_name"]
 	
 	return true
 

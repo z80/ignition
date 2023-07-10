@@ -128,22 +128,27 @@ func _process_ref_frames():
 		_ref_frame_process_index += 1
 		_ref_frame_other_index = _ref_frame_process_index + 1
 	
-	if (_ref_frame_process_index >= qty) or (_ref_frame_other_index >= qty):
+	if _ref_frame_process_index >= qty:
 		_ref_frame_process_index = 0
 		_ref_frame_other_index = 1
 	
-	var other_index: int = _ref_frame_other_index
-	_ref_frame_other_index += 1
+	if _ref_frame_other_index <= _ref_frame_process_index:
+		_ref_frame_other_index = _ref_frame_process_index + 1
 	
 	var ch: Node = self.get_child( _ref_frame_process_index )
 	var ref_frame_a: RefFramePhysics = ch as RefFramePhysics
 	
 	if ref_frame_a == null:
+		_ref_frame_other_index += 1
 		return false
 	
 	ref_frame_a.process_children_surface()
 	
-	ch = self.get_child( other_index )
+	if _ref_frame_other_index >= qty:
+		return false
+	
+	ch = self.get_child( _ref_frame_other_index )
+	_ref_frame_other_index += 1
 	var ref_frame_b: RefFramePhysics = ch as RefFramePhysics
 	
 	if ref_frame_b == null:

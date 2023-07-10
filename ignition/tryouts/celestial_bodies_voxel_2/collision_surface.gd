@@ -23,6 +23,14 @@ func _ready():
 	pass
 
 
+func _exit_tree():
+	var delete: bool = is_queued_for_deletion()
+	if delete:
+		for id in _collision_cells:
+			var cell: RefFrameNode = _collision_cells[id]
+			cell.queue_free()
+		_collision_cells.clear()
+
 
 func _initialize( surface_source: Resource ):
 	_initialize_strategy( surface_source )
@@ -264,6 +272,18 @@ func get_bounding_nodes():
 	
 	return nodes
 
+
+func get_collision_cells():
+	if _running:
+		return []
+	
+	var cells: Array = []
+	for id in _collision_cells:
+		var cell: Node = _collision_cells[id]
+		cells.push_back( cell )
+	
+	return cells
+	
 
 
 func get_bounding_node_clusters( other_bounding_nodes = null ):

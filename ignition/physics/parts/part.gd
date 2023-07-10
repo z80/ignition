@@ -585,7 +585,14 @@ static func _dfs( part: Part, parts: Array ):
 
 func gui_classes( mode: Array ):
 	var classes: Array = super.gui_classes( mode )
-	if not mode.has( "construction_editing" ):
+	
+	if mode.is_empty():
+		var cam_mode = load( "res://physics/camera_ctrl/gui_elements/gui_camera_mode.tscn" )
+		var cam_this = load( "res://physics/camera_ctrl/gui_elements/gui_control_this.tscn" )
+		classes.push_back( cam_mode )
+		classes.push_back( cam_this )
+
+	elif not mode.has( "construction_editing" ):
 		# Append with control group selection.
 		var gui_control_group = preload( "res://physics/parts/gui_elements/gui_control_group.tscn" )
 		classes.push_back( gui_control_group )
