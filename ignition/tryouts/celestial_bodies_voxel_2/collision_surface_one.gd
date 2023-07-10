@@ -338,13 +338,15 @@ func _serialize( data: Dictionary ):
 	var qty: int = _bodies_inside.size()
 	for i in range(qty):
 		var body: RefFrameBodyNode = _bodies_inside[i]
-		body.queue_free()
 		
 		var file: String = body.scene_file_path
 		var se3: Se3Ref = body.get_se3()
 		var body_data: Dictionary = body.serialize()
 		var body_dict: Dictionary = { "file": file, "data": body_data }
 		bodies.append( body_dict )
+		
+		body.queue_free()
+		body.on_delete()
 	
 	data["bodies"] = bodies
 	return true
