@@ -328,6 +328,12 @@ func clear_bodies():
 
 
 func _serialize( data: Dictionary ):
+	var rf: RefFrameNode = get_parent()
+	var rf_se3: Se3Ref = rf.get_se3()
+	
+	var se3_data: Dictionary = rf_se3.serialize()
+	data["rf_se3"] = se3_data
+	
 	var bodies: Array = []
 	var qty: int = _bodies_inside.size()
 	for i in range(qty):
@@ -354,6 +360,12 @@ func _deserialize( data: Dictionary ):
 	_bodies_inside.clear()
 	
 	var rf: RefFramePhysics = get_parent()
+	var rf_se3: Se3Ref = rf.get_se3()
+	var inv_rf_se3: Se3Ref = rf_se3.inverse()
+	
+	var se3_data: Dictionary = data["rf_se3"]
+	var saved_rf_se3: Se3Ref = Se3Ref.new()
+	saved_rf_se3.deserialize( se3_data )
 	
 	var bodies: Array = data["bodies"]
 	qty = bodies.size()
@@ -365,6 +377,10 @@ func _deserialize( data: Dictionary ):
 		var body: RefFrameBodyNode = Body.instantiate() 
 		body.change_parent( rf, false )
 		body.deserialize( body_data )
+		var se3: Se3Ref = body.get_se3()
+		se3 = saved_rf_se3.mul( se3 )
+		se3 = inv_rf_se3.mul( se3 )
+		body.set_se3( se3 )
 		
 		_bodies_inside.push_back( body )
 	return true
