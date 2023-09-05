@@ -22,7 +22,9 @@ public:
 	VolMc();
 	~VolMc();
 
-	bool build_surface( const VolGeometry * geometry, const VolSource * source, Float size=100.0, Integer subdivisions=2 );
+	bool build_surface( const VolGeometry * geometry, const VolSource * source, Float size=0.1, Integer subdivisions=2 );
+
+	const Vector<VolFace> & faces() const;
 
 private:
 	Float   _size;

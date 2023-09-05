@@ -50,6 +50,7 @@
 #include "ign_random_gd.h"
 
 #include "iir2.h"
+#include "vol_mc_gd.h"
 
 //void register_ignition_types()
 void initialize_ignition_module( ModuleInitializationLevel p_level )
@@ -105,6 +106,7 @@ void initialize_ignition_module( ModuleInitializationLevel p_level )
 
 
         ClassDB::register_class<Iir2::Iir2sRef>();
+		ClassDB::register_class<Ign::VolMcGd>();
 }
 
 //void unregister_ignition_types()

@@ -10,7 +10,7 @@ namespace Ign
 {
 
 VolMc::VolMc()
-	: _size( 100.0 ),
+	: _scale( 0.1 ),
 	  _subdivisions( 2 )
 {
 }
@@ -19,9 +19,9 @@ VolMc::~VolMc()
 {
 }
 
-bool VolMc::build_surface( const VolGeometry * geometry, const VolSource * source, Float size, Integer subdivisions )
+bool VolMc::build_surface( const VolGeometry * geometry, const VolSource * source, Float scale, Integer subdivisions )
 {
-	_size = size;
+	_scale = scale;
 	_subdivisions = subdivisions;
 
 	_faces.clear();
@@ -29,6 +29,11 @@ bool VolMc::build_surface( const VolGeometry * geometry, const VolSource * sourc
 
 	_traverse_nodes_brute_force( geometry, source );
 	return true;
+}
+
+const Vector<VolFace> & VolMc::faces() const
+{
+	return _faces;
 }
 
 void VolMc::_compute_scale()
@@ -40,7 +45,7 @@ void VolMc::_compute_scale()
 	for ( Integer i=0; i<_subdivisions; i++ )
 		size *= 2;
 
-	_scale = _size / static_cast<Float>(size);
+	_size = _scale * static_cast<Float>(size);
 	_size_2 = size / 2;
 }
 
