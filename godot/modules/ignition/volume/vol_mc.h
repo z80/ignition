@@ -19,10 +19,10 @@ class VolSource;
 class VolMc
 {
 public:
-	VolMc( Float size=100.0, Integer subdivisions=2 );
+	VolMc();
 	~VolMc();
 
-	bool build_surface( const VolGeometry * geometry, const VolSource * source );
+	bool build_surface( const VolGeometry * geometry, const VolSource * source, Float size=100.0, Integer subdivisions=2 );
 
 private:
 	Float   _size;

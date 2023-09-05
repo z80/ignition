@@ -9,9 +9,9 @@
 namespace Ign
 {
 
-VolMc::VolMc( Float size, Integer subdivisions )
-	: _size( size ),
-	  _subdivisions( subdivisions )
+VolMc::VolMc()
+	: _size( 100.0 ),
+	  _subdivisions( 2 )
 {
 }
 
@@ -19,10 +19,14 @@ VolMc::~VolMc()
 {
 }
 
-bool VolMc::build_surface( const VolGeometry * geometry, const VolSource * source )
+bool VolMc::build_surface( const VolGeometry * geometry, const VolSource * source, Float size, Integer subdivisions )
 {
+	_size = size;
+	_subdivisions = subdivisions;
+
 	_faces.clear();
 	_compute_scale();
+
 	_traverse_nodes_brute_force( geometry, source );
 	return true;
 }
