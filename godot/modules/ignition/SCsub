@@ -41,6 +41,13 @@ def configure_static_build():
 
     module_env.Append(CPPPATH=["#modules/ignition/cubes/tree"])
     module_env.add_source_files( env.modules_sources, "cubes/tree/*.cpp" )
+    
+    # Collision probing prototype.
+    module_env.Append(CPPPATH=["#modules/ignition/volume"])
+    module_env.add_source_files( env.modules_sources, "volume/*.cpp" )
+
+    module_env.Append(CPPPATH=["#modules/ignition/volume_gd"])
+    module_env.add_source_files( env.modules_sources, "volume_gd/*.cpp" )
 
 
 
