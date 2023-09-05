@@ -69,6 +69,11 @@ public:
 		const VectorInt ret( x+b.x, y+b.y, z+b.z );
 		return ret;
 	}
+	const VectorInt operator+( const Integer b )
+	{
+		const VectorInt ret( x+b, y+b, z+b );
+		return ret;
+	}
 	VectorInt( const VectorInt & inst )
 	{
 		*this = inst;
@@ -95,6 +100,7 @@ public:
 };
 
 VectorInt operator+( const VectorInt & a, const VectorInt & b );
+VectorInt operator+( const VectorInt & a, Integer b );
 
 
 
