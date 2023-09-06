@@ -106,10 +106,6 @@ void VolMc::_compute_node_values( VolMcNode & node, Vector3d * intersection_pts,
 	static const int edges[][2] = { {0, 1}, {1, 2}, {2, 3}, {3, 0},
 								   {4, 5}, {5, 6}, {6, 7}, {7, 4},
 								   {0, 4}, {1, 5}, {2, 6}, {3, 7} };
-	for ( int i=0; i<12; i++ )
-	{
-		node.values[i] = 0;
-	}
 
 	bool edge_intersects[12];
 	for ( int i=0; i<12; i++ )
@@ -122,34 +118,49 @@ void VolMc::_compute_node_values( VolMcNode & node, Vector3d * intersection_pts,
 		edge_intersects[i] = intersects;
 	}
 
-	// There are edges which do not intersect.
-	// If at least one edge has intersection,
-	// after this operation all values should be assigned.
-	for ( int i=0; i<12; i++ )
+	static const Float EPS = 0.000001;
+
+	while ( true )
 	{
-		const bool intersects = edge_intersects[i];
-		if ( intersects )
-			continue;
-		const int ind_a = edges[i][0];
-		const int ind_b = edges[i][1];
-		for ( int j=0; j<12; j++ )
+		// There are edges which do not intersect.
+		// If at least one edge has intersection,
+		// after this operation all values should be assigned.
+		for ( int i=0; i<12; i++ )
 		{
-			if (i==j)
+			const bool intersects = edge_intersects[i];
+			if ( intersects )
 				continue;
-			const bool sec_intersects = edge_intersects[j];
-			if ( !sec_intersects )
-				continue;
-			const int sec_ind_a = edges[j][0];
-			const int sec_ind_b = edges[j][1];
-			if (ind_a == sec_ind_a)
-				node.values[ind_a] += node.values[sec_ind_b];
-			else if (ind_a == sec_ind_b)
-				node.values[ind_a] += node.values[sec_ind_a];
-			else if (ind_b == sec_ind_a)
-				node.values[ind_b] += node.values[sec_ind_b];
-			else if (ind_b == sec_ind_b)
-				node.values[ind_b] += node.values[sec_ind_a];
+			const int ind_a = edges[i][0];
+			const int ind_b = edges[i][1];
+
+			const Float val_a = node.values[ind_a];
+			const Float val_b = node.values[ind_b];
+			if ( Math::abs(val_a) < EPS )
+				node.values[ind_a] += val_b;
+			if ( Math::abs(val_b) < EPS )
+				node.values[ind_b] += val_a;
 		}
+
+		int zero_qty = 0;
+		int intersections_qty = 0;
+		for ( int i=0; i<12; i++ )
+		{
+			const bool intersects = edge_intersects[i];
+			const int ind_a = edges[i][0];
+			const int ind_b = edges[i][1];
+			const Float val_a = node.values[ind_a];
+			const Float val_b = node.values[ind_b];
+
+			if ( ( Math::abs(val_a) < EPS ) && ( Math::abs(val_b) < EPS ) )
+				zero_qty += 1;
+			else if ( (val_a * val_b) < 0.0 )
+				intersections_qty += 1;
+		}
+
+		if ( intersections_qty == 0 )
+			break;
+		else if ( zero_qty == 0 )
+			break;
 	}
 }
 

@@ -29,13 +29,15 @@
 /**************************************************************************/
 
 #import "view_controller.h"
-#include "core/config/project_settings.h"
-#include "display_server_ios.h"
+
+#import "display_server_ios.h"
 #import "godot_view.h"
 #import "godot_view_renderer.h"
 #import "key_mapping_ios.h"
 #import "keyboard_input_view.h"
-#include "os_ios.h"
+#import "os_ios.h"
+
+#include "core/config/project_settings.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <GameController/GameController.h>
@@ -150,7 +152,7 @@
 
 - (void)didReceiveMemoryWarning {
 	[super didReceiveMemoryWarning];
-	printf("*********** did receive memory warning!\n");
+	print_verbose("Did receive memory warning!");
 }
 
 - (void)viewDidLoad {
@@ -165,11 +167,11 @@
 }
 
 - (void)observeKeyboard {
-	printf("******** setting up keyboard input view\n");
+	print_verbose("Setting up keyboard input view.");
 	self.keyboardView = [GodotKeyboardInputView new];
 	[self.view addSubview:self.keyboardView];
 
-	printf("******** adding observer for keyboard show/hide\n");
+	print_verbose("Adding observer for keyboard show/hide.");
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
 			   selector:@selector(keyboardOnScreen:)

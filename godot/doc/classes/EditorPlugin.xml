@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorPlugin" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorPlugin" inherits="Node" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Used by the editor to extend its functionality.
 	</brief_description>
@@ -532,7 +532,7 @@
 		<method name="get_editor_interface">
 			<return type="EditorInterface" />
 			<description>
-				Returns the [EditorInterface] object that gives you control over Godot editor's window and its functionalities.
+				Returns the [EditorInterface] singleton. It provides access to some parts of the editor GUI as well as various inner states and tools.
 			</description>
 		</method>
 		<method name="get_export_as_menu">

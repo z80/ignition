@@ -15,6 +15,7 @@ void VolMcGd::_bind_methods()
 }
 
 VolMcGd::VolMcGd()
+	: RefCounted()
 {
 }
 

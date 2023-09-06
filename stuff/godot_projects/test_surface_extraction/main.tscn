@@ -1,0 +1,26 @@
+[gd_scene load_steps=4 format=3 uid="uid://dt6brv56tqgxm"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_dv3uk"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_4525d"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mc50h"]
+size = Vector3(1.3, 1.3, 1.3)
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_dv3uk")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -15.2119, 0)
+shape = SubResource("WorldBoundaryShape3D_4525d")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0114083, 0)
+shape = SubResource("BoxShape3D_mc50h")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.738573, 0.437492, -0.512944, 0, 0.760848, 0.64893, 0.674174, -0.479282, 0.561942, -3.45813, 2.62502, 3.29724)

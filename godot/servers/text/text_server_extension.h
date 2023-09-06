@@ -101,8 +101,10 @@ public:
 
 	virtual void font_set_name(const RID &p_font_rid, const String &p_name) override;
 	virtual String font_get_name(const RID &p_font_rid) const override;
+	virtual Dictionary font_get_ot_name_strings(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_name, RID, const String &);
 	GDVIRTUAL1RC(String, _font_get_name, RID);
+	GDVIRTUAL1RC(Dictionary, _font_get_ot_name_strings, RID);
 
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) override;
 	virtual String font_get_style_name(const RID &p_font_rid) const override;
@@ -293,6 +295,9 @@ public:
 
 	virtual int64_t font_get_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_char, int64_t p_variation_selector = 0) const override;
 	GDVIRTUAL4RC(int64_t, _font_get_glyph_index, RID, int64_t, int64_t, int64_t);
+
+	virtual int64_t font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const override;
+	GDVIRTUAL3RC(int64_t, _font_get_char_from_glyph_index, RID, int64_t, int64_t);
 
 	virtual bool font_has_char(const RID &p_font_rid, int64_t p_char) const override;
 	virtual String font_get_supported_chars(const RID &p_font_rid) const override;

@@ -124,7 +124,7 @@ void ShaderFileEditor::_update_options() {
 	int c = versions->get_current();
 	//remember current
 	versions->clear();
-	Vector<StringName> version_list = shader_file->get_version_list();
+	TypedArray<StringName> version_list = shader_file->get_version_list();
 
 	if (c >= version_list.size()) {
 		c = version_list.size() - 1;
@@ -289,6 +289,7 @@ ShaderFileEditor::ShaderFileEditor() {
 	error_text = memnew(RichTextLabel);
 	error_text->set_v_size_flags(SIZE_EXPAND_FILL);
 	error_text->set_selection_enabled(true);
+	error_text->set_context_menu_enabled(true);
 	main_vb->add_child(error_text);
 }
 

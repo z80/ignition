@@ -97,6 +97,7 @@ public:
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const = 0;
 	virtual Vector3 get_contact_impulse(int p_contact_idx) const = 0;
 	virtual int get_contact_local_shape(int p_contact_idx) const = 0;
+	virtual Vector3 get_contact_local_velocity_at_position(int p_contact_idx) const = 0;
 
 	virtual RID get_contact_collider(int p_contact_idx) const = 0;
 	virtual Vector3 get_contact_collider_position(int p_contact_idx) const = 0;
@@ -238,20 +239,6 @@ protected:
 	static void _bind_methods();
 
 public:
-
-	struct SeparationResult
-	{
-		real_t collision_depth;
-		Vector3 collision_point;
-		Vector3 collision_normal;
-		Vector3 collider_velocity;
-		int collision_local_shape;
-		ObjectID collider_id;
-		RID collider;
-		int collider_shape;
-		Variant collider_metadata;
-	};
-
 	static PhysicsServer3D *get_singleton();
 
 	enum ShapeType {

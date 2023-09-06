@@ -9,10 +9,6 @@ if TYPE_CHECKING:
     from SCons import Environment
 
 
-def is_active():
-    return True
-
-
 def get_name():
     return "macOS"
 
@@ -37,6 +33,16 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
     ]
+
+
+def get_doc_classes():
+    return [
+        "EditorExportPlatformMacOS",
+    ]
+
+
+def get_doc_path():
+    return "doc_classes"
 
 
 def get_flags():
@@ -108,10 +114,10 @@ def configure(env: "Environment"):
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(LINKFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
     elif env["arch"] == "x86_64":
-        print("Building for macOS 10.12+.")
-        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
-        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
-        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.12"])
+        print("Building for macOS 10.13+.")
+        env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+        env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     env.Append(CCFLAGS=["-fobjc-arc"])
 
@@ -144,7 +150,7 @@ def configure(env: "Environment"):
             env["CC"] = basecmd + "cc"
             env["CXX"] = basecmd + "c++"
         else:
-            # there aren't any ccache wrappers available for OS X cross-compile,
+            # there aren't any ccache wrappers available for macOS cross-compile,
             # to enable caching we need to prepend the path to the ccache binary
             env["CC"] = ccache_path + " " + basecmd + "cc"
             env["CXX"] = ccache_path + " " + basecmd + "c++"
@@ -225,6 +231,8 @@ def configure(env: "Environment"):
             "CoreMedia",
             "-framework",
             "QuartzCore",
+            "-framework",
+            "Security",
         ]
     )
     env.Append(LIBS=["pthread", "z"])

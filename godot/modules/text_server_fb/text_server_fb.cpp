@@ -59,14 +59,16 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
-#include "core/ShapeDistanceFinder.h"
-#include "core/contour-combiners.h"
-#include "core/edge-selectors.h"
-#include "msdfgen.h"
+#include <core/ShapeDistanceFinder.h>
+#include <core/contour-combiners.h>
+#include <core/edge-selectors.h>
+#include <msdfgen.h>
 #endif
 
 #ifdef MODULE_SVG_ENABLED
+#ifdef MODULE_FREETYPE_ENABLED
 #include "thorvg_svg_in_ot.h"
+#endif
 #endif
 
 /*************************************************************************/
@@ -2173,6 +2175,10 @@ int64_t TextServerFallback::_font_get_glyph_index(const RID &p_font_rid, int64_t
 	return (int64_t)p_char;
 }
 
+int64_t TextServerFallback::_font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const {
+	return p_glyph_index;
+}
+
 bool TextServerFallback::_font_has_char(const RID &p_font_rid, int64_t p_char) const {
 	FontFallback *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND_V_MSG((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff), false, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_char, 16) + ".");
@@ -3859,8 +3865,8 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 				}
 				prev_font = gl.font_rid;
 
-				double scale = _font_get_scale(gl.font_rid, gl.font_size);
 				if (gl.font_rid.is_valid()) {
+					double scale = _font_get_scale(gl.font_rid, gl.font_size);
 					bool subpos = (scale != 1.0) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_HALF) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_ONE_QUARTER) || (_font_get_subpixel_positioning(gl.font_rid) == SUBPIXEL_POSITIONING_AUTO && gl.font_size <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE);
 					if (sd->text[j - sd->start] != 0 && !is_linebreak(sd->text[j - sd->start])) {
 						if (sd->orientation == ORIENTATION_HORIZONTAL) {

@@ -42,6 +42,8 @@ class PopupMenu : public Popup {
 
 	struct Item {
 		Ref<Texture2D> icon;
+		int icon_max_width = 0;
+		Color icon_modulate = Color(1, 1, 1, 1);
 		String text;
 		String xl_text;
 		Ref<TextLine> text_buf;
@@ -96,15 +98,15 @@ class PopupMenu : public Popup {
 	bool during_grabbed_click = false;
 	int mouse_over = -1;
 	int submenu_over = -1;
-	Rect2 parent_rect;
 	String _get_accel_text(const Item &p_item) const;
 	int _get_mouse_over(const Point2 &p_over) const;
 	virtual Size2 _get_contents_minimum_size() const override;
 
-	int _get_item_height(int p_item) const;
+	int _get_item_height(int p_idx) const;
 	int _get_items_total_height() const;
+	Size2 _get_item_icon_size(int p_idx) const;
 
-	void _shape_item(int p_item);
+	void _shape_item(int p_idx);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event);
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
@@ -131,6 +133,10 @@ class PopupMenu : public Popup {
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
 
+	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
+	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
+	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> hover_style;
@@ -144,6 +150,7 @@ class PopupMenu : public Popup {
 		int indent = 0;
 		int item_start_padding = 0;
 		int item_end_padding = 0;
+		int icon_max_width = 0;
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> checked_disabled;
@@ -222,6 +229,8 @@ public:
 	void set_item_text_direction(int p_idx, Control::TextDirection p_text_direction);
 	void set_item_language(int p_idx, const String &p_language);
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
+	void set_item_icon_max_width(int p_idx, int p_width);
+	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	void set_item_checked(int p_idx, bool p_checked);
 	void set_item_id(int p_idx, int p_id);
 	void set_item_accelerator(int p_idx, Key p_accel);
@@ -241,10 +250,13 @@ public:
 	void toggle_item_checked(int p_idx);
 
 	String get_item_text(int p_idx) const;
+	String get_item_xl_text(int p_idx) const;
 	Control::TextDirection get_item_text_direction(int p_idx) const;
 	String get_item_language(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
+	int get_item_icon_max_width(int p_idx) const;
+	Color get_item_icon_modulate(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
@@ -269,18 +281,16 @@ public:
 	void set_item_count(int p_count);
 	int get_item_count() const;
 
-	void scroll_to_item(int p_item);
+	void scroll_to_item(int p_idx);
 
 	bool activate_item_by_event(const Ref<InputEvent> &p_event, bool p_for_global_only = false);
-	void activate_item(int p_item);
+	void activate_item(int p_idx);
 
 	void remove_item(int p_idx);
 
 	void add_separator(const String &p_text = String(), int p_id = -1);
 
 	void clear();
-
-	void set_parent_rect(const Rect2 &p_rect);
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
 

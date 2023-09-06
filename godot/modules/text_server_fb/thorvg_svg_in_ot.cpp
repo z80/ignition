@@ -53,9 +53,11 @@ using namespace godot;
 #endif
 
 #ifdef MODULE_SVG_ENABLED
+#ifdef MODULE_FREETYPE_ENABLED
+
+#include "thorvg_svg_in_ot.h"
 
 #include "thorvg_bounds_iterator.h"
-#include "thorvg_svg_in_ot.h"
 
 #include <freetype/otsvg.h>
 #include <ft2build.h>
@@ -119,14 +121,19 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 				for (int i = 0; i < parser->get_attribute_count(); i++) {
 					xml_body += vformat(" %s=\"%s\"", parser->get_attribute_name(i), parser->get_attribute_value(i));
 				}
-				xml_body += ">";
+
+				if (parser->is_empty()) {
+					xml_body += "/>";
+				} else {
+					xml_body += ">";
+				}
 			} else if (parser->get_node_type() == XMLParser::NODE_TEXT) {
 				xml_body += parser->get_node_data();
 			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
 				xml_body += vformat("</%s>", parser->get_node_name());
 			}
 		}
-		String temp_xml_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 0 0\">" + xml_body;
+		String temp_xml_str = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\">" + xml_body;
 		CharString temp_xml = temp_xml_str.utf8();
 
 		std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
@@ -286,4 +293,5 @@ SVG_RendererHooks *get_tvg_svg_in_ot_hooks() {
 	return &tvg_svg_in_ot_hooks;
 }
 
+#endif // MODULE_FREETYPE_ENABLED
 #endif // MODULE_SVG_ENABLED

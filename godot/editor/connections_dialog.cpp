@@ -33,12 +33,22 @@
 #include "core/config/project_settings.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_help.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/scene_tree_editor.h"
+#include "editor/node_dock.h"
 #include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
+#include "scene/gui/spin_box.h"
 #include "scene/resources/packed_scene.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
@@ -294,7 +304,7 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 					break;
 				}
 
-				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && E->get().class_name != F->get().class_name) {
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().class_name, F->get().class_name)) {
 					type_mismatch = true;
 					break;
 				}
@@ -1431,6 +1441,7 @@ ConnectionsDock::ConnectionsDock() {
 	connect_button->connect("pressed", callable_mp(this, &ConnectionsDock::_connect_pressed));
 
 	connect_dialog = memnew(ConnectDialog);
+	connect_dialog->connect("connected", callable_mp(NodeDock::get_singleton(), &NodeDock::restore_last_valid_node), CONNECT_DEFERRED);
 	add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);

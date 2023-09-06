@@ -624,6 +624,10 @@ void TileMap::set_layer_name(int p_layer, String p_name) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].name == p_name) {
+		return;
+	}
 	layers[p_layer].name = p_name;
 	emit_signal(SNAME("changed"));
 }
@@ -638,6 +642,10 @@ void TileMap::set_layer_enabled(int p_layer, bool p_enabled) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].enabled == p_enabled) {
+		return;
+	}
 	layers[p_layer].enabled = p_enabled;
 	_clear_layer_internals(p_layer);
 	_recreate_layer_internals(p_layer);
@@ -656,6 +664,10 @@ void TileMap::set_layer_modulate(int p_layer, Color p_modulate) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].modulate == p_modulate) {
+		return;
+	}
 	layers[p_layer].modulate = p_modulate;
 	_rendering_update_layer(p_layer);
 	emit_signal(SNAME("changed"));
@@ -671,6 +683,10 @@ void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].y_sort_enabled == p_y_sort_enabled) {
+		return;
+	}
 	layers[p_layer].y_sort_enabled = p_y_sort_enabled;
 	_clear_layer_internals(p_layer);
 	_recreate_layer_internals(p_layer);
@@ -689,6 +705,10 @@ void TileMap::set_layer_y_sort_origin(int p_layer, int p_y_sort_origin) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].y_sort_origin == p_y_sort_origin) {
+		return;
+	}
 	layers[p_layer].y_sort_origin = p_y_sort_origin;
 	_clear_layer_internals(p_layer);
 	_recreate_layer_internals(p_layer);
@@ -705,6 +725,10 @@ void TileMap::set_layer_z_index(int p_layer, int p_z_index) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].z_index == p_z_index) {
+		return;
+	}
 	layers[p_layer].z_index = p_z_index;
 	_rendering_update_layer(p_layer);
 	emit_signal(SNAME("changed"));
@@ -718,6 +742,9 @@ int TileMap::get_layer_z_index(int p_layer) const {
 }
 
 void TileMap::set_collision_animatable(bool p_enabled) {
+	if (collision_animatable == p_enabled) {
+		return;
+	}
 	collision_animatable = p_enabled;
 	_clear_internals();
 	set_notify_local_transform(p_enabled);
@@ -731,6 +758,9 @@ bool TileMap::is_collision_animatable() const {
 }
 
 void TileMap::set_collision_visibility_mode(TileMap::VisibilityMode p_show_collision) {
+	if (collision_visibility_mode == p_show_collision) {
+		return;
+	}
 	collision_visibility_mode = p_show_collision;
 	_clear_internals();
 	_recreate_internals();
@@ -742,6 +772,9 @@ TileMap::VisibilityMode TileMap::get_collision_visibility_mode() {
 }
 
 void TileMap::set_navigation_visibility_mode(TileMap::VisibilityMode p_show_navigation) {
+	if (navigation_visibility_mode == p_show_navigation) {
+		return;
+	}
 	navigation_visibility_mode = p_show_navigation;
 	_clear_internals();
 	_recreate_internals();
@@ -768,6 +801,9 @@ RID TileMap::get_navigation_map(int p_layer) const {
 }
 
 void TileMap::set_y_sort_enabled(bool p_enable) {
+	if (is_y_sort_enabled() == p_enable) {
+		return;
+	}
 	Node2D::set_y_sort_enabled(p_enable);
 	_clear_internals();
 	_recreate_internals();
@@ -1601,6 +1637,7 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 						// Create the body.
 						RID body = ps->body_create();
 						bodies_coords[body] = E_cell;
+						bodies_layers[body] = q.layer;
 						ps->body_set_mode(body, collision_animatable ? PhysicsServer2D::BODY_MODE_KINEMATIC : PhysicsServer2D::BODY_MODE_STATIC);
 						ps->body_set_space(body, space);
 
@@ -1656,6 +1693,7 @@ void TileMap::_physics_cleanup_quadrant(TileMapQuadrant *p_quadrant) {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
 	for (RID body : p_quadrant->bodies) {
 		bodies_coords.erase(body);
+		bodies_layers.erase(body);
 		PhysicsServer2D::get_singleton()->free(body);
 	}
 	p_quadrant->bodies.clear();
@@ -2296,7 +2334,8 @@ Vector2i TileMap::map_pattern(const Vector2i &p_position_in_tilemap, const Vecto
 
 void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<TileMapPattern> p_pattern) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
+	ERR_FAIL_COND(p_pattern.is_null());
 
 	TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
 	for (int i = 0; i < used_cells.size(); i++) {
@@ -2859,6 +2898,11 @@ Vector2i TileMap::get_coords_for_body_rid(RID p_physics_body) {
 	return bodies_coords[p_physics_body];
 }
 
+int TileMap::get_layer_for_body_rid(RID p_physics_body) {
+	ERR_FAIL_COND_V_MSG(!bodies_layers.has(p_physics_body), int(), vformat("No tiles for the given body RID %d.", p_physics_body));
+	return bodies_layers[p_physics_body];
+}
+
 void TileMap::fix_invalid_tiles() {
 	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
 
@@ -3042,7 +3086,7 @@ void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r
 
 							// Create the runtime TileData.
 							TileData *tile_data_runtime_use = tile_data->duplicate();
-							tile_data->set_allow_transform(true);
+							tile_data_runtime_use->set_allow_transform(true);
 							q.runtime_tile_data_cache[E_cell.value] = tile_data_runtime_use;
 
 							GDVIRTUAL_CALL(_tile_data_runtime_update, q.layer, E_cell.value, tile_data_runtime_use);
@@ -4118,6 +4162,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "layer", "coords", "use_proxies"), &TileMap::get_cell_tile_data, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
+	ClassDB::bind_method(D_METHOD("get_layer_for_body_rid", "body"), &TileMap::get_layer_for_body_rid);
 
 	ClassDB::bind_method(D_METHOD("get_pattern", "layer", "coords_array"), &TileMap::get_pattern);
 	ClassDB::bind_method(D_METHOD("map_pattern", "position_in_tilemap", "coords_in_pattern", "pattern"), &TileMap::map_pattern);

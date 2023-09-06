@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRInterface" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRInterface" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for an XR interface implementation.
 	</brief_description>
@@ -55,6 +55,13 @@
 			<return type="Array" />
 			<description>
 				Returns the an array of supported environment blend modes, see [enum XRInterface.EnvironmentBlendMode].
+			</description>
+		</method>
+		<method name="get_system_info">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] with extra system info. Interfaces are expected to return [code]XRRuntimeName[/code] and [code]XRRuntimeVersion[/code] providing info about the used XR runtime. Additional entries may be provided specific to an interface.
+				[b]Note:[/b]This information may only be available after [method initialize] was successfully called.
 			</description>
 		</method>
 		<method name="get_tracking_status" qualifiers="const">

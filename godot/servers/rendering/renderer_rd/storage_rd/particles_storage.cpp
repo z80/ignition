@@ -47,6 +47,10 @@ ParticlesStorage::ParticlesStorage() {
 
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
+	/* Effects */
+
+	sort_effects = memnew(SortEffects);
+
 	/* Particles */
 
 	{
@@ -205,6 +209,11 @@ ParticlesStorage::~ParticlesStorage() {
 
 	material_storage->material_free(particles_shader.default_material);
 	material_storage->shader_free(particles_shader.default_shader);
+
+	if (sort_effects) {
+		memdelete(sort_effects);
+		sort_effects = nullptr;
+	}
 
 	singleton = nullptr;
 }
@@ -421,7 +430,7 @@ void ParticlesStorage::particles_set_fractional_delta(RID p_particles, bool p_en
 void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_COND(!particles);
-	ERR_FAIL_COND(p_length < 0.1);
+	ERR_FAIL_COND(p_length < 0.01);
 	p_length = MIN(10.0, p_length);
 
 	particles->trails_enabled = p_enable;
@@ -1228,7 +1237,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
 
 		RD::get_singleton()->compute_list_end();
-		RendererCompositorRD::get_singleton()->get_effects()->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
+		sort_effects->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
 	}
 
 	if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
@@ -1279,7 +1288,10 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 
 		particles->userdata_count = userdata_count;
 
-		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * 4 * (xform_size + 1 + 1) * total_amount);
+		PackedByteArray data;
+		data.resize_zeroed(sizeof(float) * 4 * (xform_size + 1 + 1) * total_amount);
+
+		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * 4 * (xform_size + 1 + 1) * total_amount, data);
 		//needs to clear it
 
 		{

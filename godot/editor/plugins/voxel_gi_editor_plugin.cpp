@@ -30,8 +30,9 @@
 
 #include "voxel_gi_editor_plugin.h"
 
-#include "editor/editor_file_dialog.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "editor/gui/editor_file_dialog.h"
 
 void VoxelGIEditorPlugin::_bake() {
 	if (voxel_gi) {
@@ -165,8 +166,13 @@ void VoxelGIEditorPlugin::_voxel_gi_save_path_and_bake(const String &p_path) {
 	probe_file->hide();
 	if (voxel_gi) {
 		voxel_gi->bake();
-		ERR_FAIL_COND(voxel_gi->get_probe_data().is_null());
-		ResourceSaver::save(voxel_gi->get_probe_data(), p_path, ResourceSaver::FLAG_CHANGE_PATH);
+		// Ensure the VoxelGIData is always saved to an external resource.
+		// This avoids bloating the scene file with large binary data,
+		// which would be serialized as Base64 if the scene is a `.tscn` file.
+		Ref<VoxelGIData> voxel_gi_data = voxel_gi->get_probe_data();
+		ERR_FAIL_COND(voxel_gi_data.is_null());
+		voxel_gi_data->set_path(p_path);
+		ResourceSaver::save(voxel_gi_data, p_path, ResourceSaver::FLAG_CHANGE_PATH);
 	}
 }
 
@@ -190,7 +196,7 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin() {
 	probe_file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	probe_file->add_filter("*.res");
 	probe_file->connect("file_selected", callable_mp(this, &VoxelGIEditorPlugin::_voxel_gi_save_path_and_bake));
-	get_editor_interface()->get_base_control()->add_child(probe_file);
+	EditorInterface::get_singleton()->get_base_control()->add_child(probe_file);
 	probe_file->set_title(TTR("Select path for VoxelGI Data File"));
 
 	VoxelGI::bake_begin_function = bake_func_begin;

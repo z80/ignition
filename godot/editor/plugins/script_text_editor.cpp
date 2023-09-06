@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 
 void ConnectionInfoDialog::ok_pressed() {
@@ -377,12 +378,8 @@ void ScriptTextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
 
-void ScriptTextEditor::convert_indent_to_spaces() {
-	code_editor->convert_indent_to_spaces();
-}
-
-void ScriptTextEditor::convert_indent_to_tabs() {
-	code_editor->convert_indent_to_tabs();
+void ScriptTextEditor::convert_indent() {
+	code_editor->get_text_editor()->convert_indent();
 }
 
 void ScriptTextEditor::tag_saved_version() {
@@ -551,6 +548,7 @@ void ScriptTextEditor::_update_warnings() {
 
 		warnings_panel->push_cell();
 		warnings_panel->add_text(w.message);
+		warnings_panel->add_newline();
 		warnings_panel->pop(); // Cell.
 	}
 	warnings_panel->pop(); // Table.
@@ -572,6 +570,7 @@ void ScriptTextEditor::_update_errors() {
 
 		errors_panel->push_cell();
 		errors_panel->add_text(err.message);
+		errors_panel->add_newline();
 		errors_panel->pop(); // Cell.
 	}
 	errors_panel->pop(); // Table
@@ -755,8 +754,6 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	}
 	String hint;
 	Error err = script->get_language()->complete_code(p_code, script->get_path(), base, r_options, r_force, hint);
-
-	r_options->sort_custom_inplace<CodeCompletionOptionCompare>();
 
 	if (err == OK) {
 		code_editor->get_text_editor()->set_code_hint(hint);
@@ -1281,10 +1278,12 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-			convert_indent_to_spaces();
+			tx->set_indent_using_spaces(true);
+			convert_indent();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-			convert_indent_to_tabs();
+			tx->set_indent_using_spaces(false);
+			convert_indent();
 		} break;
 		case EDIT_PICK_COLOR: {
 			color_panel->popup();
@@ -1322,6 +1321,10 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				tx->insert_text_at_caret(String("\n").join(results), caret_idx);
 			}
 			tx->end_complex_operation();
+		} break;
+		case EDIT_TOGGLE_WORD_WRAP: {
+			TextEdit::LineWrappingMode wrap = code_editor->get_text_editor()->get_line_wrapping_mode();
+			code_editor->get_text_editor()->set_line_wrapping_mode(wrap == TextEdit::LINE_WRAPPING_BOUNDARY ? TextEdit::LINE_WRAPPING_NONE : TextEdit::LINE_WRAPPING_BOUNDARY);
 		} break;
 		case SEARCH_FIND: {
 			code_editor->get_find_replace_bar()->popup_search();
@@ -2070,6 +2073,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_select_all"), EDIT_SELECT_ALL);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_word_wrap"), EDIT_TOGGLE_WORD_WRAP);
 	edit_menu->get_popup()->add_separator();
 	{
 		PopupMenu *sub_menu = memnew(PopupMenu);
@@ -2180,6 +2184,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	warnings_panel->set_meta_underline(true);
 	warnings_panel->set_selection_enabled(true);
+	warnings_panel->set_context_menu_enabled(true);
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 
@@ -2188,6 +2193,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	errors_panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	errors_panel->set_meta_underline(true);
 	errors_panel->set_selection_enabled(true);
+	errors_panel->set_context_menu_enabled(true);
 	errors_panel->set_focus_mode(FOCUS_CLICK);
 	errors_panel->hide();
 
@@ -2287,6 +2293,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/duplicate_selection", TTR("Duplicate Selection"), KeyModifierMask::SHIFT | KeyModifierMask::CTRL | Key::D);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/duplicate_selection", "macos", KeyModifierMask::SHIFT | KeyModifierMask::META | Key::C);
 	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::E);
+	ED_SHORTCUT("script_text_editor/toggle_word_wrap", TTR("Toggle Word Wrap"), KeyModifierMask::ALT | Key::Z);
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent to Spaces"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::Y);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent to Tabs"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::I);
