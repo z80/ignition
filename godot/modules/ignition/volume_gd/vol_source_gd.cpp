@@ -29,18 +29,30 @@ bool VolSourceGd::intersects( const Vector3d & start, const Vector3d & end, Floa
 	args.collide_with_areas  = true;
 	args.collide_with_bodies = true;
 	args.hit_back_faces      = true;
-	args.hit_from_inside     = false;
+	args.hit_from_inside     = true; // It just returns start point.
 	args.from                = Vector3( start.x_, start.y_, start.z_ );
 	args.to                  = Vector3( end.x_,   end.y_,   end.z_ );
 	//args.pick_ray            = true;
 
 	bool ok = _state->intersect_ray( args, res );
 	bool inverted = false;
+	if ( ok )
+	{
+		const bool in_the_beginning = args.from.is_equal_approx( res.position );
+		if ( in_the_beginning )
+			ok = false;
+	}
 	if ( !ok )
 	{
 		args.from = Vector3( end.x_,   end.y_,   end.z_ );
 		args.to   = Vector3( start.x_, start.y_, start.z_ );
 		ok = _state->intersect_ray( args, res );
+		if ( ok )
+		{
+			const bool in_the_beginning = args.from.is_equal_approx( res.position );
+			if ( in_the_beginning )
+				ok = false;
+		}
 		inverted = true;
 	}
 
