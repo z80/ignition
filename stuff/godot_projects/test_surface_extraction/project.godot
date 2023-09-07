@@ -14,3 +14,7 @@ config/name="test_surface_extraction"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.1", "Forward Plus")
 config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/control_camera3d/plugin.cfg")

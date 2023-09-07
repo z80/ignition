@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdwaibupkp7xm"
-path="res://.godot/imported/editor_settings.png-af80b133a522dbb700e51845cc0c35b8.ctex"
+uid="uid://bx8ng14fn2j8c"
+path="res://.godot/imported/control_camera3d.svg-a87679233b6a4ccd91c28dfdf1a5bf46.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/maujoe.camera_control/screenshots/editor_settings.png"
-dest_files=["res://.godot/imported/editor_settings.png-af80b133a522dbb700e51845cc0c35b8.ctex"]
+source_file="res://addons/control_camera3d/control_camera3d.svg"
+dest_files=["res://.godot/imported/control_camera3d.svg-a87679233b6a4ccd91c28dfdf1a5bf46.ctex"]
 
 [params]
 
@@ -32,3 +32,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false
