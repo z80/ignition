@@ -16,7 +16,7 @@ func _physics_process(delta):
 	if create_surface:
 		var state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
 		var v: VolMcGd = VolMcGd.new()
-		triangles = v.build_surface( Vector3(-0.0, -0.2, -0.0), state, 0.5, 1 )
+		triangles = v.build_surface( Vector3(-0.0, -0.2, -0.0), state, 0.25, 4 )
 		create_surface = false
 		
 		var im: ImmediateMesh = ImmediateMesh.new()

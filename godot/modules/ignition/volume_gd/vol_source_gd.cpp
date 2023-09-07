@@ -35,11 +35,13 @@ bool VolSourceGd::intersects( const Vector3d & start, const Vector3d & end, Floa
 	//args.pick_ray            = true;
 
 	bool ok = _state->intersect_ray( args, res );
+	bool inverted = false;
 	if ( !ok )
 	{
 		args.from = Vector3( end.x_,   end.y_,   end.z_ );
 		args.to   = Vector3( start.x_, start.y_, start.z_ );
 		ok = _state->intersect_ray( args, res );
+		inverted = true;
 	}
 
 
@@ -48,15 +50,31 @@ bool VolSourceGd::intersects( const Vector3d & start, const Vector3d & end, Floa
 		at = Vector3d( res.position.x, res.position.y, res.position.z );
 		const Vector3d norm = Vector3d( res.normal.x, res.normal.y, res.normal.z );
 
-		const Vector3d a = end - start;
-		const bool positive = a.DotProduct( norm );
-		const Float ta = a.DotProduct( at - start ) / a.DotProduct( a );
-		v_start = -ta;
-		v_end   = 1.0 - ta;
-		if ( !positive )
+		if ( inverted )
 		{
-			v_start = -v_start;
-			v_end   = -v_end;
+			const Vector3d a = start - end;
+			const bool positive = (a.DotProduct( norm ) > 0.0);
+			const Float ta = a.DotProduct( at - end ) / a.DotProduct( a );
+			v_end   = -ta;
+			v_start = ta+1.0;
+			if ( positive )
+			{
+				v_start = -v_start;
+				v_end   = -v_end;
+			}
+		}
+		else
+		{
+			const Vector3d a = end - start;
+			const bool positive = (a.DotProduct( norm ) > 0.0);
+			const Float ta = a.DotProduct( at - start ) / a.DotProduct( a );
+			v_start = -ta;
+			v_end   = ta+1.0;
+			if ( positive )
+			{
+				v_start = -v_start;
+				v_end   = -v_end;
+			}
 		}
 	}
 
