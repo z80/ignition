@@ -10,8 +10,8 @@ namespace Ign
 {
 
 VolMc::VolMc()
-	: _scale( 0.1 ),
-	  _subdivisions( 2 )
+	: _size( 0.1 ),
+	  _resolution( 1 )
 {
 }
 
@@ -19,10 +19,10 @@ VolMc::~VolMc()
 {
 }
 
-bool VolMc::build_surface( const VolGeometry * geometry, const VolSource * source, Float scale, Integer subdivisions )
+bool VolMc::build_surface( const VolGeometry * geometry, const VolSource * source, Float size, Integer resolution )
 {
-	_scale = scale;
-	_subdivisions = subdivisions;
+	_size       = size;
+	_resolution = resolution;
 
 	_faces.clear();
 	_compute_scale();
@@ -41,41 +41,33 @@ void VolMc::_compute_scale()
 	// Minimum node size = 2.
 	// It is not 1 because I want it to be able to contain the origin.
 	// But integer node of size 1 cannot contain origin.
-	Integer size = 2;
-	for ( Integer i=0; i<_subdivisions; i++ )
-		size *= 2;
-
-	_size = _scale * static_cast<Float>(size);
-	_size_2 = size / 2;
-}
-
-void VolMc::_search_surface_bfs()
-{
-	VolMcNode whole_volume_node;
-	whole_volume_node.at   = VolVectorInt( -_size_2, -_size_2, -_size_2 );
-	whole_volume_node.size = _size_2 * 2;
+	_scale = _size / static_cast<Float>(_resolution);
 }
 
 void VolMc::_traverse_nodes_brute_force( const VolGeometry * geometry, const VolSource * source )
 {
 	Vector3d intersection_pts[12];
-	for ( int ix=-_size_2; ix<_size_2; ix+=2 )
+	bool     pts_assigned[12];
+	for ( int ix=0; ix<_resolution; ix+=1 )
 	{
-		for ( int iy=-_size_2; iy<_size_2; iy+=2 )
+		for ( int iy=0; iy<_resolution; iy+=1 )
 		{
-			for ( int iz=-_size_2; iz<_size_2; iz+=2 )
+			for ( int iz=0; iz<_resolution; iz+=1 )
 			{
 				VolMcNode node;
 				node.at   = VolVectorInt( ix, iy, iz );
-				node.size = 2;
-				_compute_node_values( node, intersection_pts, geometry, source );
-				_create_faces( node, intersection_pts );
+				node.size = 1;
+				for ( int i=0; i<12; i++ )
+					pts_assigned[i] = false;
+				const bool ok = _compute_node_values( node, intersection_pts, geometry, source, pts_assigned );
+				if ( ok )
+					_create_faces( node, intersection_pts, pts_assigned );
 			}
 		}
 	}
 }
 
-void VolMc::_compute_node_values( VolMcNode & node, Vector3d * intersection_pts, const VolGeometry * geometry, const VolSource * source )
+bool VolMc::_compute_node_values( VolMcNode & node, Vector3d * intersection_pts, const VolGeometry * geometry, const VolSource * source, bool * pts_assigned )
 {
 	VolVectorInt verts[8];
 	const int x  = node.at.x;
@@ -108,6 +100,7 @@ void VolMc::_compute_node_values( VolMcNode & node, Vector3d * intersection_pts,
 								   {0, 4}, {1, 5}, {2, 6}, {3, 7} };
 
 	bool edge_intersects[12];
+	int intersections_qty = 0;
 	for ( int i=0; i<12; i++ )
 	{
 		const int ind_a = edges[i][0];
@@ -116,7 +109,12 @@ void VolMc::_compute_node_values( VolMcNode & node, Vector3d * intersection_pts,
 		const Vector3d & b = node.vertices[ ind_b ];
 		const bool intersects = _assign_edge_values( a, b, node.values[ind_a], node.values[ind_b], intersection_pts[i], source );
 		edge_intersects[i] = intersects;
+		pts_assigned[i] = intersects;
+		if (intersects)
+			intersections_qty += 1;
 	}
+	if (intersections_qty < 3)
+		return false;
 
 	static const Float EPS = 0.000001;
 
@@ -162,6 +160,8 @@ void VolMc::_compute_node_values( VolMcNode & node, Vector3d * intersection_pts,
 		else if ( zero_qty == 0 )
 			break;
 	}
+
+	return true;
 }
 
 bool VolMc::_assign_edge_values( const Vector3d & a, const Vector3d & b, Float & va, Float & vb, Vector3d & at, const VolSource * source ) const
@@ -171,7 +171,7 @@ bool VolMc::_assign_edge_values( const Vector3d & a, const Vector3d & b, Float &
 	return ok;
 }
 
-void VolMc::_create_faces( const VolMcNode & node, const Vector3d * intersection_pts )
+void VolMc::_create_faces( const VolMcNode & node, const Vector3d * intersection_pts, const bool * pts_assigned )
 {
 	uint32_t cube_index = 0;
 	for ( int i=0; i<8; i++ )
@@ -185,50 +185,74 @@ void VolMc::_create_faces( const VolMcNode & node, const Vector3d * intersection
 	if ( edge & 1 )
 	{
 		edges_int[0] = VolEdgeInt( node.vertices_int[0], node.vertices_int[1] );
+		if (!pts_assigned[0])
+			int i=0;
 	}
 	if ( edge & 2 )
 	{
 		edges_int[1] = VolEdgeInt( node.vertices_int[1], node.vertices_int[2] );
+		if (!pts_assigned[1])
+			int i=0;
 	}
 	if ( edge & 4 )
 	{
 		edges_int[2] = VolEdgeInt( node.vertices_int[2], node.vertices_int[3] );
+		if (!pts_assigned[2])
+			int i=0;
 	}
 	if ( edge & 8 )
 	{
 		edges_int[3] = VolEdgeInt( node.vertices_int[3], node.vertices_int[0] );
+		if (!pts_assigned[3])
+			int i=0;
 	}
 	if ( edge & 16 )
 	{
 		edges_int[4] = VolEdgeInt( node.vertices_int[4], node.vertices_int[5] );
+		if (!pts_assigned[4])
+			int i=0;
 	}
 	if ( edge & 32 )
 	{
 		edges_int[5] = VolEdgeInt( node.vertices_int[5], node.vertices_int[6] );
+		if (!pts_assigned[5])
+			int i=0;
 	}
 	if ( edge & 64 )
 	{
 		edges_int[6] = VolEdgeInt( node.vertices_int[6], node.vertices_int[7] );
+		if (!pts_assigned[6])
+			int i=0;
 	}
 	if ( edge & 128 )
 	{
 		edges_int[7] = VolEdgeInt( node.vertices_int[7], node.vertices_int[4] );
+		if (!pts_assigned[7])
+			int i=0;
 	}
 	if ( edge & 256 )
 	{
 		edges_int[8] = VolEdgeInt( node.vertices_int[0], node.vertices_int[4] );
+		if (!pts_assigned[8])
+			int i=0;
 	}
 	if ( edge & 512 )
 	{
 		edges_int[9] = VolEdgeInt( node.vertices_int[1], node.vertices_int[5] );
+		if (!pts_assigned[9])
+			int i=0;
 	}
 	if ( edge & 1024 )
 	{
 		edges_int[10] = VolEdgeInt( node.vertices_int[2], node.vertices_int[6] );
+		if (!pts_assigned[10])
+			int i=0;
 	}
 	if ( edge & 2048 )
 	{
 		edges_int[11] = VolEdgeInt( node.vertices_int[3], node.vertices_int[7] );
+		if (!pts_assigned[11])
+			int i=0;
 	}
 
 	const int * indices = VolMcTables::TRIANGLES[cube_index];
@@ -237,6 +261,16 @@ void VolMc::_create_faces( const VolMcNode & node, const Vector3d * intersection
 		const int ind_a = indices[i];
 		const int ind_b = indices[i+1];
 		const int ind_c = indices[i+2];
+
+		const bool assigned_a = pts_assigned[ind_a];
+		if ( !assigned_a )
+			continue;
+		const bool assigned_b = pts_assigned[ind_b];
+		if ( !assigned_b )
+			continue;
+		const bool assigned_c = pts_assigned[ind_c];
+		if ( !assigned_c )
+			continue;
 
 		const Vector3d & a = intersection_pts[ind_a];
 		const Vector3d & b = intersection_pts[ind_b];

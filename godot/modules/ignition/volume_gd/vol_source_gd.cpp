@@ -90,6 +90,17 @@ bool VolSourceGd::intersects( const Vector3d & start, const Vector3d & end, Floa
 		}
 	}
 
+	// Debugging.
+	if ( ok )
+	{
+		const Float a = (at - start).Length() / (end - start).Length();
+		const Float a_abs = Math::abs(a);
+		if ( a_abs > 1.0 )
+		{
+			int i=0;
+		}
+	}
+
 	return ok;
 }
 

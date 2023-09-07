@@ -3,6 +3,10 @@ extends Node3D
 var create_surface: bool = true
 var triangles: Array = []
 
+var resolution: int = 10
+var size: float = 4.0
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass
@@ -16,7 +20,7 @@ func _physics_process(delta):
 	if create_surface:
 		var state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
 		var v: VolMcGd = VolMcGd.new()
-		triangles = v.build_surface( Vector3(-0.0, -0.2, -0.0), state, 0.25, 4 )
+		triangles = v.build_surface( Vector3(-0.0, -0.2, -0.0), state, size, resolution )
 		create_surface = false
 		
 		var im: ImmediateMesh = ImmediateMesh.new()
@@ -44,3 +48,9 @@ func _physics_process(delta):
 		mesh_inst.mesh = im
 
 
+
+
+func _on_gui_panel_value_changed(sz, res):
+	self.size = sz
+	self.resolution = res
+	create_surface = true
