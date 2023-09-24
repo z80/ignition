@@ -115,7 +115,9 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src, bool p_encr
 	}
 
 	File pf;
-	pf.path = p_file;
+	// Simplify path here and on every 'files' access so that paths that have extra '/'
+	// symbols in them still match to the MD5 hash for the saved path.
+	pf.path = p_file.simplify_path();
 	pf.src_path = p_src;
 	pf.ofs = ofs;
 	pf.size = f->get_length();
@@ -250,10 +252,6 @@ Error PCKPacker::flush(bool p_verbose) {
 		if (p_verbose && (file_num > 0)) {
 			print_line(vformat("[%d/%d - %d%%] PCKPacker flush: %s -> %s", count, file_num, float(count) / file_num * 100, files[i].src_path, files[i].path));
 		}
-	}
-
-	if (p_verbose) {
-		printf("\n");
 	}
 
 	file.unref();

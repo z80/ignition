@@ -35,11 +35,11 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
 #include "scene/gui/menu_button.h"
 
@@ -245,6 +245,7 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_a
 	description->add_text("\n" + TTR("Description:") + "\n\n");
 	description->append_text(p_description);
 	description->set_selection_enabled(true);
+	description->set_context_menu_enabled(true);
 	set_title(p_title);
 }
 

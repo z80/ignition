@@ -229,6 +229,12 @@ int BulletPhysicsDirectBodyState::get_contact_local_shape(int p_contact_idx) con
 	return body->collisions[p_contact_idx].local_shape;
 }
 
+Vector3 BulletPhysicsDirectBodyState::get_contact_local_velocity_at_position(int p_contact_idx) const
+{
+    const Vector3 ret = get_contact_collider_velocity_at_position( p_contact_idx );
+    return ret;
+}
+
 RID BulletPhysicsDirectBodyState::get_contact_collider(int p_contact_idx) const {
 	return body->collisions[p_contact_idx].otherObject->get_self();
 }

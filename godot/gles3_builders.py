@@ -40,7 +40,6 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
     line = fs.readline()
 
     while line:
-
         if line.find("=") != -1 and header_data.reading == "":
             # Mode
             eqpos = line.find("=")
@@ -121,7 +120,6 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
             uline = uline.replace(";", "")
             lines = uline.split(",")
             for x in lines:
-
                 x = x.strip()
                 x = x[x.rfind(" ") + 1 :]
                 if x.find("[") != -1:
@@ -143,7 +141,6 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
             uline = uline.replace("{", "").strip()
             lines = uline.split(",")
             for x in lines:
-
                 x = x.strip()
                 x = x[x.rfind(" ") + 1 :]
                 if x.find("[") != -1:
@@ -159,7 +156,6 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
             uline = uline.replace(";", "")
             lines = uline.split(",")
             for x in lines:
-
                 x = x.strip()
                 x = x[x.rfind(" ") + 1 :]
                 if x.find("[") != -1:
@@ -199,11 +195,21 @@ def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, 
     return header_data
 
 
-def build_gles3_header(filename: str, include: str, class_suffix: str, header_data: Optional[GLES3HeaderStruct] = None):
+def build_gles3_header(
+    filename: str,
+    include: str,
+    class_suffix: str,
+    optional_output_filename: str = None,
+    header_data: Optional[GLES3HeaderStruct] = None,
+):
     header_data = header_data or GLES3HeaderStruct()
     include_file_in_gles3_header(filename, header_data, 0)
 
-    out_file = filename + ".gen.h"
+    if optional_output_filename is None:
+        out_file = filename + ".gen.h"
+    else:
+        out_file = optional_output_filename
+
     fd = open(out_file, "w")
     defspec = 0
     defvariant = ""
@@ -476,7 +482,6 @@ def build_gles3_header(filename: str, include: str, class_suffix: str, header_da
     fd.write("\tvirtual void _init() override {\n\n")
 
     if header_data.uniforms:
-
         fd.write("\t\tstatic const char* _uniform_strings[]={\n")
         if header_data.uniforms:
             for x in header_data.uniforms:
@@ -487,7 +492,6 @@ def build_gles3_header(filename: str, include: str, class_suffix: str, header_da
 
     variant_count = 1
     if len(header_data.variant_defines) > 0:
-
         fd.write("\t\tstatic const char* _variant_defines[]={\n")
         for x in header_data.variant_defines:
             fd.write('\t\t\t"' + x + '",\n')
@@ -532,7 +536,6 @@ def build_gles3_header(filename: str, include: str, class_suffix: str, header_da
     feedback_count = 0
 
     if header_data.feedbacks:
-
         fd.write("\t\tstatic const Feedback _feedbacks[]={\n")
         for x in header_data.feedbacks:
             name = x[0]

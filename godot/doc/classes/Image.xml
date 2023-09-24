@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Image" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Image" inherits="Resource" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Image datatype.
 	</brief_description>
@@ -382,17 +382,17 @@
 				Converts a standard RGBE (Red Green Blue Exponent) image to an sRGB image.
 			</description>
 		</method>
-		<method name="rotate_180">
-			<return type="void" />
-			<description>
-				Rotates the image by [code]180[/code] degrees. The width and height of the image must be greater than [code]1[/code].
-			</description>
-		</method>
 		<method name="rotate_90">
 			<return type="void" />
 			<param index="0" name="direction" type="int" enum="ClockDirection" />
 			<description>
 				Rotates the image in the specified [param direction] by [code]90[/code] degrees. The width and height of the image must be greater than [code]1[/code]. If the width and height are not equal, the image will be resized.
+			</description>
+		</method>
+		<method name="rotate_180">
+			<return type="void" />
+			<description>
+				Rotates the image by [code]180[/code] degrees. The width and height of the image must be greater than [code]1[/code].
 			</description>
 		</method>
 		<method name="save_exr" qualifiers="const">

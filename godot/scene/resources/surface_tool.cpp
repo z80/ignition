@@ -374,6 +374,10 @@ void SurfaceTool::set_smooth_group(uint32_t p_group) {
 	last_smooth_group = p_group;
 }
 
+void SurfaceTool::_add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<Color> &p_colors, const Vector<Vector2> &p_uv2s, const Vector<Vector3> &p_normals, const TypedArray<Plane> &p_tangents) {
+	add_triangle_fan(p_vertices, p_uvs, p_colors, p_uv2s, p_normals, Variant(p_tangents));
+}
+
 void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<Color> &p_colors, const Vector<Vector2> &p_uv2s, const Vector<Vector3> &p_normals, const Vector<Plane> &p_tangents) {
 	ERR_FAIL_COND(!begun);
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
@@ -791,8 +795,8 @@ void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, Local
 	_create_list_from_arrays(arr, r_vertex, r_index, lformat);
 }
 
-static const uint32_t custom_mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
-static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
+const uint32_t SurfaceTool::custom_mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
+const uint32_t SurfaceTool::custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 
 void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<SurfaceTool::Vertex> &ret, uint32_t *r_format) {
 	ret.clear();
@@ -1300,6 +1304,8 @@ AABB SurfaceTool::get_aabb() const {
 	return aabb;
 }
 Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_count) {
+	WARN_DEPRECATED_MSG(R"*(The "SurfaceTool.generate_lod()" method is deprecated. Consider using "ImporterMesh.generate_lods()" instead.)*");
+
 	Vector<int> lod;
 
 	ERR_FAIL_COND_V(simplify_func == nullptr, lod);
@@ -1347,7 +1353,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom", "channel_index", "custom_color"), &SurfaceTool::set_custom);
 	ClassDB::bind_method(D_METHOD("set_smooth_group", "index"), &SurfaceTool::set_smooth_group);
 
-	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
+	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::_add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(TypedArray<Plane>()));
 
 	ClassDB::bind_method(D_METHOD("add_index", "index"), &SurfaceTool::add_index);
 

@@ -47,10 +47,11 @@ using namespace godot;
 #include "core/templates/hash_map.h"
 #include "core/typedefs.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
+#include "modules/modules_enabled.gen.h" // For svg, freetype.
 #endif
 
 #ifdef MODULE_SVG_ENABLED
+#ifdef MODULE_FREETYPE_ENABLED
 
 #include <freetype/freetype.h>
 #include <freetype/otsvg.h>
@@ -65,8 +66,22 @@ struct GL_State {
 	float y = 0;
 	float w = 0;
 	float h = 0;
+#ifndef GDEXTENSION
 	CharString xml_code;
+#else
+	// @todo After godot-cpp#1142 is fixed, use CharString just like when compiled as a Godot module.
+	char *xml_code = nullptr;
+	int xml_code_length = 0;
+#endif
 	tvg::Matrix m;
+
+#ifdef GDEXTENSION
+	~GL_State() {
+		if (xml_code) {
+			memdelete_arr(xml_code);
+		}
+	}
+#endif
 };
 
 struct TVG_State {
@@ -81,6 +96,7 @@ FT_Error tvg_svg_in_ot_render(FT_GlyphSlot p_slot, FT_Pointer *p_state);
 
 SVG_RendererHooks *get_tvg_svg_in_ot_hooks();
 
+#endif // MODULE_FREETYPE_ENABLED
 #endif // MODULE_SVG_ENABLED
 
 #endif // THORVG_SVG_IN_OT_H

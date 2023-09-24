@@ -31,9 +31,9 @@
 #include "editor_export.h"
 
 bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) {
-	if (values.has(p_name)) {
-		values[p_name] = p_value;
-		EditorExport::singleton->save_presets();
+	values[p_name] = p_value;
+	EditorExport::singleton->save_presets();
+	if (update_visibility.has(p_name)) {
 		if (update_visibility[p_name]) {
 			notify_property_list_changed();
 		}
@@ -52,10 +52,18 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
+void EditorExportPreset::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_get_property_warning", "name"), &EditorExportPreset::_get_property_warning);
+}
+
+String EditorExportPreset::_get_property_warning(const StringName &p_name) const {
+	return platform->get_export_option_warning(this, p_name);
+}
+
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (const PropertyInfo &E : properties) {
-		if (platform->get_export_option_visibility(this, E.name, values)) {
-			p_list->push_back(E);
+	for (const KeyValue<StringName, PropertyInfo> &E : properties) {
+		if (platform->get_export_option_visibility(this, E.key)) {
+			p_list->push_back(E.value);
 		}
 	}
 }
@@ -292,6 +300,17 @@ void EditorExportPreset::set_script_encryption_key(const String &p_key) {
 
 String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
+}
+
+Variant EditorExportPreset::get_or_env(const StringName &p_name, const String &p_env_var, bool *r_valid) const {
+	const String from_env = OS::get_singleton()->get_environment(p_env_var);
+	if (!from_env.is_empty()) {
+		if (r_valid) {
+			*r_valid = true;
+		}
+		return from_env;
+	}
+	return get(p_name, r_valid);
 }
 
 EditorExportPreset::EditorExportPreset() {}

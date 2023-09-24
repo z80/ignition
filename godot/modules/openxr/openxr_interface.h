@@ -31,13 +31,12 @@
 #ifndef OPENXR_INTERFACE_H
 #define OPENXR_INTERFACE_H
 
-#include "servers/xr/xr_interface.h"
-#include "servers/xr/xr_positional_tracker.h"
-
 #include "action_map/openxr_action_map.h"
+#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 #include "openxr_api.h"
 
-#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_positional_tracker.h"
 
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
@@ -112,6 +111,7 @@ public:
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;
+	virtual Dictionary get_system_info() override;
 
 	virtual void trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0) override;
 
@@ -126,6 +126,9 @@ public:
 	bool is_action_set_active(const String &p_action_set) const;
 	void set_action_set_active(const String &p_action_set, bool p_active);
 	Array get_action_sets() const;
+
+	double get_render_target_size_multiplier() const;
+	void set_render_target_size_multiplier(double multiplier);
 
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;

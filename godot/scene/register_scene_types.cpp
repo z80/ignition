@@ -165,6 +165,7 @@
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/navigation_mesh.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particle_process_material.h"
@@ -385,6 +386,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(FlowContainer);
 	GDREGISTER_CLASS(HFlowContainer);
 	GDREGISTER_CLASS(VFlowContainer);
+	GDREGISTER_CLASS(MarginContainer);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -419,7 +421,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AcceptDialog);
 	GDREGISTER_CLASS(ConfirmationDialog);
 
-	GDREGISTER_CLASS(MarginContainer);
 	GDREGISTER_CLASS(SubViewportContainer);
 	GDREGISTER_CLASS(SplitContainer);
 	GDREGISTER_CLASS(HSplitContainer);
@@ -465,6 +466,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeAdd3);
 	GDREGISTER_CLASS(AnimationNodeBlend2);
 	GDREGISTER_CLASS(AnimationNodeBlend3);
+	GDREGISTER_CLASS(AnimationNodeSub2);
 	GDREGISTER_CLASS(AnimationNodeTimeScale);
 	GDREGISTER_CLASS(AnimationNodeTimeSeek);
 	GDREGISTER_CLASS(AnimationNodeTransition);
@@ -695,6 +697,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeParticleAccelerator);
 	GDREGISTER_CLASS(VisualShaderNodeParticleEmit);
 
+	GDREGISTER_VIRTUAL_CLASS(Material);
+	GDREGISTER_CLASS(PlaceholderMaterial);
 	GDREGISTER_CLASS(ShaderMaterial);
 	GDREGISTER_ABSTRACT_CLASS(CanvasItem);
 	GDREGISTER_CLASS(CanvasTexture);
@@ -781,6 +785,7 @@ void register_scene_types() {
 	ParticleProcessMaterial::init_shaders();
 
 	GDREGISTER_VIRTUAL_CLASS(Mesh);
+	GDREGISTER_CLASS(MeshConvexDecompositionSettings);
 	GDREGISTER_CLASS(ArrayMesh);
 	GDREGISTER_CLASS(PlaceholderMesh);
 	GDREGISTER_CLASS(ImmediateMesh);
@@ -802,11 +807,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TubeTrailMesh);
 	GDREGISTER_CLASS(RibbonTrailMesh);
 	GDREGISTER_CLASS(PointMesh);
-	GDREGISTER_VIRTUAL_CLASS(Material);
 	GDREGISTER_ABSTRACT_CLASS(BaseMaterial3D);
 	GDREGISTER_CLASS(StandardMaterial3D);
 	GDREGISTER_CLASS(ORMMaterial3D);
-	GDREGISTER_CLASS(PlaceholderMaterial);
 	GDREGISTER_CLASS(ProceduralSkyMaterial);
 	GDREGISTER_CLASS(PanoramaSkyMaterial);
 	GDREGISTER_CLASS(PhysicalSkyMaterial);
@@ -928,6 +931,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PathFollow2D);
 
 	GDREGISTER_CLASS(NavigationMesh);
+	GDREGISTER_CLASS(NavigationMeshSourceGeometryData3D);
 	GDREGISTER_CLASS(NavigationPolygon);
 	GDREGISTER_CLASS(NavigationRegion2D);
 	GDREGISTER_CLASS(NavigationAgent2D);
@@ -1139,6 +1143,10 @@ void register_scene_types() {
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_navigation"), i + 1), "");
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_physics"), i + 1), "");
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_navigation"), i + 1), "");
+	}
+
+	for (int i = 0; i < 32; i++) {
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/avoidance"), i + 1), "");
 	}
 
 	if (RenderingServer::get_singleton()) {

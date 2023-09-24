@@ -30,11 +30,11 @@
 
 #include "key_mapping_macos.h"
 
-#import <Carbon/Carbon.h>
-#import <Cocoa/Cocoa.h>
-
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
+
+#import <Carbon/Carbon.h>
+#import <Cocoa/Cocoa.h>
 
 struct HashMapHasherKeys {
 	static _FORCE_INLINE_ uint32_t hash(const Key p_key) { return hash_fmix32(static_cast<uint32_t>(p_key)); }
@@ -327,7 +327,7 @@ bool KeyMappingMacOS::is_numpad_key(unsigned int p_key) {
 	return numpad_keys.has(p_key);
 }
 
-// Translates a OS X keycode to a Godot keycode.
+// Translates a macOS keycode to a Godot keycode.
 Key KeyMappingMacOS::translate_key(unsigned int p_key) {
 	const Key *key = keysym_map.getptr(p_key);
 	if (key) {

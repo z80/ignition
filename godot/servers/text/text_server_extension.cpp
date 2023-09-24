@@ -65,6 +65,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_set_name, "font_rid", "name");
 	GDVIRTUAL_BIND(_font_get_name, "font_rid");
+	GDVIRTUAL_BIND(_font_get_ot_name_strings, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_style_name, "font_rid", "name_style");
 	GDVIRTUAL_BIND(_font_get_style_name, "font_rid");
@@ -178,6 +179,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_get_kerning, "font_rid", "size", "glyph_pair");
 
 	GDVIRTUAL_BIND(_font_get_glyph_index, "font_rid", "size", "char", "variation_selector");
+	GDVIRTUAL_BIND(_font_get_char_from_glyph_index, "font_rid", "size", "glyph_index");
 
 	GDVIRTUAL_BIND(_font_has_char, "font_rid", "char");
 	GDVIRTUAL_BIND(_font_get_supported_chars, "font_rid");
@@ -250,7 +252,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shaped_text_substr, "shaped", "start", "length");
 	GDVIRTUAL_BIND(_shaped_text_get_parent, "shaped");
 
-	GDVIRTUAL_BIND(_shaped_text_fit_to_width, "shaped", "width", "jst_flags");
+	GDVIRTUAL_BIND(_shaped_text_fit_to_width, "shaped", "width", "justification_flags");
 	GDVIRTUAL_BIND(_shaped_text_tab_align, "shaped", "tab_stops");
 
 	GDVIRTUAL_BIND(_shaped_text_shape, "shaped");
@@ -472,6 +474,12 @@ void TextServerExtension::font_set_name(const RID &p_font_rid, const String &p_n
 String TextServerExtension::font_get_name(const RID &p_font_rid) const {
 	String ret;
 	GDVIRTUAL_CALL(_font_get_name, p_font_rid, ret);
+	return ret;
+}
+
+Dictionary TextServerExtension::font_get_ot_name_strings(const RID &p_font_rid) const {
+	Dictionary ret;
+	GDVIRTUAL_CALL(_font_get_ot_name_strings, p_font_rid, ret);
 	return ret;
 }
 
@@ -822,6 +830,12 @@ Vector2 TextServerExtension::font_get_kerning(const RID &p_font_rid, int64_t p_s
 int64_t TextServerExtension::font_get_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_char, int64_t p_variation_selector) const {
 	int64_t ret = 0;
 	GDVIRTUAL_CALL(_font_get_glyph_index, p_font_rid, p_size, p_char, p_variation_selector, ret);
+	return ret;
+}
+
+int64_t TextServerExtension::font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_font_get_char_from_glyph_index, p_font_rid, p_size, p_glyph_index, ret);
 	return ret;
 }
 

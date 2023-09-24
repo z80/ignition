@@ -126,6 +126,7 @@ public:
 
 	virtual String get_font_name() const;
 	virtual String get_font_style_name() const;
+	virtual Dictionary get_ot_name_strings() const;
 	virtual BitField<TextServer::FontStyle> get_font_style() const;
 	virtual int get_font_weight() const;
 	virtual int get_font_stretch() const;
@@ -359,6 +360,7 @@ public:
 
 	// Base font properties.
 	virtual int32_t get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector = 0x0000) const;
+	virtual char32_t get_char_from_glyph_index(int p_size, int32_t p_glyph_index) const;
 
 	FontFile();
 	~FontFile();

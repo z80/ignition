@@ -66,14 +66,16 @@ using namespace godot;
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
-#include "core/ShapeDistanceFinder.h"
-#include "core/contour-combiners.h"
-#include "core/edge-selectors.h"
-#include "msdfgen.h"
+#include <core/ShapeDistanceFinder.h>
+#include <core/contour-combiners.h>
+#include <core/edge-selectors.h>
+#include <msdfgen.h>
 #endif
 
 #ifdef MODULE_SVG_ENABLED
+#ifdef MODULE_FREETYPE_ENABLED
 #include "thorvg_svg_in_ot.h"
+#endif
 #endif
 
 /*************************************************************************/
@@ -2015,6 +2017,121 @@ String TextServerAdvanced::_font_get_name(const RID &p_font_rid) const {
 	return fd->font_name;
 }
 
+Dictionary TextServerAdvanced::_font_get_ot_name_strings(const RID &p_font_rid) const {
+	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, Dictionary());
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, 16);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Dictionary());
+
+	hb_face_t *hb_face = hb_font_get_face(fd->cache[size]->hb_handle);
+
+	unsigned int num_entries = 0;
+	const hb_ot_name_entry_t *names = hb_ot_name_list_names(hb_face, &num_entries);
+	HashMap<String, Dictionary> names_for_lang;
+	for (unsigned int i = 0; i < num_entries; i++) {
+		String name;
+		switch (names[i].name_id) {
+			case HB_OT_NAME_ID_COPYRIGHT: {
+				name = "copyright";
+			} break;
+			case HB_OT_NAME_ID_FONT_FAMILY: {
+				name = "family_name";
+			} break;
+			case HB_OT_NAME_ID_FONT_SUBFAMILY: {
+				name = "subfamily_name";
+			} break;
+			case HB_OT_NAME_ID_UNIQUE_ID: {
+				name = "unique_identifier";
+			} break;
+			case HB_OT_NAME_ID_FULL_NAME: {
+				name = "full_name";
+			} break;
+			case HB_OT_NAME_ID_VERSION_STRING: {
+				name = "version";
+			} break;
+			case HB_OT_NAME_ID_POSTSCRIPT_NAME: {
+				name = "postscript_name";
+			} break;
+			case HB_OT_NAME_ID_TRADEMARK: {
+				name = "trademark";
+			} break;
+			case HB_OT_NAME_ID_MANUFACTURER: {
+				name = "manufacturer";
+			} break;
+			case HB_OT_NAME_ID_DESIGNER: {
+				name = "designer";
+			} break;
+			case HB_OT_NAME_ID_DESCRIPTION: {
+				name = "description";
+			} break;
+			case HB_OT_NAME_ID_VENDOR_URL: {
+				name = "vendor_url";
+			} break;
+			case HB_OT_NAME_ID_DESIGNER_URL: {
+				name = "designer_url";
+			} break;
+			case HB_OT_NAME_ID_LICENSE: {
+				name = "license";
+			} break;
+			case HB_OT_NAME_ID_LICENSE_URL: {
+				name = "license_url";
+			} break;
+			case HB_OT_NAME_ID_TYPOGRAPHIC_FAMILY: {
+				name = "typographic_family_name";
+			} break;
+			case HB_OT_NAME_ID_TYPOGRAPHIC_SUBFAMILY: {
+				name = "typographic_subfamily_name";
+			} break;
+			case HB_OT_NAME_ID_MAC_FULL_NAME: {
+				name = "full_name_macos";
+			} break;
+			case HB_OT_NAME_ID_SAMPLE_TEXT: {
+				name = "sample_text";
+			} break;
+			case HB_OT_NAME_ID_CID_FINDFONT_NAME: {
+				name = "cid_findfont_name";
+			} break;
+			case HB_OT_NAME_ID_WWS_FAMILY: {
+				name = "weight_width_slope_family_name";
+			} break;
+			case HB_OT_NAME_ID_WWS_SUBFAMILY: {
+				name = "weight_width_slope_subfamily_name";
+			} break;
+			case HB_OT_NAME_ID_LIGHT_BACKGROUND: {
+				name = "light_background_palette";
+			} break;
+			case HB_OT_NAME_ID_DARK_BACKGROUND: {
+				name = "dark_background_palette";
+			} break;
+			case HB_OT_NAME_ID_VARIATIONS_PS_PREFIX: {
+				name = "postscript_name_prefix";
+			} break;
+			default: {
+				name = vformat("unknown_%d", names[i].name_id);
+			} break;
+		}
+		unsigned int text_size = hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, nullptr, nullptr) + 1;
+		// @todo After godot-cpp#1141 is fixed, use text.resize() and write directly to text.wptr() instead of using a temporary buffer.
+		char32_t *buffer = memnew_arr(char32_t, text_size);
+		hb_ot_name_get_utf32(hb_face, names[i].name_id, names[i].language, &text_size, (uint32_t *)buffer);
+		String text(buffer);
+		memdelete_arr(buffer);
+		if (!text.is_empty()) {
+			Dictionary &id_string = names_for_lang[String(hb_language_to_string(names[i].language))];
+			id_string[name] = text;
+		}
+	}
+
+	Dictionary out;
+	for (const KeyValue<String, Dictionary> &E : names_for_lang) {
+		out[E.key] = E.value;
+	}
+
+	return out;
+}
+
 void TextServerAdvanced::_font_set_antialiasing(const RID &p_font_rid, TextServer::FontAntialiasing p_antialiasing) {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND(!fd);
@@ -3094,6 +3211,37 @@ int64_t TextServerAdvanced::_font_get_glyph_index(const RID &p_font_rid, int64_t
 	}
 #else
 	return (int64_t)p_char;
+#endif
+}
+
+int64_t TextServerAdvanced::_font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const {
+	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
+
+#ifdef MODULE_FREETYPE_ENABLED
+	if (fd->cache[size]->inv_glyph_map.is_empty()) {
+		FT_Face face = fd->cache[size]->face;
+		FT_UInt gindex;
+		FT_ULong charcode = FT_Get_First_Char(face, &gindex);
+		while (gindex != 0) {
+			if (charcode != 0) {
+				fd->cache[size]->inv_glyph_map[gindex] = charcode;
+			}
+			charcode = FT_Get_Next_Char(face, charcode, &gindex);
+		}
+	}
+
+	if (fd->cache[size]->inv_glyph_map.has(p_glyph_index)) {
+		return fd->cache[size]->inv_glyph_map[p_glyph_index];
+	} else {
+		return 0;
+	}
+#else
+	return p_glyph_index;
 #endif
 }
 

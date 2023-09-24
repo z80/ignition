@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRInterface" inherits="XRInterface" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRInterface" inherits="XRInterface" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Our OpenXR interface.
 	</brief_description>
@@ -42,6 +42,9 @@
 	<members>
 		<member name="display_refresh_rate" type="float" setter="set_display_refresh_rate" getter="get_display_refresh_rate" default="0.0">
 			The display refresh rate for the current HMD. Only functional if this feature is supported by the OpenXR runtime and after the interface has been initialized.
+		</member>
+		<member name="render_target_size_multiplier" type="float" setter="set_render_target_size_multiplier" getter="get_render_target_size_multiplier" default="1.0">
+			The render size multiplier for the current HMD. Must be set before the interface has been initialized.
 		</member>
 	</members>
 	<signals>

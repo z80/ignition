@@ -37,13 +37,13 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
+#include "drivers/gles3/shaders/cubemap_filter.glsl.gen.h"
+#include "drivers/gles3/shaders/sky.glsl.gen.h"
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
 #include "shader_gles3.h"
-#include "shaders/cubemap_filter.glsl.gen.h"
-#include "shaders/sky.glsl.gen.h"
 #include "storage/light_storage.h"
 #include "storage/material_storage.h"
 #include "storage/render_scene_buffers_gles3.h"
@@ -220,6 +220,7 @@ private:
 		uint32_t flags = 0;
 		uint32_t surface_index = 0;
 		uint32_t lod_index = 0;
+		uint32_t index_count = 0;
 
 		void *surface = nullptr;
 		GLES3::SceneShaderData *shader = nullptr;

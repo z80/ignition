@@ -31,8 +31,8 @@
 #include "shader_create_dialog.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_scale.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "scene/resources/shader_include.h"
 #include "scene/resources/visual_shader.h"
 #include "servers/rendering/shader_types.h"
@@ -464,7 +464,7 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 }
 
 void ShaderCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
-	error_label->set_text("- " + p_msg);
+	error_label->set_text(String::utf8("•  ") + p_msg);
 	if (valid) {
 		error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {
@@ -473,7 +473,7 @@ void ShaderCreateDialog::_msg_script_valid(bool valid, const String &p_msg) {
 }
 
 void ShaderCreateDialog::_msg_path_valid(bool valid, const String &p_msg) {
-	path_error_label->set_text("- " + p_msg);
+	path_error_label->set_text(String::utf8("•  ") + p_msg);
 	if (valid) {
 		path_error_label->add_theme_color_override("font_color", gc->get_theme_color(SNAME("success_color"), SNAME("Editor")));
 	} else {

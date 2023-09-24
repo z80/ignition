@@ -30,13 +30,12 @@
 
 #import "joypad_ios.h"
 
-#include "core/config/project_settings.h"
-#include "drivers/coreaudio/audio_driver_coreaudio.h"
-#include "main/main.h"
-
 #import "godot_view.h"
+#import "os_ios.h"
 
-#include "os_ios.h"
+#include "core/config/project_settings.h"
+#import "drivers/coreaudio/audio_driver_coreaudio.h"
+#include "main/main.h"
 
 JoypadIOS::JoypadIOS() {
 	observer = [[JoypadIOSObserver alloc] init];
@@ -150,7 +149,7 @@ void JoypadIOS::start_processing() {
 	int joy_id = Input::get_singleton()->get_unused_joy_id();
 
 	if (joy_id == -1) {
-		printf("Couldn't retrieve new joy id\n");
+		print_verbose("Couldn't retrieve new joy ID.");
 		return;
 	}
 
@@ -174,12 +173,12 @@ void JoypadIOS::start_processing() {
 	GCController *controller = (GCController *)notification.object;
 
 	if (!controller) {
-		printf("Couldn't retrieve new controller\n");
+		print_verbose("Couldn't retrieve new controller.");
 		return;
 	}
 
 	if ([[self.connectedJoypads allKeysForObject:controller] count] > 0) {
-		printf("Controller is already registered\n");
+		print_verbose("Controller is already registered.");
 	} else if (!self.isProcessing) {
 		[self.joypadsQueue addObject:controller];
 	} else {

@@ -240,6 +240,8 @@ private:
 		String language;
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
+		BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
+		PackedFloat32Array tab_stops;
 		ItemParagraph() { type = ITEM_PARAGRAPH; }
 	};
 
@@ -252,6 +254,7 @@ private:
 		ListType list_type = LIST_DOTS;
 		bool capitalize = false;
 		int level = 0;
+		String bullet = String::utf8("•");
 		ItemList() { type = ITEM_LIST; }
 	};
 
@@ -404,6 +407,7 @@ private:
 	bool use_selected_font_color = false;
 
 	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	BitField<TextServer::JustificationFlag> default_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
 
 	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
@@ -417,6 +421,7 @@ private:
 	void _stop_thread();
 	bool _validate_line_caches();
 	void _process_line_caches();
+	_FORCE_INLINE_ float _update_scroll_exceeds(float p_total_height, float p_ctrl_height, float p_width, int p_idx, float p_old_scroll, float p_text_rect_height);
 
 	void _add_item(Item *p_item, bool p_enter = false, bool p_ensure_newline = false);
 	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
@@ -490,7 +495,9 @@ private:
 	ItemDropcap *_find_dc_item(Item *p_item);
 	int _find_list(Item *p_item, Vector<int> &r_index, Vector<ItemList *> &r_list);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
+	PackedFloat32Array _find_tab_stops(Item *p_item);
 	HorizontalAlignment _find_alignment(Item *p_item);
+	BitField<TextServer::JustificationFlag> _find_jst_flags(Item *p_item);
 	TextServer::Direction _find_direction(Item *p_item);
 	TextServer::StructuredTextParser _find_stt(Item *p_item);
 	String _find_language(Item *p_item);
@@ -504,6 +511,7 @@ private:
 	Color _find_fgcolor(Item *p_item);
 	bool _find_layout_subitem(Item *from, Item *to);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
+	void _normalize_subtags(Vector<String> &subtags);
 
 	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
@@ -527,6 +535,7 @@ private:
 #endif
 	bool use_bbcode = false;
 	String text;
+	void _apply_translation();
 
 	bool fit_content = false;
 
@@ -591,9 +600,9 @@ public:
 	void push_outline_color(const Color &p_color);
 	void push_underline();
 	void push_strikethrough();
-	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT);
+	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
 	void push_indent(int p_level);
-	void push_list(int p_level, ListType p_list, bool p_capitalize);
+	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
 	void push_meta(const Variant &p_meta);
 	void push_hint(const String &p_string);
 	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP, int p_align_to_row = -1);
@@ -623,9 +632,6 @@ public:
 
 	void set_hint_underline(bool p_underline);
 	bool is_hint_underlined() const;
-
-	void set_override_selected_font_color(bool p_override_selected_font_color);
-	bool is_overriding_selected_font_color() const;
 
 	void set_scroll_active(bool p_active);
 	bool is_scroll_active() const;
@@ -679,6 +685,7 @@ public:
 	bool is_deselect_on_focus_loss_enabled() const;
 	void deselect();
 
+	int get_pending_paragraphs() const;
 	bool is_ready() const;
 	bool is_updating() const;
 
