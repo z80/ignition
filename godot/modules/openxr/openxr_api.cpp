@@ -215,7 +215,7 @@ bool OpenXRAPI::is_extension_enabled(const String &p_extension) const {
 }
 
 bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
-	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_top_level_extension(p_toplevel_path);
+	String required_extension = OpenXRInteractionProfileMetadata::get_singleton()->get_top_level_extension(p_toplevel_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
 	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported toplevel path " + p_toplevel_path);
@@ -235,7 +235,7 @@ bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
 }
 
 bool OpenXRAPI::is_interaction_profile_supported(const String &p_ip_path) {
-	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_interaction_profile_extension(p_ip_path);
+	String required_extension = OpenXRInteractionProfileMetadata::get_singleton()->get_interaction_profile_extension(p_ip_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
 	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported interaction profile " + p_ip_path);
@@ -259,9 +259,9 @@ bool OpenXRAPI::interaction_profile_supports_io_path(const String &p_ip_path, co
 		return false;
 	}
 
-	const OpenXRInteractionProfileMetaData::IOPath *io_path = OpenXRInteractionProfileMetaData::get_singleton()->get_io_path(p_ip_path, p_io_path);
+	const OpenXRInteractionProfileMetadata::IOPath *io_path = OpenXRInteractionProfileMetadata::get_singleton()->get_io_path(p_ip_path, p_io_path);
 
-	// If the io_path is not part of our meta data we've likely got a misspelled name or a bad action map, report
+	// If the io_path is not part of our metadata we've likely got a misspelled name or a bad action map, report
 	ERR_FAIL_NULL_V_MSG(io_path, false, "OpenXR: Unsupported io path " + String(p_ip_path) + String(p_io_path));
 
 	if (io_path->openxr_extension_name == "") {
@@ -794,7 +794,7 @@ bool OpenXRAPI::create_swapchains() {
 
 		Also Godot only creates a swapchain for the main output.
 		OpenXR will require us to create swapchains as the render target for additional viewports if we want to use the layer system
-		to optimize text rendering and background rendering as OpenXR may choose to re-use the results for reprojection while we're
+		to optimize text rendering and background rendering as OpenXR may choose to reuse the results for reprojection while we're
 		already rendering the next frame.
 
 		Finally an area we need to expand upon is that Foveated rendering is only enabled for the swap chain we create,
@@ -1667,7 +1667,7 @@ bool OpenXRAPI::process() {
 }
 
 bool OpenXRAPI::acquire_image(OpenXRSwapChainInfo &p_swapchain) {
-	ERR_FAIL_COND_V(p_swapchain.image_acquired, true); // this was not released when it should be, error out and re-use...
+	ERR_FAIL_COND_V(p_swapchain.image_acquired, true); // This was not released when it should be, error out and reuse...
 
 	XrResult result;
 	XrSwapchainImageAcquireInfo swapchain_image_acquire_info = {

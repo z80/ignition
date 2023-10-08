@@ -141,7 +141,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			final int physical_keycode = event.getKeyCode();
 			final int unicode = event.getUnicodeChar();
 			final int key_label = event.getDisplayLabel();
-			GodotLib.key(physical_keycode, unicode, key_label, false);
+			GodotLib.key(physical_keycode, unicode, key_label, false, event.getRepeatCount() > 0);
 		};
 
 		return true;
@@ -176,7 +176,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			final int physical_keycode = event.getKeyCode();
 			final int unicode = event.getUnicodeChar();
 			final int key_label = event.getDisplayLabel();
-			GodotLib.key(physical_keycode, unicode, key_label, true);
+			GodotLib.key(physical_keycode, unicode, key_label, true, event.getRepeatCount() > 0);
 		}
 
 		return true;
@@ -306,7 +306,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			return;
 		}
 
-		// Assign first available number. Re-use numbers where possible.
+		// Assign first available number. Reuse numbers where possible.
 		final int id = assignJoystickIdNumber(deviceId);
 
 		final Joystick joystick = new Joystick();

@@ -1834,7 +1834,7 @@ void ThemeItemEditorDialog::_edit_theme_item_gui_input(const Ref<InputEvent> &p_
 			return;
 		}
 
-		if (k->is_action_pressed(SNAME("ui_accept"), false, true)) {
+		if (k->is_action_pressed(SNAME("ui_text_submit"), false, true)) {
 			_confirm_edit_theme_item();
 			edit_theme_item_dialog->hide();
 			edit_theme_item_dialog->set_input_as_handled();
@@ -3582,6 +3582,8 @@ void ThemeEditor::_remove_preview_tab(int p_tab) {
 		}
 
 		preview_tabs_content->remove_child(preview_tab);
+		preview_tab->queue_free();
+
 		preview_tabs->remove_tab(p_tab);
 		_change_preview_tab(preview_tabs->get_current_tab());
 	}
