@@ -6,4 +6,5 @@ bone_*
 _temp
 .godot
 .import
+.storage
 
