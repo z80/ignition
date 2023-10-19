@@ -12,6 +12,7 @@
 #include "ref_frame_rotation_node.h"
 #include "ref_frame_non_inertial_node.h"
 #include "ref_frame_body_node.h"
+#include "ref_frame_static_node.h"
 #include "ref_frame_assembly_node.h"
 //#include "ref_frame_auto_node.h"
 #include "se3_ref.h"
@@ -49,6 +50,7 @@
 #include "ign_random_gd.h"
 
 #include "iir2.h"
+#include "vol_mc_gd.h"
 
 //void register_ignition_types()
 void initialize_ignition_module( ModuleInitializationLevel p_level )
@@ -68,7 +70,8 @@ void initialize_ignition_module( ModuleInitializationLevel p_level )
         ClassDB::register_class<Ign::RefFrameRotationNode>();
         ClassDB::register_class<Ign::RefFrameNonInertialNode>();
         ClassDB::register_class<Ign::RefFrameBodyNode>();
-        ClassDB::register_class<Ign::RefFrameAssemblyNode>();
+		ClassDB::register_class<Ign::RefFrameStaticNode>();
+		ClassDB::register_class<Ign::RefFrameAssemblyNode>();
         //ClassDB::register_class<Ign::RefFrameAutoNode>();
         ClassDB::register_class<Ign::Se3Ref>();
         ClassDB::register_class<Ign::DistanceScalerBaseRef>();
@@ -103,6 +106,7 @@ void initialize_ignition_module( ModuleInitializationLevel p_level )
 
 
         ClassDB::register_class<Iir2::Iir2sRef>();
+		ClassDB::register_class<Ign::VolMcGd>();
 }
 
 //void unregister_ignition_types()

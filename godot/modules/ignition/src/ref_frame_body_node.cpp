@@ -24,9 +24,9 @@ RefFrameBodyNode::~RefFrameBodyNode()
 {
 }
 
-void RefFrameBodyNode::set_acceleration( const Vector3 & acc )
+void RefFrameBodyNode::set_acceleration( const Vector3 & new_acc )
 {
-	this->acc = Vector3d( acc.x, acc.y, acc.z );
+	this->acc = Vector3d( new_acc.x, new_acc.y, new_acc.z );
 }
 
 Vector3 RefFrameBodyNode::get_acceleration() const

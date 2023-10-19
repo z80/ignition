@@ -3,7 +3,7 @@
 #ifndef __REF_FRAME_BODY_NODE_H_
 #define __REF_FRAME_BODY_NODE_H_
 
-#include "ref_Frame_node.h"
+#include "ref_frame_node.h"
 
 namespace Ign
 {
