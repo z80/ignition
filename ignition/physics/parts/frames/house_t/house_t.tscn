@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://bd80rlokwoxij"]
+
+[ext_resource type="Script" path="res://physics/parts/frames/house_t/house_t.gd" id="1_kfw6n"]
+[ext_resource type="PackedScene" uid="uid://cvyv15scfir58" path="res://physics/parts/frames/house_t/house_t_visual.tscn" id="2_fydgy"]
+
+[node name="HouseT" type="RefFrameBodyNode"]
+script = ExtResource("1_kfw6n")
+VisualScene = ExtResource("2_fydgy")

@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://bdualcfby5odj"]
+
+[ext_resource type="Script" path="res://physics/parts/frames/tree_birch/tree_birch.gd" id="1_al4wu"]
+[ext_resource type="PackedScene" uid="uid://dap5wf8i5sac0" path="res://physics/parts/frames/tree_birch/tree_birch_visual.tscn" id="2_j8x4l"]
+
+[node name="TreeBirch" type="RefFrameBodyNode"]
+script = ExtResource("1_al4wu")
+VisualScene = ExtResource("2_j8x4l")

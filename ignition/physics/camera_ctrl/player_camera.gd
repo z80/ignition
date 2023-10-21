@@ -51,6 +51,76 @@ var _target: Node3D = null
 var _camera: Camera3D = null
 
 
+const ScreenshotMode = {
+	IDLE = 0, 
+	HIDE_PLAYER = 1, 
+	TAKE_SCRENSHOT = 2,
+	SHOW_PLAYER = 3
+}
+
+var _screenshot_mode: int = ScreenshotMode.IDLE
+
+
+func _ready():
+	_screenshot_mode = ScreenshotMode.IDLE
+
+
+func _process_screenshot():
+	if _screenshot_mode == ScreenshotMode.IDLE:
+		pass
+	
+	elif _screenshot_mode == ScreenshotMode.HIDE_PLAYER:
+		_screenshot_mode = ScreenshotMode.TAKE_SCRENSHOT
+		_screenshot_hide_player()
+	
+	elif _screenshot_mode == ScreenshotMode.TAKE_SCRENSHOT:
+		_screenshot_mode = ScreenshotMode.SHOW_PLAYER
+		_screenshot_take_screenshot()
+	
+	elif _screenshot_mode == ScreenshotMode.SHOW_PLAYER:
+		_screenshot_mode = ScreenshotMode.IDLE
+		_screenshot_show_player()
+
+
+func _screenshot_hide_player():
+	var player: RefFrameNode = get_parent()
+	player.set_visible( false )
+
+
+func _screenshot_take_screenshot():
+	var player: RefFrameNode = get_parent()
+	var rf: RefFrameNonInertialNode = player.get_parent()
+	var rot: RefFrameRotationNode = rf.get_parent()
+	# Camera relative to rotating planet.
+	var se3: Se3Ref = self.relative_to( rot )
+	
+	var path: String = ".screenshots"
+	var dir: DirAccess = DirAccess.open("res://")
+	var exists: bool = dir.dir_exists( path )
+	if not exists:
+		dir.make_dir_recursive( path )
+	
+	var r: Vector3 = se3.r
+	var fname: String = "%4.3f_%4.3f_%4.3f.png" % [ r.x, r.y, r.z ]
+	fname = "res://" + path + "/" + fname
+	
+	var vp: Viewport = get_viewport()
+	var vp_texture: ViewportTexture = vp.get_texture()
+	var image: Image = vp_texture.get_image()
+	image.save_png( fname )
+
+
+
+func _screenshot_show_player():
+	var player: RefFrameNode = get_parent()
+	player.set_visible( true )
+
+
+func _process( _delta ):
+	_process_screenshot()
+
+
+
 func _get_camera():
 	if _camera == null:
 		_camera = RootScene.get_visual_layer_near().camera
@@ -227,15 +297,9 @@ func _input( event ):
 	if zoom_out:
 		_zoom_displacement += 1
 	
-	#var pressed_c: bool = Input.is_action_just_pressed( "ui_c" )
-	#if pressed_c:
-	#	_cycle_target()
-
-	#var change_mode: bool = Input.is_action_just_pressed( "ui_v" )
-	#if change_mode:
-	#	_cycle_mode()
-	
-	#print( "mouse displacement: ", _mouse_displacement )
+	var make_screenshot: bool = Input.is_action_just_pressed( "ui_screenshot" )
+	if make_screenshot:
+		_screenshot_mode = ScreenshotMode.HIDE_PLAYER
 
 
 

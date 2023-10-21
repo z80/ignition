@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3 uid="uid://qhdyk45gj7g4"]
+
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="1_j4yri"]
+[ext_resource type="PackedScene" uid="uid://cyvfwpf03sban" path="res://physics/parts/frames/house_ramp/raw_house_ramp.tscn" id="2_bejg5"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_r8ye7"]
+size = Vector3(2.28597, 1.72033, 1.79844)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_enett"]
+size = Vector3(1, 1.27417, 0.444189)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_e6ciw"]
+size = Vector3(0.6379, 0.865549, 0.67689)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6mjn7"]
+
+[node name="HouseRampVisual" type="RigidBody3D"]
+freeze = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, -0.0961832, 4.22659, 0)
+shape = SubResource("BoxShape3D_r8ye7")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
+transform = Transform3D(5, 0, 0, 0, 2.95444, 4.03377, 0, -4.03377, 2.95444, -6.55133, 1.27608, 1.3421)
+shape = SubResource("BoxShape3D_enett")
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="."]
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, -6.88073, 1.90277, -2.24875)
+shape = SubResource("BoxShape3D_e6ciw")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51556, -0.318263)
+mesh = SubResource("BoxMesh_6mjn7")
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.61807, 0)
+script = ExtResource("1_j4yri")
+
+[node name="house_ramp" parent="." instance=ExtResource("2_bejg5")]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0, 0)

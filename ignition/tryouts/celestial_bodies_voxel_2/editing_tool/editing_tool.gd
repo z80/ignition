@@ -16,8 +16,8 @@ func _ready():
 	_sun_position = get_node( "SunPosition" )
 	_camera = get_node( "Sun/Planet/Rotation/RefFrameNode/Camera3D" )
 	_camera.map_mode = false
-	var atm: Node = _camera.get_node( "Camera3D/Atmosphere" )
-	atm.visible = false
+	#var atm: Node = _camera.get_node( "Camera3D/Atmosphere" )
+	#atm.visible = false
 
 	
 	var t: Transform3D = Transform3D.IDENTITY

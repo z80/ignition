@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://bg76kte6xat1b"]
+
+[ext_resource type="PackedScene" uid="uid://dbi14h7b311hw" path="res://physics/parts/frames/gas_station/assets/gas_station.glb" id="1_n8k8d"]
+
+[node name="gas_station" instance=ExtResource("1_n8k8d")]

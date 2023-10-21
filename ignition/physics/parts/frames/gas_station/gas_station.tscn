@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://ds6hxry5x51g5"]
+
+[ext_resource type="Script" path="res://physics/parts/frames/gas_station/gas_station.gd" id="1_ret40"]
+[ext_resource type="PackedScene" uid="uid://dn6175fxxsk7o" path="res://physics/parts/frames/gas_station/gas_station_visual.tscn" id="2_f2dcw"]
+
+[node name="GasStation" type="RefFrameBodyNode"]
+script = ExtResource("1_ret40")
+VisualScene = ExtResource("2_f2dcw")

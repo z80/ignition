@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://b7umm6abdj4yi"]
+
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="1_jvd71"]
+[ext_resource type="PackedScene" uid="uid://bvme48sjkgkd1" path="res://physics/parts/frames/road_curve/raw_road_curve.tscn" id="2_bry3m"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_6mjn7"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_nrp7y"]
+points = PackedVector3Array(37.9939, -56.9077, 10.4161, -212.264, 399.943, -11.346, -201.338, 291.149, -11.346, 375.198, 95.3758, -11.346, -5.53664, 585.014, 10.4161, 375.198, 95.3758, 10.4161, 233.738, -111.372, -11.346, -5.53664, 585.014, -11.346, -212.264, 585.014, 10.4161, 375.198, -111.372, 10.4161, -168.733, 182.424, 10.4161, -38.1989, 8.32745, -11.346, -212.264, 585.014, -11.346, 375.198, -111.372, -11.346, -201.338, 291.149, 10.4161, -157.865, 160.679, -11.346, -92.5402, 62.7241, 10.4161, 59.7304, -67.8143, -11.346, 168.471, -100.466, 10.4161, -212.264, 399.943, 10.4161, -92.5402, 62.7241, -11.346, 233.738, -111.372, 10.4161, 168.471, -100.466, -11.346, -16.4049, -13.4176, 10.4161, 37.9939, -56.9077, -11.346, 92.3352, -78.7209, 10.4161, -179.601, 215.076, -11.346, -157.865, 160.679, 10.4161, -16.4049, -13.4176, -11.346, 92.3352, -78.7209, -11.346, 59.7304, -67.8143, 10.4161, -168.733, 182.424, -11.346)
+
+[node name="HouseCornerVisual" type="RigidBody3D"]
+freeze = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51556, -0.318263)
+visible = false
+mesh = SubResource("BoxMesh_6mjn7")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="."]
+transform = Transform3D(0.02, 0, 0, 0, -8.74228e-10, -0.02, 0, 0.02, -8.74228e-10, 0, -1, 0)
+shape = SubResource("ConvexPolygonShape3D_nrp7y")
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0690892, 2)
+script = ExtResource("1_jvd71")
+
+[node name="road_curve" parent="." instance=ExtResource("2_bry3m")]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)

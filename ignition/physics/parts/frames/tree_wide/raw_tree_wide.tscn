@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://bdn2uk1yjhvpg"]
+
+[ext_resource type="PackedScene" uid="uid://bfkqrn1gt0g0u" path="res://physics/parts/frames/tree_wide/assets/tree_wide.glb" id="1_56r11"]
+[ext_resource type="Texture2D" uid="uid://ddbjsh7g3a4jr" path="res://physics/parts/frames/tree_wide/assets/tree_wide_treeWide-treeWideOpacity.png" id="2_6fia0"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l3hye"]
+resource_name = "Material"
+transparency = 1
+cull_mode = 2
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("2_6fia0")
+roughness = 0.5
+
+[node name="tree_wide" instance=ExtResource("1_56r11")]
+
+[node name="treeWide" parent="." index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_l3hye")

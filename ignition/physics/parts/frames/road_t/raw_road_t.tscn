@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://cjcymjt3alqau"]
+
+[ext_resource type="PackedScene" uid="uid://de7alpvksbvxr" path="res://physics/parts/frames/road_t/assets/road_t.glb" id="1_kboku"]
+
+[node name="road_t" instance=ExtResource("1_kboku")]

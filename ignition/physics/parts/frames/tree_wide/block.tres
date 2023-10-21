@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CreatableBlockDesc" load_steps=4 format=3 uid="uid://beanbc8dlwsng"]
+
+[ext_resource type="PackedScene" uid="uid://cak6heh6hwuiw" path="res://physics/parts/frames/tree_wide/tree_wide.tscn" id="1_knj6e"]
+[ext_resource type="Texture2D" uid="uid://c3ofupcqiqial" path="res://physics/parts/frames/tree_wide/icon.png" id="2_ccpy0"]
+[ext_resource type="Script" path="res://resource_management/block.gd" id="3_fwovc"]
+
+[resource]
+script = ExtResource("3_fwovc")
+block_scene = ExtResource("1_knj6e")
+category = "static_blocks"
+required_tech = "root"
+icon = ExtResource("2_ccpy0")
+brief_description = "Tree Wide"
+wiki_file = "res://wiki/root.wiki"

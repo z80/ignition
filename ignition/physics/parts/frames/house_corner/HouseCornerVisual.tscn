@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://naotqdarsp2o"]
+
+[ext_resource type="PackedScene" uid="uid://caf1w80ixos0i" path="res://physics/parts/frames/house_corner/raw_house_corner.tscn" id="1_m0ykr"]
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="2_wu724"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_r8ye7"]
+size = Vector3(6, 9.01146, 5.65253)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6mjn7"]
+
+[node name="HouseCornerVisual" type="RigidBody3D"]
+freeze = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.99044, 0)
+shape = SubResource("BoxShape3D_r8ye7")
+
+[node name="house_corner" parent="." instance=ExtResource("1_m0ykr")]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51556, 0)
+mesh = SubResource("BoxMesh_6mjn7")
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.61807, 0)
+script = ExtResource("2_wu724")

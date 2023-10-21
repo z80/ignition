@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvme48sjkgkd1"]
+
+[ext_resource type="PackedScene" uid="uid://d00d8eijd8ixq" path="res://physics/parts/frames/road_curve/assets/road_curve.glb" id="1_20yj1"]
+
+[node name="road_curve" instance=ExtResource("1_20yj1")]

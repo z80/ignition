@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://x52fdf27issq"]
+
+[ext_resource type="Script" path="res://physics/parts/frames/road_curve/road_curve.gd" id="1_lw703"]
+[ext_resource type="PackedScene" uid="uid://b7umm6abdj4yi" path="res://physics/parts/frames/road_curve/road_curve_visual.tscn" id="2_n0p2c"]
+
+[node name="HouseT" type="RefFrameBodyNode"]
+script = ExtResource("1_lw703")
+VisualScene = ExtResource("2_n0p2c")

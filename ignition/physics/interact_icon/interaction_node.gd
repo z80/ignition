@@ -140,6 +140,8 @@ func _position_on_screen() -> Vector2:
 	return at_2d
 
 func _icon_under_window() -> bool:
+	return false
+	
 	if _container_window == null:
 		return false
 	elif not is_instance_valid(_container_window):

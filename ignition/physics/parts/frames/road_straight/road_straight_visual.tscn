@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://dg7dg81kpwnxm"]
+
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="1_77ew0"]
+[ext_resource type="PackedScene" uid="uid://8t3g5tg7qo3c" path="res://physics/parts/frames/road_straight/raw_road_straight.tscn" id="2_a4xo6"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_6mjn7"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_uigud"]
+points = PackedVector3Array(365.387, 99.4657, 0, 365.387, 99.4657, -5.90551, -365.387, 99.4657, 0, 365.387, -99.4657, 0, 365.387, -99.4657, -5.90551, -365.387, 99.4657, -5.90551, -365.387, -99.4657, 0, -365.387, -99.4657, -5.90551)
+
+[node name="HouseCornerVisual" type="RigidBody3D"]
+freeze = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51556, -0.318263)
+visible = false
+mesh = SubResource("BoxMesh_6mjn7")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(0.02, 0, 0, 0, -8.74228e-10, -0.02, 0, 0.02, -8.74228e-10, 0, -0.916682, 0)
+shape = SubResource("ConvexPolygonShape3D_uigud")
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.00775099, 0)
+script = ExtResource("1_77ew0")
+
+[node name="road_straight" parent="." instance=ExtResource("2_a4xo6")]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)

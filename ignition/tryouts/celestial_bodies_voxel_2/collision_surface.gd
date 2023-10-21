@@ -39,6 +39,24 @@ func _initialize( surface_source: Resource ):
 
 
 
+func _input( event ):
+	if Input.is_action_just_pressed( "ui_force_serialize" ):
+		
+		var rf: RefFrameNonInertialNode = get_parent()
+		var bodies: Array = rf.root_most_child_bodies()
+		rf.register_bodies_in_nodes( bodies )
+
+		for id in _collision_cells:
+			var cell: Node = _collision_cells[id]
+			cell.dont_delete_on_serialize = true
+			cell._serialize_bodies()
+			cell.dont_delete_on_serialize = false
+		
+		print( "Force saved all the nodes" )
+		
+
+
+
 func _initialize_strategy( surface_source: Resource ):
 	var radius: float  = surface_source.source_radius
 	var max_level: int = layer_config.max_level

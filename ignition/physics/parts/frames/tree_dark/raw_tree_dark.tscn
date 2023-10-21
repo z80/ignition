@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://bnxty50ksisw1"]
+
+[ext_resource type="PackedScene" uid="uid://bm6vcxnxfe7nx" path="res://physics/parts/frames/tree_dark/assets/tree_dark.glb" id="1_m3bwr"]
+[ext_resource type="Texture2D" uid="uid://bc0lryp4ejkxi" path="res://physics/parts/frames/tree_dark/assets/tree_dark_treeDark-treeDarkOpacity.png" id="2_i5api"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qmth2"]
+resource_name = "Material"
+transparency = 1
+cull_mode = 2
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("2_i5api")
+roughness = 0.5
+
+[node name="tree_dark" instance=ExtResource("1_m3bwr")]
+
+[node name="treeDark" parent="." index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_qmth2")

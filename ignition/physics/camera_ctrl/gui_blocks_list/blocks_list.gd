@@ -20,16 +20,6 @@ func _ready():
 	_fill_blocks()
 
 
-func _input(event):
-	if (event is InputEventKey) and (not event.echo):
-		var key_pressed: bool = event.pressed
-		#print( "pressed: ", pressed )
-		if not key_pressed:
-			return
-		var key_code: int = event.keycode
-		if key_code == KEY_ESCAPE:
-			self.queue_free()
-
 
 func _get_container():
 	if _container == null:

@@ -14,9 +14,11 @@ var _bodies_inside: Array = []
 
 var _source_se3: Se3Ref = null
 
+var dont_delete_on_serialize: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _enter_tree():
+	dont_delete_on_serialize = false
 	if _source_se3 == null:
 		_source_se3 = Se3Ref.new()
 	
@@ -334,10 +336,17 @@ func _serialize( data: Dictionary ):
 	var se3_data: Dictionary = rf_se3.serialize()
 	data["rf_se3"] = se3_data
 	
+	var player_control: RefFrameNode = RootScene.ref_frame_root.player_camera.get_parent()
+	
 	var bodies: Array = []
 	var qty: int = _bodies_inside.size()
 	for i in range(qty):
 		var body: RefFrameBodyNode = _bodies_inside[i]
+		
+		# Don't serialize player controlled character when it is forced serialization 
+		# of all objects.
+		if dont_delete_on_serialize and (body == player_control):
+			continue
 		
 		var file: String = body.scene_file_path
 		var se3: Se3Ref = body.get_se3()
@@ -345,8 +354,9 @@ func _serialize( data: Dictionary ):
 		var body_dict: Dictionary = { "file": file, "data": body_data }
 		bodies.append( body_dict )
 		
-		body.queue_free()
-		body.on_delete()
+		if not dont_delete_on_serialize:
+			body.queue_free()
+			body.on_delete()
 	
 	data["bodies"] = bodies
 	return true

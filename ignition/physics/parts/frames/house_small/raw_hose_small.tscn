@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://dixyr16v602cb"]
+
+[ext_resource type="PackedScene" uid="uid://c7da1nqxm538s" path="res://physics/parts/frames/house_small/assets/hose_small.glb" id="1_w6ax1"]
+
+[node name="hose_small" instance=ExtResource("1_w6ax1")]
