@@ -234,7 +234,7 @@ func gui_classes( mode: Array ):
 	var classes = []
 	
 	var sb: Node = get_assembly_raw()
-	if sb != null:
+	if (sb != null) and (sb != self):
 		var s_classes = sb.gui_classes( mode )
 		for cl in s_classes:
 			classes.push_back( cl )
@@ -256,7 +256,7 @@ func gui_classes( mode: Array ):
 func gui_mode():
 	var ret: Array = []
 	var sb: Node = get_assembly_raw()
-	if sb != null:
+	if (sb != null) and (sb != self):
 		var more: Array = sb.gui_mode()
 		for m in more:
 			ret.push_back( m )
@@ -648,6 +648,13 @@ func get_ref_frame_root():
 		rf = rf.get_parent() as RefFrameNode
 	
 	return null
+
+
+
+func set_visible( en: bool ):
+	if (_visual != null) and (is_instance_valid(_visual)):
+		_visual.visible = en
+
 
 
 

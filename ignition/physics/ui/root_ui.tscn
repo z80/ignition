@@ -1,7 +1,8 @@
-[gd_scene load_steps=10 format=3 uid="uid://d164mxaj5h5it"]
+[gd_scene load_steps=11 format=3 uid="uid://d164mxaj5h5it"]
 
 [ext_resource type="PackedScene" uid="uid://bga668jgke041" path="res://physics/ui/navigation/navigation.tscn" id="2"]
 [ext_resource type="PackedScene" uid="uid://c5ygsyd6vywnw" path="res://physics/camera_ctrl/gui_blocks_list/blocks_list.tscn" id="2_ncv8a"]
+[ext_resource type="PackedScene" uid="uid://dx23igqlr2l76" path="res://physics/camera_ctrl/gui_location_query/location_query.tscn" id="3_socrb"]
 [ext_resource type="PackedScene" uid="uid://cth8j6w265f3c" path="res://physics/ui/save_load/ui_save_load.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://physics/ui/time_dilation/time_dilation.tscn" id="5"]
 [ext_resource type="PackedScene" path="res://physics/ui/esc_menu/esc_menu.tscn" id="6"]
@@ -22,6 +23,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("9")
 BuildGui = ExtResource("2_ncv8a")
+LocationQueryGui = ExtResource("3_socrb")
 
 [node name="EdgeButtons" parent="." instance=ExtResource("7")]
 visible = false
@@ -81,6 +83,7 @@ grow_horizontal = 1
 grow_vertical = 1
 
 [node name="Build" type="TextureButton" parent="."]
+visible = false
 layout_mode = 0
 offset_right = 73.0
 offset_bottom = 17.0

@@ -9,16 +9,17 @@
 [resource]
 render_priority = 0
 shader = ExtResource("1")
+shader_parameter/softmax_alpha = 0.3
 shader_parameter/metallic = 0.046
 shader_parameter/roughness = 0.508
 shader_parameter/layers_qty = 4
 shader_parameter/scale = PackedFloat32Array(50, 50, 50, 50)
-shader_parameter/mean = PackedFloat32Array(0, 0.5, 1, 1.5)
-shader_parameter/sigma = PackedFloat32Array(0.5, 0.5, 0.5, 0.5)
+shader_parameter/mean = PackedFloat32Array(0, 3, 5, 7)
+shader_parameter/sigma = PackedFloat32Array(0.3, 0.3, 0.3, 0.3)
 shader_parameter/scale_slope = 50.0
 shader_parameter/threshold_slope = 0.3
 shader_parameter/common_point = null
 shader_parameter/to_planet_rf = null
-shader_parameter/planet_radius = 100.0
+shader_parameter/planet_radius = 500.0
 shader_parameter/tex_albedo = Array[Texture2D]([ExtResource("5"), ExtResource("8"), ExtResource("2"), ExtResource("3")])
 shader_parameter/tex_albedo_slope = ExtResource("2")

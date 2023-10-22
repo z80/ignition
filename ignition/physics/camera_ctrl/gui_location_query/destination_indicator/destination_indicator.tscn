@@ -1,0 +1,61 @@
+[gd_scene load_steps=5 format=3 uid="uid://dupomrqmtfxc7"]
+
+[ext_resource type="Texture2D" uid="uid://cimjl80il5b4i" path="res://physics/camera_ctrl/gui_location_query/destination_indicator/assets/target_indicator.png" id="1_58bbp"]
+[ext_resource type="Script" path="res://physics/camera_ctrl/gui_location_query/destination_indicator/destination_indicator.gd" id="1_q2um0"]
+
+[sub_resource type="FontFile" id="FontFile_48uwm"]
+face_index = null
+embolden = null
+transform = null
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/16/0/kerning_overrides/16/0 = Vector2(0, 0)
+cache/0/16/0/kerning_overrides/64/0 = Vector2(0, 0)
+cache/0/16/0/kerning_overrides/48/0 = Vector2(0, 0)
+cache/0/64/0/ascent = 0.0
+cache/0/64/0/descent = 0.0
+cache/0/64/0/underline_position = 0.0
+cache/0/64/0/underline_thickness = 0.0
+cache/0/64/0/scale = 1.0
+cache/0/64/0/kerning_overrides/16/0 = Vector2(0, 0)
+cache/0/64/0/kerning_overrides/64/0 = Vector2(0, 0)
+cache/0/64/0/kerning_overrides/48/0 = Vector2(0, 0)
+cache/0/48/0/ascent = 0.0
+cache/0/48/0/descent = 0.0
+cache/0/48/0/underline_position = 0.0
+cache/0/48/0/underline_thickness = 0.0
+cache/0/48/0/scale = 1.0
+cache/0/48/0/kerning_overrides/16/0 = Vector2(0, 0)
+cache/0/48/0/kerning_overrides/64/0 = Vector2(0, 0)
+cache/0/48/0/kerning_overrides/48/0 = Vector2(0, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_xvgjs"]
+font = SubResource("FontFile_48uwm")
+font_size = 48
+font_color = Color(1, 0.145098, 0.984314, 1)
+outline_size = 4
+outline_color = Color(0, 0, 0, 1)
+
+[node name="TargetIndicator" type="Control"]
+layout_mode = 3
+offset_left = 466.0
+offset_top = 322.0
+offset_right = 506.0
+offset_bottom = 362.0
+script = ExtResource("1_q2um0")
+
+[node name="Distance" type="Label" parent="."]
+layout_mode = 0
+offset_left = -176.0
+offset_top = 35.0
+offset_right = 175.0
+offset_bottom = 103.0
+text = "Distance"
+label_settings = SubResource("LabelSettings_xvgjs")
+horizontal_alignment = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_58bbp")

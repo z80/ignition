@@ -2,27 +2,26 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b1b4fnfq3exup"
-path.s3tc="res://.godot/imported/texture_part_node.png-378d34e0030d66451f9881d5ca859930.s3tc.ctex"
+uid="uid://cimjl80il5b4i"
+path="res://.godot/imported/target_indicator.png-1694934b278e30a2eed544beaee4be56.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://physics/parts/coupling_nodes/assets/texture_part_node.png"
-dest_files=["res://.godot/imported/texture_part_node.png-378d34e0030d66451f9881d5ca859930.s3tc.ctex"]
+source_file="res://physics/camera_ctrl/gui_location_query/destination_indicator/assets/target_indicator.png"
+dest_files=["res://.godot/imported/target_indicator.png-1694934b278e30a2eed544beaee4be56.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -32,4 +31,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1

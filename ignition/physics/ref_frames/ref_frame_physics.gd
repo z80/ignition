@@ -881,7 +881,7 @@ func get_ref_frame_root():
 
 
 func register_bodies_in_nodes( bodies: Array ):
-	var rot: RefFrameRotationNode = get_parent()
+	var rot: RefFrameRotationNode = get_parent() as RefFrameRotationNode
 	if rot == null:
 		return false
 	

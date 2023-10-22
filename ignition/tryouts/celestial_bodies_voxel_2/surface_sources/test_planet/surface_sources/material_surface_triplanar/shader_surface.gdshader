@@ -3,6 +3,8 @@ shader_type spatial;
 
 const int LAYERS_QTY = 4;
 
+uniform float softmax_alpha = 2.0;
+
 uniform float metallic : hint_range(0.0, 1.0) = 0.0;
 uniform float roughness : hint_range(0.0, 1.0) = 0.02;
 
@@ -106,14 +108,21 @@ void compute_combined_color( out vec3 albedo )
 	float accum = 0.0;
 	albedo = vec3(0.0, 0.0, 0.0);
 	//normal = vec3(0.0, 0.0, 0.0);
+	float max_coeff = -1.0;
 	for ( int i=0; i<layers_qty; i++ )
 	{
 		vec3 albedo_ = compute_tex_triplanar( tex_albedo[i], scale[i], vertex_w, normal_w );
 		//vec3 normal_ = compute_tex_triplanar( tex_normal[i], scale[i], vertex_w, normal_w );
 		float coeff_  = tex_intensity( dist_w, mean[i], sigma[i] );
+		coeff_ *= exp(softmax_alpha*coeff_);
 		accum += coeff_;
 		albedo += albedo_ * coeff_;
 		//normal += normal_ * coeff_;
+		/*if (coeff_ > max_coeff)
+		{
+			max_coeff = coeff_;
+			albedo = albedo_;
+		}*/
 	}
 //	vec3 albedo_ = compute_tex_triplanar( tex_albedo[0], scale[0], vertex_w, normal_w );
 //	vec3 normal_ = compute_tex_triplanar( tex_normal[0], scale[0], vertex_w, normal_w );

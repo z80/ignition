@@ -35,14 +35,15 @@ light_color = Color(0.996078, 1, 0.843137, 1)
 shadow_enabled = true
 directional_shadow_mode = 0
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="SunLight"]
+[node name="_MeshInstance3D" type="MeshInstance3D" parent="SunLight"]
 transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 0.561991, 0, -0.703025)
 visible = false
 mesh = SubResource("4")
 skeleton = NodePath("")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="SunLight/MeshInstance3D"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="SunLight/_MeshInstance3D"]
 transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 0, -6.06995)
+visible = false
 mesh = SubResource("6")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
