@@ -66,7 +66,7 @@ func _ign_pre_process( _delta: float ):
 	# Camera should be updated the last, after all poses are set.
 	update_camera( _delta )
 	
-		# Celestial body orbital movement time delta.
+	# Celestial body orbital movement time delta.
 	# It should be applied to planet movement and ref. frames 
 	# moving under gravitational influence of a planet.
 	#var orbital_delta: float = _delta * _time_scale_evolution
@@ -105,14 +105,15 @@ func _ign_physics_pre_process( delta ):
 	# Need to have all super body poses up to date.
 	update_super_bodies()
 	
-	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
-	var ref_frames: Array = get_tree().get_nodes_in_group( group )
-	
-	for rf in ref_frames:
-		var deleted: bool =  rf.is_queued_for_deletion()
-		if deleted:
-			continue
-		rf.process_children()
+	# These goes directly to Translation and Rotation of celestial bodies.
+#	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
+#	var ref_frames: Array = get_tree().get_nodes_in_group( group )
+#
+#	for rf in ref_frames:
+#		var deleted: bool =  rf.is_queued_for_deletion()
+#		if deleted:
+#			continue
+#		rf.process_children()
 	
 	# Update. Here controls are applied.
 	update_bodies_physical( delta )

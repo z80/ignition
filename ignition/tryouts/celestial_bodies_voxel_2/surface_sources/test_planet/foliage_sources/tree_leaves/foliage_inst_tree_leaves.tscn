@@ -1,8 +1,8 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://d2aol3crsiyos"]
 
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/foliage_instance_base.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/foliage_sources/tree_leaves/tree_leaves.tscn" type="PackedScene" id=2]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/foliage_instance_base.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://b5htqdtujbg7f" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/foliage_sources/tree_leaves/tree_leaves.tscn" id="2"]
 
 [node name="TreeLeaves" type="RefFrameNode"]
-script = ExtResource( 1 )
-VisualScene = ExtResource( 2 )
+script = ExtResource("1")
+VisualScene = ExtResource("2")

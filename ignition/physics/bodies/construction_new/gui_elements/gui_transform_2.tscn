@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3 uid="uid://ioeosnm0otxf"]
+[gd_scene load_steps=3 format=3 uid="uid://cqvaj201gofma"]
 
 [ext_resource type="Script" path="res://physics/bodies/construction/gui_elements/gui_transform_2.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://bfwco4snfwagl" path="res://physics/bodies/construction/panel_parts/icon_grab.png" id="2"]

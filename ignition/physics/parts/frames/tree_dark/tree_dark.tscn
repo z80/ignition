@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://cc1f51n43wlb3"]
+
+[ext_resource type="Script" path="res://physics/parts/frames/tree_dark/tree_dark.gd" id="1_ydxdq"]
+[ext_resource type="PackedScene" uid="uid://d3nm6uowpw3uf" path="res://physics/parts/frames/tree_dark/tree_dark_visual.tscn" id="2_q2dk5"]
+
+[node name="TreeDark" type="RefFrameBodyNode"]
+script = ExtResource("1_ydxdq")
+VisualScene = ExtResource("2_q2dk5")

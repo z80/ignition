@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://caf1w80ixos0i"]
+
+[ext_resource type="PackedScene" uid="uid://b8w1umax7yo0w" path="res://physics/parts/frames/house_corner/assets/house_corner.glb" id="1_gne3u"]
+
+[node name="house_corner" instance=ExtResource("1_gne3u")]

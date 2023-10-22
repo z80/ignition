@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://tissi8o4kacw"]
+
+[ext_resource type="Script" path="res://physics/parts/frames/tree_pine/tree_pine.gd" id="1_dv3xa"]
+[ext_resource type="PackedScene" uid="uid://dnrexb8tk0byi" path="res://physics/parts/frames/tree_pine/tree_pine_visual.tscn" id="2_kihfb"]
+
+[node name="TreePine" type="RefFrameBodyNode"]
+script = ExtResource("1_dv3xa")
+VisualScene = ExtResource("2_kihfb")

@@ -54,25 +54,47 @@ func get_broad_tree():
 	return _broad_tree
 
 
-func process_children():
+func process_children_space():
+	include_close_enough_bodies()
+	var has_split: bool = split_if_needed_space()
+	debug_has_split = has_split
+	if has_split:
+		return true
+	#print( "******************** merge if needed" )
+	if ( merge_if_needed_space() ):
+		return true
+	
+	#print( "******************** self delete if unused" )
+	if ( self_delete_if_unused() ):
+		return true
+	
+	return false
+
+
+
+func process_children_surface():
 	#print( "******************** apply forces" )
 	#if not debug_has_split:
 	#exclude_too_far_bodies()
 	#print( "******************** include close enough bodies" )
 	include_close_enough_bodies()
 	#print( "******************** split if needed" )
-	var has_split: bool = split_if_needed()
+	var has_split: bool = split_if_needed_surface()
 	debug_has_split = has_split
 	if has_split:
 		return true
 	#print( "******************** merge if needed" )
-	if ( merge_if_needed() ):
-		return true
+	# Merge on surface uses pairs.
+	#if ( merge_if_needed_surface() ):
+	#	return true
+	
 	#print( "******************** self delete if unused" )
 	if ( self_delete_if_unused() ):
 		return true
 	
 	return false
+
+
 
 
 
@@ -86,7 +108,9 @@ func update():
 
 
 
-
+func _change_parent( node, recursive ):
+	#super( node, recursive )
+	pass
 
 
 # Override ready. Added surface provider creation.
@@ -326,7 +350,7 @@ func print_all_ref_frames():
 			DDD.print( name + ": " + str(se3.r) )
 
 
-func split_if_needed() -> bool:
+func split_if_needed_space() -> bool:
 	var bodies: Array = root_most_child_bodies()
 	if ( bodies.size() < 2 ):
 		return false
@@ -402,7 +426,7 @@ func split_if_needed() -> bool:
 #	# Assign SE3.
 #	rf.set_se3( se3_b )
 	
-	rf.call_deferred( "clone_collision_surface", self )
+	#rf.call_deferred( "clone_collision_surface", self )
 	
 	for body in bodies_b:
 		body.call_deferred( "change_parent", rf, false )
@@ -420,8 +444,57 @@ func split_if_needed() -> bool:
 	return true 
 
 
+func split_if_needed_surface() -> bool:
+	var collision_surf: Node = get_collision_surface()
+	var running: bool = collision_surf.is_running()
+	if running:
+		return false
+	
+	var node_clusters: Array = collision_surf.get_bounding_node_clusters()
+	var qty: int = node_clusters.size()
+	if qty < 2:
+		return false
+	
+	var bodies: Array = root_most_child_bodies()
+	if ( bodies.size() < 2 ):
+		return false
+	
+	var last_cluster: Array = node_clusters.front()
+	var cells_in_last_cluster_qty: int = last_cluster.size()
+	
+	var rot: RefFrameRotationNode = get_parent()
+	var surface: MarchingCubesDualGd = collision_surf.get_surface()
+	
+	var bodies_b: Array = []
+	
+	qty = bodies.size()
+	for i in range(qty):
+		var body: RefFrameBodyNode = bodies[i]
+		var se3: Se3Ref = body.relative_to( rot )
+		var inside: bool = BoundingNodeGd.cluster_contains_point( surface, last_cluster, se3 )
+		if inside:
+			bodies_b.push_back( body )
+	
+	var root: RefFrameRoot = get_ref_frame_root()
+	var rf: RefFramePhysics = root.create_ref_frame_physics()
+	rf.change_parent( rot, false )
+	var current_rf_se3: Se3Ref = self.get_se3()
+	rf.set_se3( current_rf_se3 )
+	
+	call_deferred( "_post_split_surface", rf, last_cluster, bodies_b )
+	
+	return true
 
-func merge_if_needed():
+
+func _post_split_surface( new_rf: RefFrameNode, nodes: Array, bodies: Array ):
+	var surf: Node = get_collision_surface()
+	surf.move_cells_to_other_ref_frame( nodes, new_rf )
+	for body in bodies:
+		body.change_parent( new_rf, false )
+
+
+
+func merge_if_needed_space():
 	var root: RefFrameRoot = get_ref_frame_root()
 	var ref_frames: Array = root.physics_ref_frames()
 	for rf in ref_frames:
@@ -459,7 +532,47 @@ func merge_if_needed():
 			print_all_ref_frames()
 			
 			return true
+	
 	return false
+
+
+
+func merge_if_needed_surface( other_rf: RefFramePhysics ):
+	var collision_surf_other: Node  = other_rf.get_collision_surface()
+	var running: bool = collision_surf_other.is_running()
+	if running:
+		return false
+	
+	var bounding_nodes_other: Array = collision_surf_other.get_bounding_nodes()
+
+	var collision_surf_own: Node  = get_collision_surface()
+	running = collision_surf_own.is_running()
+	if running:
+		return false
+	
+	var clusters: Array = collision_surf_own.get_bounding_node_clusters( bounding_nodes_other )
+	
+	var clusters_qty: int = clusters.size()
+	if clusters_qty > 1:
+		return false
+	
+	# Bounding node clusters touch each other. So we merge the other ref. frame into this one.
+	var bodies: Array = other_rf.root_most_child_bodies()
+	for body in bodies:
+		body.change_parent( self, false )
+	
+	# Here the origins of individual cells of other_rf are different compared to 
+	# the current ref. frame. Besides of just reparenting eed to relocate them.
+	# Or may be not because they are RefFrameNode derivatives which is supposed 
+	# to do relocation automatically.
+	var surf_other: Node = other_rf.get_collision_surface()
+	surf_other.move_cells_to_other_ref_frame( bounding_nodes_other, self )
+	
+	# Queue the other ref. frame for deletion.
+	other_rf.queue_free()
+	
+	return true
+
 
 
 # Need to be removed if returned "true".
@@ -504,11 +617,13 @@ func self_delete_if_unused():
 		for i in range(qty):
 			var b: RefFrameBodyNode = bodies[i]
 			var se3: Se3Ref = b.get_se3()
-			var v: float = se3.v.length()
-			var w: float = se3.w.length()
-			v = max(v, w)
-			if v > Constants.IDLE_SPEED_THRESHOLD:
-				moving_qty += 1
+			#var v: float = se3.v.length()
+			#var w: float = se3.w.length()
+			#v = max(v, w)
+			#if v > Constants.IDLE_SPEED_THRESHOLD:
+			#	moving_qty += 1
+		
+		register_bodies_in_nodes( bodies )
 		
 		if moving_qty == 0:
 			on_delete()
@@ -555,7 +670,7 @@ func root_most_child_bodies():
 			continue
 		
 		if (b != null):
-			var root_most_body: RefFrameNode = b.root_most_body()
+			var root_most_body: RefFrameNode = b #.root_most_body()
 			var append: bool = not (root_most_body in bodies)
 			if append:
 				bodies.push_back( root_most_body )
@@ -637,13 +752,19 @@ func _exit_tree():
 
 
 func on_delete():
-	_re_parent_children_on_delete()
+	# These days serialize children. No need to re-parent them.
+	#_re_parent_children_on_delete()
 	# Just in case if camera is parented to this rf directly.
 	_on_delete_rescue_camera()
+	_delete_collision_surface()
 	_destroy_physics_environment()
-	
 
 
+
+func _delete_collision_surface():
+	var surf: Node = get_collision_surface()
+	if surf != null:
+		surf.queue_free()
 
 
 
@@ -677,7 +798,7 @@ func _re_parent_children_on_delete():
 	var children: Array = root_most_child_bodies()
 	for ch in children:
 		if (ch != null) and is_instance_valid(ch):
-			ch.change_parent( p )
+			ch.change_parent( p, false )
 
 
 
@@ -755,4 +876,42 @@ func _force_source_recursive( n: Node ):
 func get_ref_frame_root():
 	var rf: RefFrameNode = RootScene.ref_frame_root
 	return rf
+
+
+
+
+func register_bodies_in_nodes( bodies: Array ):
+	var rot: RefFrameRotationNode = get_parent() as RefFrameRotationNode
+	if rot == null:
+		return false
+	
+	var bodies_qty: int = bodies.size()
+
+	var collision_surf: Node = get_collision_surface()
+	var surface: MarchingCubesDualGd = collision_surf.get_surface()
+	var node_cluster: Array = collision_surf.get_bounding_nodes()
+	var cells: Array = collision_surf.get_collision_cells()
+	var qty: int = node_cluster.size()
+	
+	# Clear registered bodies.
+	for i in range(qty):
+		var cell: Node = cells[i]
+		cell.clear_bodies()
+	
+	# Add registered bodies.
+	for body_ind in range(bodies_qty):
+		var body: RefFrameBodyNode = bodies[body_ind]
+		var se3: Se3Ref = body.relative_to( rot )
+		for i in range(qty):
+			var node: BoundingNodeGd = node_cluster[i]
+			var inside: bool = node.contains_point( surface, se3 )
+			if not inside:
+				continue
+			
+			# Bind the point and the volume node.
+			var cell: Node = cells[i]
+			cell.add_body( body )
+	
+	return false
+
 

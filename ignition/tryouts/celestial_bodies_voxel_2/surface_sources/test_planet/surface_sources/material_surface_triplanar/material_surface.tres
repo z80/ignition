@@ -1,30 +1,25 @@
-[gd_resource type="ShaderMaterial" load_steps=10 format=3 uid="uid://i8lpqeb5hkf6"]
+[gd_resource type="ShaderMaterial" load_steps=6 format=3 uid="uid://i8lpqeb5hkf6"]
 
 [ext_resource type="Shader" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/shader_surface.gdshader" id="1"]
 [ext_resource type="Texture2D" uid="uid://riqabelawpi7" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/rocks_albedo.png" id="2"]
 [ext_resource type="Texture2D" uid="uid://bygn0w10vhgm" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/snow_albedo.png" id="3"]
-[ext_resource type="Texture2D" uid="uid://t24hhapwq6x4" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/grass_normal.png" id="4"]
 [ext_resource type="Texture2D" uid="uid://bcew16yte7ymv" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/sand_albedo.png" id="5"]
-[ext_resource type="Texture2D" uid="uid://b1nkn7ylk5164" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/snow_normal.png" id="6"]
-[ext_resource type="Texture2D" uid="uid://b3unkhmx8ljsn" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/sand_normal.png" id="7"]
 [ext_resource type="Texture2D" uid="uid://c60e6hly6tx1c" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/grass_albedo.png" id="8"]
-[ext_resource type="Texture2D" uid="uid://ckkwm35cnfy2i" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_surface_triplanar/textures/rocks_normal.png" id="9"]
 
 [resource]
 render_priority = 0
 shader = ExtResource("1")
+shader_parameter/softmax_alpha = 0.3
 shader_parameter/metallic = 0.046
 shader_parameter/roughness = 0.508
-shader_parameter/layers_qty = 1
+shader_parameter/layers_qty = 4
 shader_parameter/scale = PackedFloat32Array(50, 50, 50, 50)
-shader_parameter/mean = PackedFloat32Array(0, 300, 600, 900)
-shader_parameter/sigma = PackedFloat32Array(300, 300, 300, 300)
+shader_parameter/mean = PackedFloat32Array(0, 3, 5, 7)
+shader_parameter/sigma = PackedFloat32Array(0.3, 0.3, 0.3, 0.3)
 shader_parameter/scale_slope = 50.0
 shader_parameter/threshold_slope = 0.3
 shader_parameter/common_point = null
 shader_parameter/to_planet_rf = null
-shader_parameter/planet_radius = 50000.0
+shader_parameter/planet_radius = 500.0
 shader_parameter/tex_albedo = Array[Texture2D]([ExtResource("5"), ExtResource("8"), ExtResource("2"), ExtResource("3")])
-shader_parameter/tex_normal = Array[Texture2D]([ExtResource("7"), ExtResource("4"), ExtResource("9"), ExtResource("6")])
 shader_parameter/tex_albedo_slope = ExtResource("2")
-shader_parameter/tex_normal_slope = ExtResource("9")

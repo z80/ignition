@@ -3,19 +3,21 @@ shader_type spatial;
 
 const int LAYERS_QTY = 4;
 
+uniform float softmax_alpha = 2.0;
+
 uniform float metallic : hint_range(0.0, 1.0) = 0.0;
 uniform float roughness : hint_range(0.0, 1.0) = 0.02;
 
 uniform int layers_qty: hint_range( 1, 4 ) = 1;
 
 uniform sampler2D [LAYERS_QTY] tex_albedo;
-uniform sampler2D [LAYERS_QTY] tex_normal;
+//uniform sampler2D [LAYERS_QTY] tex_normal;
 uniform float     [LAYERS_QTY] scale;
 uniform float     [LAYERS_QTY] mean;
 uniform float     [LAYERS_QTY] sigma;
 
 uniform sampler2D tex_albedo_slope;
-uniform sampler2D tex_normal_slope;
+//uniform sampler2D tex_normal_slope;
 uniform float     scale_slope = 1.0;
 
 uniform float     threshold_slope: hint_range(0.0, 1.0) = 0.3;
@@ -66,10 +68,11 @@ vec3 compute_tex_triplanar( sampler2D tex, float tex_scale, highp vec3 vertex, v
 
 float tex_intensity( float dist_, float mean_, float sigma_ )
 {
-	highp float num = abs(dist_ - mean_) + 1.0;
-	num = num;
+	//highp float num = abs(dist_ - mean_) + 1.0;
+	highp float num = abs(dist_ - mean_);
 	highp float den = sigma_;
-	highp float ret = den / num; //exp( -num/den );
+	//highp float ret = den / num; //exp( -num/den );
+	highp float ret = exp( -num/den );
 	return ret;
 }
 
@@ -100,19 +103,26 @@ void vertex()
 
 
 
-void compute_combined_color( out vec3 albedo, out vec3 normal )
+void compute_combined_color( out vec3 albedo )
 {
 	float accum = 0.0;
 	albedo = vec3(0.0, 0.0, 0.0);
-	normal = vec3(0.0, 0.0, 0.0);
-	for ( int i=0; i<1; i++ )
+	//normal = vec3(0.0, 0.0, 0.0);
+	float max_coeff = -1.0;
+	for ( int i=0; i<layers_qty; i++ )
 	{
 		vec3 albedo_ = compute_tex_triplanar( tex_albedo[i], scale[i], vertex_w, normal_w );
-		vec3 normal_ = compute_tex_triplanar( tex_normal[i], scale[i], vertex_w, normal_w );
+		//vec3 normal_ = compute_tex_triplanar( tex_normal[i], scale[i], vertex_w, normal_w );
 		float coeff_  = tex_intensity( dist_w, mean[i], sigma[i] );
+		coeff_ *= exp(softmax_alpha*coeff_);
 		accum += coeff_;
 		albedo += albedo_ * coeff_;
-		normal += normal_ * coeff_;
+		//normal += normal_ * coeff_;
+		/*if (coeff_ > max_coeff)
+		{
+			max_coeff = coeff_;
+			albedo = albedo_;
+		}*/
 	}
 //	vec3 albedo_ = compute_tex_triplanar( tex_albedo[0], scale[0], vertex_w, normal_w );
 //	vec3 normal_ = compute_tex_triplanar( tex_normal[0], scale[0], vertex_w, normal_w );
@@ -123,7 +133,7 @@ void compute_combined_color( out vec3 albedo, out vec3 normal )
 
 	accum = 1.0 / (accum + 1.0e-6);
 	albedo *= accum;
-	normal *= accum;
+	//normal *= accum;
 }
 
 
@@ -133,8 +143,8 @@ void compute_combined_color( out vec3 albedo, out vec3 normal )
 void fragment()
 {
 	vec3 albedo_c;
-	vec3 normal_c;
-	compute_combined_color( albedo_c, normal_c );
+	//vec3 normal_c;
+	compute_combined_color( albedo_c );
 	
 	//float coeff_rocks = rocks_intensity( vertex_w, normal_w );
 	//vec3  color_rocks = compute_tex_triplanar( tex_rocks, scale_rocks, vertex_w, normal_w );
@@ -144,7 +154,7 @@ void fragment()
 	//color = color*coeff_color + color_rocks*coeff_rocks;
 	
 	ALBEDO    = albedo_c;
-	NORMAL    = normal_c * 0.8;
+	//NORMAL    = normal_c * 0.8;
 	METALLIC  = metallic;
 	ROUGHNESS = roughness;
 	//ALBEDO = mix( surface_color, depth_color_edge, 0.75 );

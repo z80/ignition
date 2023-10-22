@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CreatableBlockDesc" load_steps=4 format=3 uid="uid://cqd70dw6st5no"]
+
+[ext_resource type="PackedScene" uid="uid://fou7in4podbm" path="res://physics/parts/frames/house_ramp/house_ramp.tscn" id="1_fxcfv"]
+[ext_resource type="Texture2D" uid="uid://5beuvewhnyei" path="res://physics/parts/frames/house_ramp/icon.png" id="2_8aoou"]
+[ext_resource type="Script" path="res://resource_management/block.gd" id="3_nco8a"]
+
+[resource]
+script = ExtResource("3_nco8a")
+block_scene = ExtResource("1_fxcfv")
+category = "static_blocks"
+required_tech = "root"
+icon = ExtResource("2_8aoou")
+brief_description = "House Ramp"
+wiki_file = "res://wiki/root.wiki"

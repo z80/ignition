@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CreatableBlockDesc" load_steps=4 format=3 uid="uid://gnq17m3opmen"]
+
+[ext_resource type="PackedScene" uid="uid://dqmds84jdjlc6" path="res://physics/parts/frames/house_small/house_small.tscn" id="1_5o84v"]
+[ext_resource type="Texture2D" uid="uid://dijosfr1m6xhh" path="res://physics/parts/frames/house_small/icon.png" id="2_3atmb"]
+[ext_resource type="Script" path="res://resource_management/block.gd" id="3_w7iws"]
+
+[resource]
+script = ExtResource("3_w7iws")
+block_scene = ExtResource("1_5o84v")
+category = "static_blocks"
+required_tech = "root"
+icon = ExtResource("2_3atmb")
+brief_description = "House Small"
+wiki_file = "res://wiki/root.wiki"

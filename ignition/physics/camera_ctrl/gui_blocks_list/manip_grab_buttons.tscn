@@ -1,0 +1,49 @@
+[gd_scene load_steps=2 format=3 uid="uid://bph2rokjcqb4x"]
+
+[ext_resource type="Script" path="res://physics/camera_ctrl/gui_blocks_list/manip_grab_buttons.gd" id="1_u1uld"]
+
+[node name="Buttons" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -25.9763
+offset_top = 29.4611
+offset_right = -25.9763
+offset_bottom = 29.4611
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_u1uld")
+
+[node name="World" type="Button" parent="."]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -14.2287
+offset_top = 76.8942
+offset_right = 13.7713
+offset_bottom = 101.894
+tooltip_text = "Transform3D in world reference frame"
+toggle_mode = true
+text = "W"
+
+[node name="Local" type="Button" parent="."]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 19.7513
+offset_top = 77.3662
+offset_right = 47.7513
+offset_bottom = 102.366
+tooltip_text = "Transform3D in object's local reference frame"
+toggle_mode = true
+text = "L"
+
+[connection signal="pressed" from="World" to="." method="_on_World_pressed"]
+[connection signal="pressed" from="Local" to="." method="_on_Local_pressed"]

@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://bcgfmmv5t8k4x"]
+
+[ext_resource type="Script" path="res://physics/parts/frames/road_t/road_t.gd" id="1_qvgse"]
+[ext_resource type="PackedScene" uid="uid://b1ad28am2c2on" path="res://physics/parts/frames/road_t/road_t_visual.tscn" id="2_lxsus"]
+
+[node name="Road_T" type="RefFrameBodyNode"]
+script = ExtResource("1_qvgse")
+VisualScene = ExtResource("2_lxsus")

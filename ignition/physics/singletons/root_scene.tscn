@@ -1,8 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://cofvibajb2q5h"]
+[gd_scene load_steps=5 format=3 uid="uid://cofvibajb2q5h"]
 
 [ext_resource type="Script" path="res://physics/singletons/root_scene.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://b02nestpnf384" path="res://physics/singletons/viewport_overlay/viewport_overlay.tscn" id="2"]
-[ext_resource type="PackedScene" uid="uid://c2xhrrun24kpl" path="res://physics/interact_icon/interaction_node_manager.tscn" id="3"]
 [ext_resource type="PackedScene" uid="uid://cbnfbk58c54h1" path="res://physics/singletons/visual_layer/visual_layer_near.tscn" id="4"]
 [ext_resource type="PackedScene" uid="uid://0j3ub65x3fjv" path="res://physics/singletons/visual_layer/visual_layer_space.tscn" id="5"]
 
@@ -43,7 +42,5 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-
-[node name="InteractionNodeManager" parent="." instance=ExtResource("3")]
 
 [node name="CollisionSurfaces" type="Node" parent="."]

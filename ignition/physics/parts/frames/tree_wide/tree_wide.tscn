@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://cak6heh6hwuiw"]
+
+[ext_resource type="Script" path="res://physics/parts/frames/tree_wide/tree_wide.gd" id="1_82xq7"]
+[ext_resource type="PackedScene" uid="uid://bya8dnuwcnocs" path="res://physics/parts/frames/tree_wide/tree_wide_visual.tscn" id="2_aygah"]
+
+[node name="TreeWide" type="RefFrameBodyNode"]
+script = ExtResource("1_82xq7")
+VisualScene = ExtResource("2_aygah")

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CreatableBlockDesc" load_steps=4 format=3 uid="uid://dp4u3bdekx5df"]
+
+[ext_resource type="PackedScene" uid="uid://tissi8o4kacw" path="res://physics/parts/frames/tree_pine/tree_pine.tscn" id="1_a8cva"]
+[ext_resource type="Texture2D" uid="uid://biklv557mv7tx" path="res://physics/parts/frames/tree_pine/icon.png" id="2_o1qvm"]
+[ext_resource type="Script" path="res://resource_management/block.gd" id="3_nw4o2"]
+
+[resource]
+script = ExtResource("3_nw4o2")
+block_scene = ExtResource("1_a8cva")
+category = "static_blocks"
+required_tech = "root"
+icon = ExtResource("2_o1qvm")
+brief_description = "Tree Dark"
+wiki_file = "res://wiki/root.wiki"

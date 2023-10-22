@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CreatableBlockDesc" load_steps=4 format=3 uid="uid://cpxvu5ksigl4g"]
+
+[ext_resource type="PackedScene" uid="uid://x52fdf27issq" path="res://physics/parts/frames/road_curve/road_curve.tscn" id="1_n1t52"]
+[ext_resource type="Texture2D" uid="uid://c8qhxmvulyve2" path="res://physics/parts/frames/road_curve/icon.png" id="2_tg2h6"]
+[ext_resource type="Script" path="res://resource_management/block.gd" id="3_p1owo"]
+
+[resource]
+script = ExtResource("3_p1owo")
+block_scene = ExtResource("1_n1t52")
+category = "static_blocks"
+required_tech = "root"
+icon = ExtResource("2_tg2h6")
+brief_description = "Road Curve"
+wiki_file = "res://wiki/root.wiki"

@@ -3,8 +3,9 @@ addons/godot-sqlite
 *.db
 bone_*
 .save_files
+.storage
+.screenshots
 _temp
 .godot
 .import
-.storage
 

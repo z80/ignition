@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://b1ad28am2c2on"]
+
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="1_5l2tp"]
+[ext_resource type="PackedScene" uid="uid://cjcymjt3alqau" path="res://physics/parts/frames/road_t/raw_road_t.tscn" id="2_4amy6"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_6mjn7"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_pks7f"]
+points = PackedVector3Array(371.89, -112.306, 1.395, -372.615, -112.306, -13.206, -109.771, -827.698, -13.206, 371.89, 106.766, -13.206, -372.615, 106.766, 1.395, -109.771, -827.698, 1.395, 109.12, -827.698, -13.206, -372.615, 106.766, -13.206, 371.89, 106.766, 1.395, 109.12, -827.698, 1.395, -372.615, -112.306, 1.395, 371.89, -112.306, -13.206)
+
+[node name="RoadT" type="RigidBody3D"]
+freeze = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51556, -0.318263)
+visible = false
+mesh = SubResource("BoxMesh_6mjn7")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(0.02, 0, 0, 0, -8.74228e-10, -0.02, 0, 0.02, -8.74228e-10, 0, -2.0503, 0)
+shape = SubResource("ConvexPolygonShape3D_pks7f")
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.00775099, 0)
+script = ExtResource("1_5l2tp")
+
+[node name="road_t" parent="." instance=ExtResource("2_4amy6")]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, 0, 0, 0)

@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://dls1tygcphw1q"]
+
+[ext_resource type="PackedScene" uid="uid://qaokqvcv1ngf" path="res://physics/parts/frames/tree_birch/assets/tree_birch.glb" id="1_2ydah"]
+[ext_resource type="Texture2D" uid="uid://14gsbvs5q78k" path="res://physics/parts/frames/tree_birch/assets/tree_birch_treeBirch-treeBirchOpacity.png" id="2_pgh0l"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_duwy2"]
+resource_name = "Material"
+transparency = 1
+cull_mode = 2
+vertex_color_use_as_albedo = true
+albedo_texture = ExtResource("2_pgh0l")
+roughness = 0.5
+
+[node name="tree_birch" instance=ExtResource("1_2ydah")]
+
+[node name="treeBirch" parent="." index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_duwy2")

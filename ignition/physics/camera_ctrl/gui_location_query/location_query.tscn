@@ -1,0 +1,56 @@
+[gd_scene load_steps=3 format=3 uid="uid://dx23igqlr2l76"]
+
+[ext_resource type="Script" path="res://physics/camera_ctrl/gui_location_query/location_query.gd" id="1_776xk"]
+[ext_resource type="PackedScene" uid="uid://dupomrqmtfxc7" path="res://physics/camera_ctrl/gui_location_query/destination_indicator/destination_indicator.tscn" id="2_8mqsy"]
+
+[node name="place_query" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_776xk")
+DestinationIndicator = ExtResource("2_8mqsy")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 176.0
+offset_top = 359.0
+offset_right = -91.0
+offset_bottom = -56.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1.0
+offset_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBox" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBox/HBox"]
+layout_mode = 2
+text = "Describe the place of interest:"
+
+[node name="LineEdit" type="LineEdit" parent="Panel/VBox/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Button" type="Button" parent="Panel/VBox/HBox"]
+layout_mode = 2
+text = "Query"
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

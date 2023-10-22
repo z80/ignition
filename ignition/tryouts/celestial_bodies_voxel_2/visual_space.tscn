@@ -1,9 +1,9 @@
 [gd_scene load_steps=6 format=3 uid="uid://bko6darlfbwv8"]
 
-[ext_resource type="PackedScene" path="res://tryouts/celestial_bodies_voxel_2/visual_cells/visual_cell.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://dwflonn6fuwnf" path="res://tryouts/celestial_bodies_voxel_2/visual_cells/visual_cell.tscn" id="1"]
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/visual_space.gd" id="2"]
-[ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.tres" id="3"]
-[ext_resource type="Resource" path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" id="4"]
+[ext_resource type="Resource" uid="uid://c44jyrx6lphvk" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.tres" id="3"]
+[ext_resource type="Resource" uid="uid://njea4s77g8hd" path="res://tryouts/celestial_bodies_voxel_2/config/config_detail_level.tres" id="4"]
 [ext_resource type="PackedScene" uid="uid://cuw0ilooy062h" path="res://tryouts/celestial_bodies_voxel_2/atmosphere/atmosphere.tscn" id="5"]
 
 [node name="VisualSpace" type="Node3D"]

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CreatableBlockDesc" load_steps=4 format=3 uid="uid://c3la4werfvoxy"]
+
+[ext_resource type="PackedScene" uid="uid://bdualcfby5odj" path="res://physics/parts/frames/tree_birch/tree_birch.tscn" id="1_aqgwj"]
+[ext_resource type="Texture2D" uid="uid://w43twtwspcfk" path="res://physics/parts/frames/tree_birch/icon.png" id="2_gfp8x"]
+[ext_resource type="Script" path="res://resource_management/block.gd" id="3_0f6ox"]
+
+[resource]
+script = ExtResource("3_0f6ox")
+block_scene = ExtResource("1_aqgwj")
+category = "static_blocks"
+required_tech = "root"
+icon = ExtResource("2_gfp8x")
+brief_description = "Tree Birch"
+wiki_file = "res://wiki/root.wiki"

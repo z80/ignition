@@ -11,7 +11,7 @@ var node_sz_min: float      = 0.25
 var radius: float           = 100.0
 var bounding_radius: float  = 100.0
 var noise: FastNoiseLite = null
-var height: float           = 20.0
+var height: float           = 200.0
 
 
 

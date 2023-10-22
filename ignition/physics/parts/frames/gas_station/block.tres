@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CreatableBlockDesc" load_steps=4 format=3 uid="uid://cuhs5iyc7x74q"]
+
+[ext_resource type="Script" path="res://resource_management/block.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://ds6hxry5x51g5" path="res://physics/parts/frames/gas_station/gas_station.tscn" id="1_f0wtt"]
+[ext_resource type="Texture2D" uid="uid://dvnd8lff6s8q" path="res://physics/parts/frames/gas_station/icon.png" id="2_eijus"]
+
+[resource]
+script = ExtResource("1")
+block_scene = ExtResource("1_f0wtt")
+category = "static_blocks"
+required_tech = "root"
+icon = ExtResource("2_eijus")
+brief_description = "Gas Station"
+wiki_file = "res://wiki/root.wiki"

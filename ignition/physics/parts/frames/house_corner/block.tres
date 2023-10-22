@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CreatableBlockDesc" load_steps=4 format=3 uid="uid://cfta7j7v2h8ok"]
+
+[ext_resource type="PackedScene" uid="uid://dt4lwrpxdcotq" path="res://physics/parts/frames/house_corner/house_corner.tscn" id="1_tijrm"]
+[ext_resource type="Texture2D" uid="uid://cc11li525vrxq" path="res://physics/parts/frames/house_corner/icon.png" id="2_sw1ni"]
+[ext_resource type="Script" path="res://resource_management/block.gd" id="3_bfo5t"]
+
+[resource]
+script = ExtResource("3_bfo5t")
+block_scene = ExtResource("1_tijrm")
+category = "static_blocks"
+required_tech = "root"
+icon = ExtResource("2_sw1ni")
+brief_description = "House Corner"
+wiki_file = "res://wiki/root.wiki"

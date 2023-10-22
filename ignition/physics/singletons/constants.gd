@@ -11,7 +11,7 @@ const SUN_GROUP_NAME: String                = "sun"
 const INTERACT_NODES_GROUP_NAME: String     = "interact_nodes_group_name"
 
 const DEBUG: bool = true
-const RF_JUMP_DISTANCE: float  = 100.0
+const RF_JUMP_DISTANCE: float  = 4.0
 const RF_SPLIT_DISTANCE: float = 150.0 #1000.0
 const RF_MERGE_DISTANCE: float = 120.0 #800.0
 # Switching ref frames.
@@ -31,12 +31,12 @@ const BODY_INCLUDE_DIST: float = 800.0
 const INTERACT_ICON_DIST: float = 30.0
 # It shows up if mouse is closer than this distance on screen.
 # It is in screen heights.
-const INTERACT_ICON_SCREEN_DIST: float = 0.1
+const INTERACT_ICON_SCREEN_DIST: float = 0.2
 
 # Positional grid size.
 const CONSTRUCTION_GRID_SZ: float = 0.1
 # Rotational discretization.
-const CONSTRUCTION_ROT_SNAP: float = 5.0 * 3.1415926535 / 180.0
+const CONSTRUCTION_ROT_SNAP: float = 2.0 * 3.1415926535 / 180.0
 
 # Activation distance
 const CONSTRUCTION_ACTIVATE_DIST: float = 15.0
@@ -44,7 +44,7 @@ const CONSTRUCTION_ACTIVATE_DIST: float = 15.0
 const CONSTRUCTION_DEACTIVATE_DIST: float = 20.0
 
 # Where create new blocks relative to player.
-const CONSTRUCTION_CREATE_AT: Vector3 = Vector3( 0.0, 2.0, -5.0 )
+const CONSTRUCTION_CREATE_AT: Vector3 = Vector3( 0.0, 0.5, -7.0 )
 
 
 

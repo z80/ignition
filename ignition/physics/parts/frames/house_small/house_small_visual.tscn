@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://f2gtmqae8hoe"]
+
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="1_j6vgj"]
+[ext_resource type="PackedScene" uid="uid://dixyr16v602cb" path="res://physics/parts/frames/house_small/raw_hose_small.tscn" id="2_chkfm"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_r8ye7"]
+size = Vector3(5.38319, 8.36486, 7.37153)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6mjn7"]
+
+[node name="HouseCornerVisual" type="RigidBody3D"]
+freeze = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0458802, 4.35171, -0.57566)
+shape = SubResource("BoxShape3D_r8ye7")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51556, -0.318263)
+mesh = SubResource("BoxMesh_6mjn7")
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.61807, 0)
+script = ExtResource("1_j6vgj")
+
+[node name="hose_small" parent="." instance=ExtResource("2_chkfm")]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0, 0)

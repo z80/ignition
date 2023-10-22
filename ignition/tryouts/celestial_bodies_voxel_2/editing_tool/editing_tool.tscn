@@ -1,35 +1,54 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=11 format=3 uid="uid://cjhkllkciwfrq"]
 
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/editing_tool/editing_tool.gd" type="Script" id=1]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.tscn" type="PackedScene" id=2]
-[ext_resource path="res://physics/camera_ctrl/player_camera.tscn" type="PackedScene" id=3]
-[ext_resource path="res://tryouts/celestial_bodies_voxel_2/editing_tool/editing_tool_ui.tscn" type="PackedScene" id=4]
-[ext_resource path="res://physics/celestial_bodies/sun/sun.tscn" type="PackedScene" id=5]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/editing_tool/editing_tool.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://b6oksm4adx8ax" path="res://tryouts/celestial_bodies_voxel_2/celestial_surface_voxel.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://chonhgqhxgjxr" path="res://physics/camera_ctrl/player_camera.tscn" id="3"]
+[ext_resource type="Material" uid="uid://b1fyq1lssmtkk" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" id="3_dtrae"]
+[ext_resource type="PackedScene" path="res://tryouts/celestial_bodies_voxel_2/editing_tool/editing_tool_ui.tscn" id="4"]
+[ext_resource type="Material" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" id="4_frfas"]
+[ext_resource type="PackedScene" uid="uid://d27mad85dvoyx" path="res://physics/celestial_bodies/sun/sun.tscn" id="5"]
+[ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="5_43i78"]
 
-[sub_resource type="BoxMesh" id=1]
+[sub_resource type="Resource" id="Resource_itwrn"]
+resource_local_to_scene = true
+script = ExtResource("5_43i78")
+override_material = ExtResource("4_frfas")
+bounding_radius = 10000.0
+source_radius = 10000.0
+radius_km = 10.0
+orbiting_velocity = 0.0
+g = 0.0
+focus_depth = 40.0
+materials_solid = [ExtResource("3_dtrae"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
+materials_liquid = [ExtResource("3_dtrae"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
+
+[sub_resource type="BoxMesh" id="1"]
 
 [node name="RefFrameRoot" type="RefFrameRoot"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 
-[node name="Sun" parent="." instance=ExtResource( 5 )]
+[node name="Sun" parent="." instance=ExtResource("5")]
+surface_source = SubResource("Resource_itwrn")
 
-[node name="Planet" parent="Sun" instance=ExtResource( 2 )]
-transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10000, 0, 0 )
+[node name="Planet" parent="Sun" instance=ExtResource("2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10000, 0, 0)
 rotation_period_hrs = 0.02
-perigee_vel = Vector3( 0, 0, 1 )
+perigee_vel = Vector3(0, 0, 1)
 orbital_period_hrs = 1.0
 
 [node name="RefFrameNode" type="RefFrameNode" parent="Sun/Planet/Rotation" index="1"]
-transform = Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 2, 2 )
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 2, 2)
 
-[node name="Camera3D" parent="Sun/Planet/Rotation/RefFrameNode" instance=ExtResource( 3 )]
+[node name="Camera3D" parent="Sun/Planet/Rotation/RefFrameNode" instance=ExtResource("3")]
 map_mode = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 visible = false
-mesh = SubResource( 1 )
+mesh = SubResource("1")
 skeleton = NodePath("../..")
 
-[node name="Ui" parent="." instance=ExtResource( 4 )]
+[node name="Ui" parent="." instance=ExtResource("4")]
+layout_mode = 3
+anchors_preset = 15
 
 [editable path="Sun/Planet"]

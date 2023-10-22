@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://dt4lwrpxdcotq"]
+
+[ext_resource type="Script" path="res://physics/parts/frames/house_corner/house_corner.gd" id="1_6kq8x"]
+[ext_resource type="PackedScene" uid="uid://naotqdarsp2o" path="res://physics/parts/frames/house_corner/HouseCornerVisual.tscn" id="2_xb2wk"]
+
+[node name="HouseCorner" type="RefFrameBodyNode"]
+script = ExtResource("1_6kq8x")
+VisualScene = ExtResource("2_xb2wk")

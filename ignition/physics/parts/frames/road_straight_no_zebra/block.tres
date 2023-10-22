@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CreatableBlockDesc" load_steps=4 format=3 uid="uid://doidkcphmojkv"]
+
+[ext_resource type="PackedScene" uid="uid://cf1wyprdjh6nb" path="res://physics/parts/frames/road_straight_no_zebra/road_straight_no_zebra.tscn" id="1_cajwc"]
+[ext_resource type="Texture2D" uid="uid://cy5qrdtl6ubwg" path="res://physics/parts/frames/road_straight_no_zebra/icon.png" id="2_kcox2"]
+[ext_resource type="Script" path="res://resource_management/block.gd" id="3_fc1u8"]
+
+[resource]
+script = ExtResource("3_fc1u8")
+block_scene = ExtResource("1_cajwc")
+category = "static_blocks"
+required_tech = "root"
+icon = ExtResource("2_kcox2")
+brief_description = "Road Straight No Zebra"
+wiki_file = "res://wiki/root.wiki"

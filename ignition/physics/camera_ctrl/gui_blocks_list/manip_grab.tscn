@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://dbt7hoced377b"]
+
+[ext_resource type="Script" path="res://physics/camera_ctrl/gui_blocks_list/manip_grab.gd" id="1_vhii0"]
+[ext_resource type="PackedScene" uid="uid://bph2rokjcqb4x" path="res://physics/camera_ctrl/gui_blocks_list/manip_grab_buttons.tscn" id="2_bl2u8"]
+
+[node name="ManipGrab" type="Node2D"]
+script = ExtResource("1_vhii0")
+Buttons = ExtResource("2_bl2u8")

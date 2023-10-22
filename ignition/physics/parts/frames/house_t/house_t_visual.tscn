@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://cvyv15scfir58"]
+
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="1_bekwl"]
+[ext_resource type="PackedScene" uid="uid://bbgi1kvg12oea" path="res://physics/parts/frames/house_t/raw_hose_t.tscn" id="2_os3e4"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_r8ye7"]
+size = Vector3(15.6922, 13.5984, 9.75248)
+
+[sub_resource type="BoxMesh" id="BoxMesh_6mjn7"]
+
+[node name="HouseCornerVisual" type="RigidBody3D"]
+freeze = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.629985, 6.94778, 0.0109123)
+shape = SubResource("BoxShape3D_r8ye7")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51556, -0.318263)
+mesh = SubResource("BoxMesh_6mjn7")
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.61807, 0)
+script = ExtResource("1_bekwl")
+
+[node name="hose_t" parent="." instance=ExtResource("2_os3e4")]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0, 0)

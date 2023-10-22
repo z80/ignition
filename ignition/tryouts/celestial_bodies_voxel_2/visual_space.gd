@@ -39,7 +39,7 @@ func _initialize_scale_distance_ratio():
 
 
 func _initialize_strategies():
-	var radius: float      = surface_source.bounding_radius
+	var radius: float      = surface_source.source_radius
 	
 	var focus_depth: float = radius * layer_config.min_relative_focal_depth
 	var rebuild_dist: float = radius * layer_config.relative_rebuild_dist
@@ -79,7 +79,9 @@ func _rebuild_start( view_point_se3: Se3Ref ):
 	_running = true
 	_requested_rebuild = false
 	
-	_node_size_strategy.focal_point = _rebuild_strategy.get_focal_point_rebuild()
+	var focal_point: Vector3 = _rebuild_strategy.get_focal_point_rebuild()
+	print( "focal_point: ", focal_point )
+	_node_size_strategy.focal_point = focal_point
 	var source_solid: VolumeSourceGd  = surface_source.get_source_solid()
 	var source_liquid: VolumeSourceGd = surface_source.get_source_liquid()
 	
@@ -133,6 +135,7 @@ func _rebuild_finished( args ):
 	var qty: int = voxel_surface_solid.get_nodes_qty()
 	print( "rebuild done, nodes qty: ", qty )
 	voxel_surface_solid.apply_to_mesh_only( solid )
+	#voxel_surface_solid.apply_to_mesh_only_wireframe( solid )
 	
 	var sm: ShaderMaterial = solid.material_override
 	if sm == null:
@@ -146,6 +149,7 @@ func _rebuild_finished( args ):
 	
 	if voxel_surface_liquid != null:
 		voxel_surface_liquid.apply_to_mesh_only( liquid )
+		#voxel_surface_solid.apply_to_mesh_only_wireframe( solid )
 		
 		sm = liquid.material_override
 		if sm == null:

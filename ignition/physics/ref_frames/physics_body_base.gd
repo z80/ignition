@@ -93,6 +93,11 @@ func _parent_jumped():
 		update_physics_from_state()
 
 
+func _set_se3( se3 ):
+	if (_physical != null) and (is_instance_valid(_physical)):
+		_physical.transform        = se3.transform
+		_physical.linear_velocity  = se3.v
+		_physical.angular_velocity = se3.w
 
 
 func init():
@@ -229,24 +234,29 @@ func gui_classes( mode: Array ):
 	var classes = []
 	
 	var sb: Node = get_assembly_raw()
-	if sb != null:
+	if (sb != null) and (sb != self):
 		var s_classes = sb.gui_classes( mode )
 		for cl in s_classes:
 			classes.push_back( cl )
 	
 	var empty: bool = mode.is_empty()
 	if empty:
-		var cam_mode = load( "res://physics/camera_ctrl/gui_elements/gui_camera_mode.tscn" )
-		var cam_this = load( "res://physics/camera_ctrl/gui_elements/gui_control_this.tscn" )
-		classes.push_back( cam_mode )
-		classes.push_back( cam_this )
+		#var cam_mode = load( "res://physics/camera_ctrl/gui_elements/gui_camera_mode.tscn" )
+		#var cam_this = load( "res://physics/camera_ctrl/gui_elements/gui_control_this.tscn" )
+		#classes.push_back( cam_mode )
+		#classes.push_back( cam_this )
+		var transform_mode = load( "res://physics/camera_ctrl/gui_elements/gui_transform_3.tscn" )
+		classes.push_back( transform_mode )
+		var finish_editing_mode = load( "res://physics/camera_ctrl/gui_elements/gui_finish_editing_3.tscn" )
+		classes.push_back( finish_editing_mode )
+		
 	return classes
 
 # Defines GUI classes to be shown.
 func gui_mode():
 	var ret: Array = []
 	var sb: Node = get_assembly_raw()
-	if sb != null:
+	if (sb != null) and (sb != self):
 		var more: Array = sb.gui_mode()
 		for m in more:
 			ret.push_back( m )
@@ -298,6 +308,8 @@ func _ign_physics_pre_process( delta ):
 # To make it overridable.
 func update_state_from_physics( delta ):
 	if _physical != null:
+		#if _physical.freeze:
+		#	return
 		var t: Transform3D = _physical.transform
 		var v: Vector3   = _physical.linear_velocity
 		var w: Vector3   = _physical.angular_velocity
@@ -574,9 +586,12 @@ func _serialize( data: Dictionary ):
 # When this thing is called all objects are created.
 # So can assume that all saved paths should be valid.
 func _deserialize( data: Dictionary ):
-	var ok: bool = super.deserialize( data )
-	if not ok:
-		return false
+#	var ok: bool = super.deserialize( data )
+#	if not ok:
+#		return false
+	var has_name: bool = data.has( "visual_name" )
+	if has_name and (_visual != null):
+		_visual.name = data["visual_name"]
 	
 	return true
 
@@ -631,6 +646,13 @@ func get_ref_frame_root():
 		rf = rf.get_parent() as RefFrameNode
 	
 	return null
+
+
+
+func set_visible( en: bool ):
+	if (_visual != null) and (is_instance_valid(_visual)):
+		_visual.visible = en
+
 
 
 

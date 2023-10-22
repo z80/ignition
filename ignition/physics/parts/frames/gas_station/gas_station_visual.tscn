@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3 uid="uid://dn6175fxxsk7o"]
+
+[ext_resource type="PackedScene" uid="uid://bg76kte6xat1b" path="res://physics/parts/frames/gas_station/raw_gas_station.tscn" id="1_as78k"]
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="2_neavj"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_m4khd"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_koqvs"]
+size = Vector3(14.4275, 5.67269, 7)
+
+[node name="gas_station_visual" type="RigidBody3D"]
+freeze = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51692, 0)
+mesh = SubResource("BoxMesh_m4khd")
+
+[node name="gas_station" parent="." instance=ExtResource("1_as78k")]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, -2.48942)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.520259, 2.98504, -2.49142)
+shape = SubResource("BoxShape3D_koqvs")
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+script = ExtResource("2_neavj")

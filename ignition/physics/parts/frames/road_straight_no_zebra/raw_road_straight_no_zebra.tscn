@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://da3dywdo3a8ra"]
+
+[ext_resource type="PackedScene" uid="uid://dafp5mskxlbua" path="res://physics/parts/frames/road_straight_no_zebra/assets/road_straight_no_zebra.glb" id="1_vq6vi"]
+
+[node name="road_straight_no_zebra" instance=ExtResource("1_vq6vi")]

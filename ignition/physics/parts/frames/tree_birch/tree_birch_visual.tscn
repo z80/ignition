@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://dap5wf8i5sac0"]
+
+[ext_resource type="Script" path="res://physics/interact_icon/interaction_node.gd" id="1_cyhvo"]
+[ext_resource type="PackedScene" uid="uid://dls1tygcphw1q" path="res://physics/parts/frames/tree_birch/raw_tree_birch.tscn" id="2_qr4hq"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_6mjn7"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_4trgr"]
+radius = 0.168762
+
+[node name="RoadT" type="RigidBody3D"]
+freeze = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.51556, -0.318263)
+visible = false
+mesh = SubResource("BoxMesh_6mjn7")
+
+[node name="InteractionNode" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.00775, 0)
+script = ExtResource("1_cyhvo")
+
+[node name="tree_birch" parent="." instance=ExtResource("2_qr4hq")]
+transform = Transform3D(0.03, 0, 0, 0, 0.03, 0, 0, 0, 0.03, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.044156, 1.04227, 0)
+shape = SubResource("CylinderShape3D_4trgr")
