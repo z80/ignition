@@ -19,6 +19,8 @@ public:
 	RefFrameAssemblyNode();
 	virtual ~RefFrameAssemblyNode();
 
+	virtual void ign_process( real_t delta ) override;
+
 };
 
 }

@@ -23,6 +23,11 @@ public:
 	void set_acceleration( const Vector3 & acc );
 	Vector3 get_acceleration() const;
 
+	// Transform in physics ref. frame.
+	void set_se3_in_physics( const Ref<Se3Ref> & se3 );
+	Ref<Se3Ref> get_se3_in_physics() const;
+	SE3 se3_in_physics_;
+
 public:
 	Vector3d acc;
 };
