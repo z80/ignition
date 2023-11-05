@@ -325,8 +325,7 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 		RefFrameNode * ch = Object::cast_to<RefFrameNode>( n );
 		if ( ch == nullptr )
 			continue;
-		if (GDVIRTUAL_IS_OVERRIDDEN_PTR(ch, _parent_jumped) )
-			GDVIRTUAL_CALL_PTR(ch, _parent_jumped);
+		ch->on_parent_jumped();
 	}
 
 	// Call child jumped in parent.
@@ -355,6 +354,12 @@ void RefFrameNode::jump_to_( Node * dest, const SE3 & dest_se3 )
 				GDVIRTUAL_CALL_PTR(dest_rf, _child_jumped, this);
 		}
 	}
+}
+
+void RefFrameNode::on_parent_jumped()
+{
+	if (GDVIRTUAL_IS_OVERRIDDEN_PTR(this, _parent_jumped) )
+		GDVIRTUAL_CALL_PTR(this, _parent_jumped);
 }
 
 
@@ -586,26 +591,26 @@ void RefFrameNode::ign_physics_post_process( real_t delta )
 
 Dictionary RefFrameNode::serialize()
 {
-	Dictionary data;
+	Dictionary data_ret;
 	const Dictionary se3_data = se3_.serialize();
-	data["se3"] = se3_data;
+	data_ret["se3"] = se3_data;
 
 	if ( GDVIRTUAL_IS_OVERRIDDEN(_serialize) )
 	{
-		GDVIRTUAL_CALL(_serialize, data);
+		GDVIRTUAL_CALL(_serialize, data_ret);
 	}
 
-	return data;
+	return data_ret;
 }
 
-bool RefFrameNode::deserialize( const Dictionary & data )
+bool RefFrameNode::deserialize( const Dictionary & data_arg )
 {
-	const bool ok = data.has( "se3" );
+	const bool ok = data_arg.has( "se3" );
 	if ( !ok )
 		return false;
 
 	{
-		const Dictionary se3_data = data["se3"];
+		const Dictionary se3_data = data_arg["se3"];
 		const bool ok = se3_.deserialize( se3_data );
 		if ( !ok )
 			return false;
@@ -614,7 +619,7 @@ bool RefFrameNode::deserialize( const Dictionary & data )
 	if ( GDVIRTUAL_IS_OVERRIDDEN(_deserialize) )
 	{
 		bool ret;
-		GDVIRTUAL_CALL(_deserialize, data, ret );
+		GDVIRTUAL_CALL(_deserialize, data_arg, ret );
 		return ret;
 	}
 

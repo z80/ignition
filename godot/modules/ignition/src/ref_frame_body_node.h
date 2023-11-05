@@ -26,6 +26,9 @@ public:
 	// Transform in physics ref. frame.
 	void set_se3_in_physics( const Ref<Se3Ref> & se3 );
 	Ref<Se3Ref> get_se3_in_physics() const;
+	void set_se3_in_physics_raw( const SE3 & se3 );
+	const SE3 & get_se3_in_physics_raw() const;
+
 	SE3 se3_in_physics_;
 
 public:

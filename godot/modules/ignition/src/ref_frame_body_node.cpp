@@ -51,6 +51,17 @@ Ref<Se3Ref> RefFrameBodyNode::get_se3_in_physics() const
 	return se3;
 }
 
+void RefFrameBodyNode::set_se3_in_physics_raw( const SE3 & se3 )
+{
+	se3_in_physics_ = se3;
+}
+
+const SE3 & RefFrameBodyNode::get_se3_in_physics_raw() const
+{
+	return se3_in_physics_;
+}
+
+
 
 
 

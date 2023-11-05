@@ -64,6 +64,7 @@ public:
 	void jump_to_( Node * dest, const SE3 & dest_se3 );
 	// Callbacks for script notification.
 	GDVIRTUAL0(_jumped);
+	virtual void on_parent_jumped();
 	GDVIRTUAL0(_parent_jumped);
 	GDVIRTUAL1(_child_jumped, Node *);
 	GDVIRTUAL1(_child_entered, Node *);
