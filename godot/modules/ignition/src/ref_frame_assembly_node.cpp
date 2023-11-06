@@ -3,11 +3,14 @@
 #include "core/string/print_string.h"
 #include "scene/scene_string_names.h"
 
+#include "ref_frame_non_inertial_node.h"
+
 namespace Ign
 {
 
 void RefFrameAssemblyNode::_bind_methods()
 {
+	ClassDB::bind_method( D_METHOD("get_ref_frame_physics"), &RefFrameAssemblyNode::get_ref_frame_physics );
 }
 
 RefFrameAssemblyNode::RefFrameAssemblyNode()
@@ -64,6 +67,16 @@ void RefFrameAssemblyNode::on_parent_jumped()
 		}
 	}
 }
+
+Node * RefFrameAssemblyNode::get_ref_frame_physics()
+{
+	Node * p = get_parent();
+	if ( p == nullptr )
+		return nullptr;
+	RefFrameNonInertialNode * a = Object::cast_to<RefFrameNonInertialNode>( p );
+	return a;
+}
+
 
 
 

@@ -116,6 +116,11 @@ public:
 	GDVIRTUAL1(_ign_physics_post_process, real_t);
 
 
+	void set_human_readable_name( const String & name );
+	String get_human_readable_name() const;
+	String human_readable_name_;
+
+
 	virtual Dictionary serialize();
 	GDVIRTUAL1(_serialize, Dictionary);
 	virtual bool deserialize( const Dictionary & data );

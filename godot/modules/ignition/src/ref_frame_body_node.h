@@ -31,6 +31,9 @@ public:
 
 	SE3 se3_in_physics_;
 
+	Node * get_assembly();
+	Node * get_ref_frame_physics();
+
 public:
 	Vector3d acc;
 };

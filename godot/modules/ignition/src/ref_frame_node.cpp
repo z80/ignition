@@ -50,6 +50,11 @@ void RefFrameNode::_bind_methods()
 	GDVIRTUAL_BIND(_ign_physics_process, "delta");
 	GDVIRTUAL_BIND(_ign_physics_post_process, "delta");
 
+	ClassDB::bind_method( D_METHOD("set_human_readable_name", "name"),  &RefFrameNode::set_human_readable_name );
+	ClassDB::bind_method( D_METHOD("get_human_readable_name"),          &RefFrameNode::get_human_readable_name, Variant::STRING );
+
+
+
 	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
 	GDVIRTUAL_BIND(_serialize, "data");
 	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
@@ -62,6 +67,7 @@ void RefFrameNode::_bind_methods()
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL,        "debug" ), "set_debug", "get_debug" );
 	//Otherwise continuously requests "SE3" in editor.
 	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "human_readable_name" ), "set_human_readable_name", "get_human_readable_name" );
 }
 
 
@@ -587,6 +593,17 @@ void RefFrameNode::ign_physics_post_process( real_t delta )
 	}
 
 }
+
+void RefFrameNode::set_human_readable_name( const String & name )
+{
+	human_readable_name_ = name;
+}
+
+String RefFrameNode::get_human_readable_name() const
+{
+	return human_readable_name_;
+}
+
 
 
 Dictionary RefFrameNode::serialize()
