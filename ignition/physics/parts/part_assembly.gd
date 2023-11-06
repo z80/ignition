@@ -7,9 +7,6 @@ class_name PartAssembly
 # all sub-bodies.
 
 
-# List of sub-bodies this body contains if it is a super-body.
-var sub_bodies: Array = []
-
 
 # For visualizing the orbit it is needed to have an OrbitalMotionRef in order 
 # to have points on the trajectory.
@@ -43,7 +40,9 @@ func _enter_tree():
 	# joints.
 	# After physics bodies are created for all sub-bodies, 
 	# Create connecting joints.
-	for b in sub_bodies:
+	var qty: int = get_child_count()
+	for i in range(qty):
+		var b: Node = get_child( i )
 		# Only parts have this method, so check if it exists first.
 		var has: bool = b.has_method( "activate_nodes" )
 		if has:
@@ -65,70 +64,27 @@ func _process( _delta: float ):
 
 
 
-func add_sub_body( body: RefFrameNode ):
-	var sb: RefFrameNode = body.get_assembly_raw()
-	if (sb != null) and (sb != self):
-		sb.remove_sub_body( body )
-	
-	var has: bool = has_sub_body( body )
-	if has:
-		return false
-	
-	sub_bodies.push_back( body )
-	body.set_assembly( self )
-	return true
 
-
-
-func remove_sub_body( body: RefFrameNode ):
-	var index: int = sub_bodies.find( body )
-	if index >= 0:
-		sub_bodies.remove_at( index )
-		body.set_assembly( null )
-
-
-func is_assembly():
-	var empty: bool = sub_bodies.is_empty()
-	var ret: bool = not empty
-	return ret
-
-
-func has_sub_body( body: RefFrameNode ):
-	var has: bool = sub_bodies.has( body )
-	if has:
-		return true
-	
-	return false
 
 
 func has_player_control():
 	var pc = RootScene.ref_frame_root.player_camera.get_parent()
-	for body in sub_bodies:
-		if body == pc:
-			return true
-	
-	return false
+	var p: Node = pc.get_parent();
+	var ret: bool = (p == self)
+	return ret
 
 
 
 func _change_parent( p: Node, recursive_call: bool ):
-	# First need to remove all physical joints.
-	# Physical joints are being removed within 
-	# remove_physical() call.
-	
-	#var t_after: Transform = self.transform
-	for b in sub_bodies:
-		#t_before = b.transform
-		b.change_parent( p, true )
-		#t_after = b.transform
-	
 	# The thing is it is necessary to be sure that rigid bodies 
 	# on both sides are attached. And due to that it is necessary 
 	# to first create all bodies in a loop and after that activate 
 	# joints.
 	# After physics bodies are created for all sub-bodies, 
 	# Create connecting joints.
-	for b in sub_bodies:
+	var qty: int = get_child_count()
+	for i in range(qty):
+		var b: Node = get_child( i )
 		# Only parts have this method, so check if it exists first.
 		var has: bool = b.has_method( "activate_nodes" )
 		if has:
@@ -176,30 +132,18 @@ func distance( other: RefFrameNode ):
 
 
 
-func update_pose():
-	# Loop over all sub bodies.
-	var r_accum: Vector3 = Vector3.ZERO
-	var v_accum: Vector3 = Vector3.ZERO
-	for body in sub_bodies:
-		var r: Vector3 = body.r()
-		r_accum += r
-		var v: Vector3 = body.v()
-		v_accum += v
-	
-	var qty: int = sub_bodies.size()
-	if qty > 0:
-		r_accum = r_accum / qty
-		v_accum = v_accum / qty
-	
-	self.set_r( r_accum )
-	self.set_v( v_accum )
+
 
 
 
 
 func process_user_input_2( input: Dictionary ):
-	for body in sub_bodies:
-		body.process_user_input_2( input )
+	var qty: int = get_child_count()
+	for i in range(qty):
+		var ch: Node = get_child( i )
+		var body: RefFrameBodyNode = ch as RefFrameBodyNode
+		if body != null:
+			body.process_user_input_2( input )
 
 
 
@@ -216,14 +160,22 @@ func gui_mode():
 
 
 func activate( root_call: bool = true ):
-	for body in sub_bodies:
-		body.activate()
+	var qty: int = get_child_count()
+	for i in range(qty):
+		var ch: Node = get_child(i)
+		var body: RefFrameBodyNode = ch as RefFrameBodyNode
+		if body != null:
+			body.activate()
 
 
 
 func deactivate( root_call: bool = true ):
-	for body in sub_bodies:
-		body.deactivate()
+	var qty: int = get_child_count()
+	for i in range(qty):
+		var ch: Node = get_child(i)
+		var body: RefFrameBodyNode = ch as RefFrameBodyNode
+		if body != null:
+			body.deactivate()
 
 
 
@@ -297,10 +249,10 @@ func _update_celestial_motion():
 
 func on_delete():
 	self.name = self.name + "_to_be_deleted"
-	var bodies: Array = sub_bodies.duplicate()
-	for b in bodies:
-		if is_instance_valid( b ):
-			remove_sub_body( b )
+	#var bodies: Array = sub_bodies.duplicate()
+	#for b in bodies:
+	#	if is_instance_valid( b ):
+	#		remove_sub_body( b )
 
 
 

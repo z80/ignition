@@ -22,11 +22,6 @@ var _air_drag_scene: Node    = null
 var _shock_wave_visual: Node = null
 
 
-# Body which contains this one and other bodies.
-# When setter and getter are allowed simultaneously it falls into infinite recursion which 
-# can not be stopped even by the debugger.
-var _assembly: Node = null
-
 
 var _octree_mesh: OctreeMeshGd = null
 
@@ -167,10 +162,6 @@ func _traverse_shock_wave_visuals_recursive( node: Node ):
 
 # The overrideable version without "_" prefix.
 func on_delete():
-	var sb: Node = get_assembly_raw()
-
-	if is_instance_valid( sb ):
-		sb.remove_sub_body( self )
 	if force != null:
 		force.name = force.name + "_to_be_deleted"
 		force.queue_free()
@@ -233,7 +224,7 @@ func hide_shock_wave_visual():
 func gui_classes( mode: Array ):
 	var classes = []
 	
-	var sb: Node = get_assembly_raw()
+	var sb: Node = get_assembly()
 	if (sb != null) and (sb != self):
 		var s_classes = sb.gui_classes( mode )
 		for cl in s_classes:
@@ -255,7 +246,7 @@ func gui_classes( mode: Array ):
 # Defines GUI classes to be shown.
 func gui_mode():
 	var ret: Array = []
-	var sb: Node = get_assembly_raw()
+	var sb: Node = get_assembly()
 	if (sb != null) and (sb != self):
 		var more: Array = sb.gui_mode()
 		for m in more:
@@ -445,7 +436,7 @@ func remove_physical():
 func _change_parent( p: Node, recursive_call: bool ):
 	if recursive_call:
 		return
-	var assembly: Node = get_assembly_raw()
+	var assembly: Node = get_assembly()
 	if (assembly != null) and is_instance_valid( assembly ):
 		assembly.change_parent( p )
 
@@ -459,7 +450,7 @@ func process_user_input_2( input: Dictionary ):
 
 # It permits or not showing the window with all the little panels.
 func show_click_container():
-	var sb: Node = get_assembly_raw()
+	var sb: Node = get_assembly()
 	if sb != null:
 		var res: bool = sb.show_click_container()
 		return res
@@ -546,29 +537,6 @@ func _parent_physics_ref_frame():
 
 
 
-func set_assembly( new_assembly ):
-	if (_assembly != null) and ( is_instance_valid(_assembly) ):
-		_assembly.remove_sub_body( self )
-	_assembly = new_assembly
-
-
-
-
-
-func get_assembly():
-	if _assembly == null:
-		_assembly = create_assembly()
-	return _assembly
-
-
-func get_assembly_raw():
-	return _assembly
-
-
-
-# This one should be overwritten by decendant classes.
-func create_assembly():
-	return null
 
 
 
