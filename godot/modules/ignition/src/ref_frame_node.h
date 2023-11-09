@@ -120,6 +120,13 @@ public:
 	String get_human_readable_name() const;
 	String human_readable_name_;
 
+	void set_needs_relative_to_camera( bool en );
+	bool get_needs_relative_to_camera() const;
+	bool needs_relative_to_camera_;
+
+	virtual void on_relative_to_camera( RefFrameNode * root_node, RefFrameNode * camera_node, const SE3 & se3 );
+	GDVIRTUAL3(_relative_to_camera, Node *, Node *, Ref<Se3Ref>);
+
 
 	virtual Dictionary serialize();
 	GDVIRTUAL1(_serialize, Dictionary);

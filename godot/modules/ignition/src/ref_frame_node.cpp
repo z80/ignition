@@ -53,6 +53,10 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_human_readable_name", "name"),  &RefFrameNode::set_human_readable_name );
 	ClassDB::bind_method( D_METHOD("get_human_readable_name"),          &RefFrameNode::get_human_readable_name, Variant::STRING );
 
+	ClassDB::bind_method( D_METHOD("set_needs_relative_to_camera", "en"),  &RefFrameNode::set_needs_relative_to_camera );
+	ClassDB::bind_method( D_METHOD("get_needs_relative_to_camera"),        &RefFrameNode::get_needs_relative_to_camera, Variant::BOOL );
+
+	GDVIRTUAL_BIND(_relative_to_camera, "root_node", "camera_node", "se3");
 
 
 	ClassDB::bind_method( D_METHOD("serialize"),           &RefFrameNode::serialize,   Variant::DICTIONARY );
@@ -68,13 +72,15 @@ void RefFrameNode::_bind_methods()
 	//Otherwise continuously requests "SE3" in editor.
 	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
 	ADD_PROPERTY( PropertyInfo( Variant::STRING, "human_readable_name" ), "set_human_readable_name", "get_human_readable_name" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "needs_relative_to_camera" ), "set_needs_relative_to_camera", "get_relative_to_camera" );
 }
 
 
 
 RefFrameNode::RefFrameNode()
 	: Node(),
-	  debug_( false )
+	  debug_( false ),
+	  needs_relative_to_camera_( false )
 {
 }
 
@@ -603,6 +609,28 @@ String RefFrameNode::get_human_readable_name() const
 {
 	return human_readable_name_;
 }
+
+void RefFrameNode::set_needs_relative_to_camera( bool en )
+{
+	needs_relative_to_camera_ = en;
+}
+
+bool RefFrameNode::get_needs_relative_to_camera() const
+{
+	return needs_relative_to_camera_;
+}
+
+void RefFrameNode::on_relative_to_camera( RefFrameNode * root_node, RefFrameNode * camera_node, const SE3 & se3 )
+{
+	if ( GDVIRTUAL_IS_OVERRIDDEN(_relative_to_camera) )
+	{
+		Ref<Se3Ref> se3_ref;
+		se3_ref.instantiate();
+		se3_ref.ptr()->se3 = se3;
+		GDVIRTUAL_CALL( _relative_to_camera, root_node, camera_node, se3_ref );
+	}
+}
+
 
 
 

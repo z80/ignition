@@ -10,6 +10,9 @@ void RefFrameRoot::_bind_methods()
 	ClassDB::bind_method( D_METHOD( "set_time_dilation", "en" ), &RefFrameRoot::set_time_dilation );
 	ClassDB::bind_method( D_METHOD( "get_time_dilation" ),       &RefFrameRoot::get_time_dilation );
 
+	ClassDB::bind_method( D_METHOD( "set_camera_node", "camera_node" ), &RefFrameRoot::set_camera_node );
+	ClassDB::bind_method( D_METHOD( "get_camera_node" ),                &RefFrameRoot::get_camera_node );
+
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "time_dilation" ), "set_time_dilation", "get_time_dilation" );
 
@@ -19,6 +22,7 @@ RefFrameRoot::RefFrameRoot()
 	: RefFrameNode()
 {
 	time_dilation = 1.0;
+	camera_node_ = nullptr;
 
 	set_process( true );
 	set_physics_process( true );
@@ -36,6 +40,16 @@ void RefFrameRoot::set_time_dilation( real_t gain )
 real_t RefFrameRoot::get_time_dilation() const
 {
 	return time_dilation;
+}
+
+void RefFrameRoot::set_camera_node( Node * node )
+{
+	camera_node_ = Object::cast_to<RefFrameNode>( node );
+}
+
+Node * RefFrameRoot::get_camera_node() const
+{
+	return camera_node_;
 }
 
 void RefFrameRoot::_notification( int p_notification )
@@ -99,6 +113,17 @@ void RefFrameRoot::process_children( RefFrameNode * ref_frame, real_t delta )
 void RefFrameRoot::post_process_children( RefFrameNode * ref_frame, real_t delta )
 {
 	ref_frame->ign_post_process( delta );
+
+	// _relative_to_camera() is called the last, after even "ign_post_process()".
+	if ( camera_node_ != nullptr )
+	{
+		const bool needs_relative = ref_frame->get_needs_relative_to_camera();
+		if ( needs_relative )
+		{
+			const SE3 se3 = ref_frame->relative_( camera_node_ );
+			ref_frame->on_relative_to_camera( this, camera_node_, se3 );
+		}
+	}
 
 	int qty = ref_frame->get_child_count();
 	for ( int i=0; i<qty; i++ )

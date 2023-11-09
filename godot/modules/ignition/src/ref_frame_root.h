@@ -22,6 +22,9 @@ public:
 	void set_time_dilation( real_t gain );
 	real_t get_time_dilation() const;
 
+	void set_camera_node( Node * node );
+	Node * get_camera_node() const;
+
 protected:
 	void _notification( int p_notification );
 
@@ -35,6 +38,7 @@ protected:
 
 public:
 	Float time_dilation;
+	RefFrameNode * camera_node_;
 };
 
 }
