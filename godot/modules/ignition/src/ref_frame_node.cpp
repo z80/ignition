@@ -72,7 +72,7 @@ void RefFrameNode::_bind_methods()
 	//Otherwise continuously requests "SE3" in editor.
 	//ADD_PROPERTY( PropertyInfo( Variant::OBJECT,    "se3" ),              "set_se3", "get_se3" );
 	ADD_PROPERTY( PropertyInfo( Variant::STRING, "human_readable_name" ), "set_human_readable_name", "get_human_readable_name" );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "needs_relative_to_camera" ), "set_needs_relative_to_camera", "get_relative_to_camera" );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "needs_relative_to_camera" ), "set_needs_relative_to_camera", "get_needs_relative_to_camera" );
 }
 
 

@@ -22,10 +22,6 @@ public:
 	virtual void ign_process( real_t delta ) override;
 
 	virtual void on_parent_jumped() override;
-
-	Node * get_ref_frame_physics();
-
-
 };
 
 }

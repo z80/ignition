@@ -60,6 +60,7 @@ func _exit_tree():
 
 func _ready():
 	add_to_group( Constants.BODIES_GROUP_NAME )
+	self.needs
 	
 	if AirDragScene != null:
 		_create_octree_mesh()
@@ -93,6 +94,14 @@ func _set_se3( se3 ):
 		_physical.transform        = se3.transform
 		_physical.linear_velocity  = se3.v
 		_physical.angular_velocity = se3.w
+
+
+
+func _relative_to_camera( root_node, camera_node, se3 ):
+	if (_visual != null) and ( is_instance_valid(_visual) ):
+		var t: Transform3D = se3.transform
+		_visual.transform = t
+
 
 
 func init():
