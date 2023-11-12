@@ -13,20 +13,15 @@ var _source_se3: Se3Ref = null
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	needs_relative_to_camera = true
 	_source_se3 = Se3Ref.new()
 	call_deferred( "_create_visual" )
 
 
-func _ign_post_process( _delta ):
-	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
-	var se3: Se3Ref = self.relative_to( cam )
+func _relative_to_camera(root_node, camera_node, se3):
 	var t: Transform3D = se3.transform
 	_visual.transform = t
 	
-#	# Validation.
-#	se3 = self.get_se3()
-#	se3 = se3.mul( _source_se3 )
-#	print( "validation: q: ", se3.q, "; r: ", se3.r )
 
 
 func _create_visual():

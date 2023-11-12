@@ -65,13 +65,16 @@ func update_source_se3( rotation: RefFrameRotationNode, source_se3: Se3Ref, view
 		rebuild_needed = rebuild_needed or _requested_rebuild
 		if rebuild_needed:
 			_rebuild_start( view_point_se3 )
-	
+
+
+
+func relative_to_camera( root_node, camera_node, se3, rotation_node ):
 	var scale: float = 1.0 / layer_config.scale_divider
-	var t: Transform3D = _scale_dist_ratio.compute_transform( source_se3, scale )
+	var t: Transform3D = _scale_dist_ratio.compute_transform( se3, scale )
 	solid.transform = t
 	liquid.transform = t
 	
-	atmosphere.update( rotation )
+	atmosphere.update( rotation_node )
 
 
 

@@ -28,6 +28,7 @@ func place( parent: RefFrameNode, se3: Se3Ref ):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	needs_relative_to_camera = true
 	_create_objects()
 
 
@@ -52,10 +53,7 @@ func _create_objects():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _ign_pre_process(delta):
-	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
-	var se3: Se3Ref = self.relative_to( cam )
-	
+func _relative_to_camera(root_node, camera_node, se3):
 	var t: Transform3D = se3.transform
 	#t = t.scaled( Vector3( scale, scale, scale ) )
 	_visual.transform = t

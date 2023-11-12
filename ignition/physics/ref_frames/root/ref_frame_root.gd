@@ -63,9 +63,15 @@ func init():
 
 
 func _ign_pre_process( _delta: float ):
-	# Camera should be updated the last, after all poses are set.
-	update_camera( _delta )
-	
+	var camera: RefFrameNode = _get_camera()
+	if (camera == null) or ( not is_instance_valid(camera) ):
+		self.set_camera_node( null )
+	else:
+		self.set_camera_node( camera )
+
+
+
+func _ign_process( _delta: float ):
 	# Celestial body orbital movement time delta.
 	# It should be applied to planet movement and ref. frames 
 	# moving under gravitational influence of a planet.
@@ -84,37 +90,18 @@ func _ign_pre_process( _delta: float ):
 	# Relocate children of celestial bodies depending on the 
 	# gravitational influence and atmosphere bounds.
 	process_celestial_body_children()
-	
-
-
-
-
-func _ign_process( _delta: float ):
-	var camera = _get_camera()
-	if (camera == null) or ( not is_instance_valid(camera) ):
-		return
-	update_bodies_visual()
-
 
 
 func _ign_post_process( _delta: float ):
-	pass
+	# Camera should be updated the last, after all poses are set.
+	update_camera( _delta )
+
+
+
+
 
 
 func _ign_physics_pre_process( delta ):
-	# Need to have all super body poses up to date.
-	update_super_bodies()
-	
-	# These goes directly to Translation and Rotation of celestial bodies.
-#	var group: String = Constants.REF_FRAME_PHYSICS_GROUP_NAME
-#	var ref_frames: Array = get_tree().get_nodes_in_group( group )
-#
-#	for rf in ref_frames:
-#		var deleted: bool =  rf.is_queued_for_deletion()
-#		if deleted:
-#			continue
-#		rf.process_children()
-	
 	# Update. Here controls are applied.
 	update_bodies_physical( delta )
 
@@ -173,21 +160,9 @@ func update_planets():
 
 
 
-func update_super_bodies():
-	var group: String = Constants.BODY_ASSEMBLIES_GROUP_NAME
-	var all_bodies: Array = get_tree().get_nodes_in_group( group )
-	for body in all_bodies:
-			body.update_pose()
 
 
-func update_bodies_visual():
-	var player_rf: RefFrameNode = _get_camera()
-	
-	# Update visuals for all the physical-visual objects.
-	var group: String = Constants.BODIES_GROUP_NAME
-	var all_bodies: Array = get_tree().get_nodes_in_group( group )
-	for body in all_bodies:
-		body.update_visual( player_rf )
+
 
 
 
@@ -241,11 +216,11 @@ func process_celestial_body_children():
 
 
 func update_camera( delta: float ):
-	var c: RefFrameNode = _get_camera()
+	var c: RefFrameNode = get_camera_node()
 	
 	# For the body under player control find the closest celestial
 	# body. If found, specify the atmosphere parameters.
-	var ClosestCelestialBody = load( "res://physics/utils/closest_celestial_body.gd" )
+	var ClosestCelestialBody = preload( "res://physics/utils/closest_celestial_body.gd" )
 	var p_rf: RefFrameNode = player_camera
 	var celestial_body: Node = ClosestCelestialBody.closest_celestial_body( p_rf )
 	if celestial_body != null:

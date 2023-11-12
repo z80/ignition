@@ -60,7 +60,7 @@ func _exit_tree():
 
 func _ready():
 	add_to_group( Constants.BODIES_GROUP_NAME )
-	self.needs
+	self.needs_relative_to_camera = true
 	
 	if AirDragScene != null:
 		_create_octree_mesh()
@@ -198,11 +198,6 @@ func on_delete():
 
 
 
-func update_visual( origin: RefFrameNode = null ):
-	if _visual != null:
-		var se3: Se3Ref = self.relative_to( origin )
-		var t: Transform3D = se3.transform
-		_visual.transform = t
 
 
 # Need to overload this in order to apply controls

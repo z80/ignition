@@ -2,7 +2,6 @@
 extends RefFrameMotionNode
 class_name CelestialBody
 
-@export var human_readable_name: String = "Planet"
 @export var wiki_page: String = ""
 @export var discovered: bool = false
 

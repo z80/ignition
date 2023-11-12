@@ -77,7 +77,7 @@ func _create_visuals():
 
 
 func _ready():
-	super()
+	needs_relative_to_camera = true
 	_create_visuals()
 
 	call_deferred( "init_forces" )
@@ -86,7 +86,9 @@ func _ready():
 	_create_orbit_visualizer()
 	
 	
-
+func _relative_to_camera(root_node, camera_node, se3):
+	var rotation_node: RefFrameNode = rotation_rf()
+	_visual_space.relative_to_camera( root_node, camera_node, se3, rotation_node )
 
 
 func init_forces():
@@ -135,26 +137,6 @@ func update( force_player_rf: RefFrameNode = null ):
 
 func _process_geometry( force_player_rf: RefFrameNode = null ):
 	var root: RefFrameRoot = RootScene.ref_frame_root
-	var player_rf: RefFrameNode
-	var player_ctrl: RefFrameNode
-	if force_player_rf != null:
-		player_rf = force_player_rf
-	else:
-		player_rf = root.get_player_ref_frame()
-	player_ctrl = root.player_control
-	
-	var physics_ref_frames: Array  = root.physics_ref_frames()
-	
-	var position: RefFrameNode = self
-	var rotation: RefFrameNode    = rotation_rf()
-	
-	var paths: Array = []
-	for rf in physics_ref_frames:
-		# Check if either node is direct parent of this rf
-		var p = rf.get_parent()
-		var is_child: bool = ( p == rotation ) or ( p == position )
-		if not is_child:
-			continue
 	
 	# For player ref frame rebuild mesh if needed
 	# Generate visual appearance based on camera.
