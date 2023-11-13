@@ -77,7 +77,6 @@ func _create_visuals():
 
 
 func _ready():
-	needs_relative_to_camera = true
 	_create_visuals()
 
 	call_deferred( "init_forces" )
@@ -86,9 +85,6 @@ func _ready():
 	_create_orbit_visualizer()
 	
 	
-func _relative_to_camera(root_node, camera_node, se3):
-	var rotation_node: RefFrameNode = rotation_rf()
-	_visual_space.relative_to_camera( root_node, camera_node, se3, rotation_node )
 
 
 func init_forces():
@@ -132,7 +128,8 @@ func update( force_player_rf: RefFrameNode = null ):
 
 
 
-
+func get_visual_space():
+	return _visual_space
 
 
 func _process_geometry( force_player_rf: RefFrameNode = null ):

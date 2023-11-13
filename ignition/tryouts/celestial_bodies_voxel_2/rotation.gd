@@ -2,6 +2,7 @@
 extends RefFrameRotationNode
 
 var _visual_surface: Node = null
+var visual_space: Node = null
 var _ref_frame_rebuild_index: int = 0
 var _ref_frame_process_index: int = 0
 var _ref_frame_other_index: int = 0
@@ -9,7 +10,24 @@ var _ref_frame_other_index: int = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	needs_relative_to_camera = true
 	call_deferred( "_create_collision_surfaces" )
+
+
+
+func _relative_to_camera( root_node, camera_node, se3 ):
+	if (visual_space == null):
+		print( "here" )
+		var translation: RefFrameNode = get_parent()
+		visual_space = translation.get_visual_space()
+	
+	if (visual_space != null):
+		visual_space.relative_to_camera( root_node, camera_node, se3, self )
+		print( "here" )
+	else:
+		print( "rotation is null" )
+
+
 
 
 func _child_jumped( child_ref_frame ):
