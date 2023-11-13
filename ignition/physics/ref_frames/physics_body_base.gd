@@ -91,6 +91,11 @@ func _parent_jumped():
 
 func _set_se3( se3 ):
 	if (_physical != null) and (is_instance_valid(_physical)):
+		var rf: RefFramePhysics = get_ref_frame_physics()
+		if rf != null:
+			var se3_rel_to_physics: Se3Ref = self.relative_to( rf )
+			se3 = se3_rel_to_physics
+		
 		_physical.transform        = se3.transform
 		_physical.linear_velocity  = se3.v
 		_physical.angular_velocity = se3.w
