@@ -77,6 +77,7 @@ func _create_visuals():
 
 
 func _ready():
+	super()
 	_create_visuals()
 
 	call_deferred( "init_forces" )

@@ -17,15 +17,11 @@ func _ready():
 
 func _relative_to_camera( root_node, camera_node, se3 ):
 	if (visual_space == null):
-		print( "here" )
 		var translation: RefFrameNode = get_parent()
 		visual_space = translation.get_visual_space()
 	
 	if (visual_space != null):
 		visual_space.relative_to_camera( root_node, camera_node, se3, self )
-		print( "here" )
-	else:
-		print( "rotation is null" )
 
 
 
