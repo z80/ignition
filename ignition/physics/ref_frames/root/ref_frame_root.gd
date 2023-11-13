@@ -342,7 +342,6 @@ func _serialize( data: Dictionary ):
 
 
 func _deserialize( data: Dictionary ):
-	super( data )
 	var select_path: String = data["select"]
 	player_select = get_node( select_path )
 	var control_path: String = data["control"]
