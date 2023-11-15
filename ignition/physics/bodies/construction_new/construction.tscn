@@ -5,6 +5,8 @@
 [ext_resource type="PackedScene" uid="uid://drf2uhjquk67c" path="res://physics/bodies/construction_new/visual.tscn" id="3"]
 
 [node name="Construction" type="RefFrameBodyNode"]
+human_readable_name = "Launch pad"
+needs_relative_to_camera = true
 script = ExtResource("1")
 body_state = 0
 VisualScene = ExtResource("3")

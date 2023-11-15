@@ -19,7 +19,4 @@ render_target_update_mode = 3
 
 [node name="Root" parent="SubViewport" instance=ExtResource("3")]
 
-[node name="MeshInstance3D" parent="SubViewport/Root/SunLight" index="0"]
-visible = true
-
 [editable path="SubViewport/Root"]

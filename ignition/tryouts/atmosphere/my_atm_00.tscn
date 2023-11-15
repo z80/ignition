@@ -1,43 +1,38 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=7 format=3 uid="uid://p8lblw400bov"]
 
-[ext_resource path="res://physics/atmosphere/material_atmosphere.tres" type="Material" id=1]
-[ext_resource path="res://physics/atmosphere/assets/starmap_2020_4k.jpg" type="Texture2D" id=2]
-[ext_resource path="res://tryouts/atmosphere/material_earth.tres" type="Material" id=3]
-[ext_resource path="res://assets/maujoe.camera_control/scripts/camera_control.gd" type="Script" id=4]
+[ext_resource type="Material" path="res://tryouts/atmosphere/material_earth.tres" id="3"]
+[ext_resource type="Script" path="res://assets/maujoe.camera_control/scripts/camera_control.gd" id="4"]
 
-[sub_resource type="Sky" id=1]
-panorama = ExtResource( 2 )
+[sub_resource type="Sky" id="1"]
 
-[sub_resource type="Environment" id=2]
+[sub_resource type="Environment" id="2"]
 background_mode = 2
-background_sky = SubResource( 1 )
-ambient_light_color = Color( 0.529412, 0.529412, 0.501961, 1 )
-ambient_light_energy = 16.0
+sky = SubResource("1")
+ambient_light_color = Color(0.529412, 0.529412, 0.501961, 1)
 ambient_light_sky_contribution = 0.55
+ambient_light_energy = 16.0
 
-[sub_resource type="SphereMesh" id=3]
-material = ExtResource( 3 )
+[sub_resource type="SphereMesh" id="3"]
+material = ExtResource("3")
 radius = 50.0
 height = 100.0
 
-[sub_resource type="BoxMesh" id=4]
+[sub_resource type="BoxMesh" id="4"]
 flip_faces = true
 
 [node name="Node3D" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 2 )
+environment = SubResource("2")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource( 3 )
-material/0 = null
+mesh = SubResource("3")
 
 [node name="Atm" type="MeshInstance3D" parent="MeshInstance3D"]
-transform = Transform3D( 150, 0, 0, 0, 150, 0, 0, 0, 150, 0, 0, 0 )
-mesh = SubResource( 4 )
-material/0 = ExtResource( 1 )
+transform = Transform3D(150, 0, 0, 0, 150, 0, 0, 0, 150, 0, 0, 0)
+mesh = SubResource("4")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D( -0.122562, 0, -0.992461, 0, 1, 0, 0.992461, 0, -0.122562, -7.35657, -0.114661, -50.6477 )
+transform = Transform3D(-0.122562, 0, -0.992461, 0, 1, 0, 0.992461, 0, -0.122562, -7.35657, -0.114661, -50.6477)
 far = 8192.0
-script = ExtResource( 4 )
+script = ExtResource("4")
