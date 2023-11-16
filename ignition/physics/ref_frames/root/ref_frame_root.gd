@@ -217,6 +217,7 @@ func process_celestial_body_children():
 
 func update_camera( delta: float ):
 	var c: RefFrameNode = get_camera_node()
+	c.update( delta )
 	
 	# For the body under player control find the closest celestial
 	# body. If found, specify the atmosphere parameters.
@@ -236,7 +237,6 @@ func update_camera( delta: float ):
 		var sun: RefFrameNode = all_suns[0] as RefFrameNode
 		c.apply_sun( p_rf, sun )
 	
-	c.update( delta )
 
 
 
