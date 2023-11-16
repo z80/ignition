@@ -21,10 +21,9 @@ var _physical: RigidBody3D     = null
 var _air_drag_scene: Node    = null
 var _shock_wave_visual: Node = null
 
-
-
 var _octree_mesh: OctreeMeshGd = null
 
+var _se3_in_physics: Se3Ref = null
 
 # Force visualizer
 var force: Node3D = null
@@ -33,7 +32,8 @@ var force: Node3D = null
 #func get_class():
 #	return "PhysicsBodyBase"
 
-
+func _init():
+	_se3_in_physics = Se3Ref.new()
 
 
 
@@ -308,14 +308,22 @@ func _ign_physics_pre_process( delta ):
 # To make it overridable.
 func update_state_from_physics( delta ):
 	if _physical != null:
-		#if _physical.freeze:
-		#	return
 		var t: Transform3D = _physical.transform
 		var v: Vector3   = _physical.linear_velocity
 		var w: Vector3   = _physical.angular_velocity
-		self.set_t( t )
-		self.set_v( v )
-		self.set_w( w )
+		_se3_in_physics.transform = t
+		_se3_in_physics.v         = v
+		_se3_in_physics.w         = w
+		set_se3_in_physics( _se3_in_physics )
+		
+		# Directly assign transform only if there is no assembly.
+		# If assembly exists, it overrides transforms using se3_in_physics 
+		# and its own transform.
+		var ass: RefFrameAssemblyNode = get_assembly()
+		if ass == null:
+			self.set_t( t )
+			self.set_v( v )
+			self.set_w( w )
 	
 
 
@@ -423,11 +431,10 @@ func _create_physical( Physical: PackedScene ):
 
 
 func parent_physics_ref_frame():
-	var parent_node: Node = get_parent()
-	var parent_rf = parent_node as RefFrameNonInertialNode
-	if (parent_rf == null) or ( not is_instance_valid(parent_node) ):
+	var rf: RefFrameNonInertialNode = get_ref_frame_physics()
+	if ( rf == null) or ( not is_instance_valid(rf) ):
 		return null
-	return parent_node
+	return rf
 
 
 func remove_physical():
