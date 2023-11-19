@@ -677,8 +677,6 @@ func _draw_broad_tree_faces():
 
 
 
-func root_most_body():
-	return null
 
 
 func distance( other: RefFrameNode ):

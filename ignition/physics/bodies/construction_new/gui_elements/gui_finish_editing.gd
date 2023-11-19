@@ -15,7 +15,7 @@ func _ready():
 func _on_FinishEditing_pressed():
 	if _target_obj == null:
 		return
-	var s = _target_obj.root_most_body()
+	var s = _target_obj.get_ref_frame_root_most_body()
 	var has_finish_editing: bool = s.has_method( "finish_editing" )
 	if has_finish_editing:
 		s.finish_editing()

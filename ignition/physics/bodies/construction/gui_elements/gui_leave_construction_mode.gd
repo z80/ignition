@@ -15,7 +15,7 @@ func _ready():
 func _on_Leave_pressed():
 	if _target_obj == null:
 		return
-	var construction_assembly = _target_obj.root_most_body()
+	var construction_assembly = _target_obj.get_ref_frame_root_most_body()
 	var construction = construction_assembly.construction
 	var has_activate: bool = construction.has_method( "construction_deactivate" )
 	if has_activate:

@@ -28,10 +28,8 @@ func decoupler_activate():
 	# Remove child connection.
 	self.decouple()
 	
-	# Remove assembly.
-	var sb: Node = get_assembly()
-	if (sb != null) and (is_instance_valid(sb)):
-		sb.queue_free()
+	var rf: RefFrameNonInertialNode = get_ref_frame_physics()
+	self.change_parent( rf, true )
 	
 	if (not decoupled):
 		play_sound( decouple_sound )

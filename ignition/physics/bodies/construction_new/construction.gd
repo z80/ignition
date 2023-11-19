@@ -304,18 +304,13 @@ func create_block( block_desc: Resource ):
 	# Disable physics to prevent blocks from flying around.
 	block.deactivate()
 	
-	# Establish relations.
-	# This one is needed in ordr to 
-	# have the right gui elements in the context menu.
-	var sb: Node = get_assembly()
-	sb.add_sub_body( block )
+	# Add the block as a child of the assembly.
+	block.change_parent( self, false )
 
 
 func delete_block( block: PhysicsBodyBase ):
 	dynamic_blocks.erase( block )
 	static_blocks.erase( block )
-	var sb: Node = get_assembly()
-	sb.remove_sub_body( block )
 	block.queue_free()
 
 
@@ -357,15 +352,12 @@ func on_launch():
 
 func on_abort():
 	# Need to delete all blocks.
-	var sb: Node = get_assembly()
 	for b in static_blocks:
-		sb.remove_sub_body( b )
 		b.queue_free()
 	
 	static_blocks.clear()
 	
 	for b in dynamic_blocks:
-		sb.remove_sub_body( b )
 		b.queue_free()
 	
 	dynamic_blocks.clear()

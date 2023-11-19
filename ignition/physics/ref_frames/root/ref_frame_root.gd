@@ -145,8 +145,12 @@ func process_user_input( input: Dictionary ):
 	# Call user input for the upper most body.
 	# It is supposed to distribute the same controls 
 	# to all sub-bodies.
-	var sb: RefFrameNode = body.root_most_body()
-	sb.process_user_input_2( input )
+	var sb: RefFrameNode = body.get_ref_frame_root_most_body()
+	if sb.has_method( "process_user_input_2" ):
+		sb.process_user_input_2( input )
+	else:
+		if body.has_method( "process_user_input_2" ):
+			body.process_user_input_2( input )
 
 
 

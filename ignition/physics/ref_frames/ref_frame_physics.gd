@@ -586,16 +586,12 @@ func self_delete_if_unused():
 	# And don't delete if parenting the camera.
 	var cam: RefFrameNode = RootScene.ref_frame_root.player_camera
 	if is_instance_valid( cam ):
-		var p: Node = cam.get_parent()
+		var p: Node = cam.get_ref_frame_physics()
 		if p == self:
 			# In this case may be at most stop orbiting to not 
 			# fall inside if a planet
 			return false
-		
-		elif p != null:
-			p = p.get_parent()
-			if p == self:
-				return false
+
 	
 	
 	# Check all
@@ -670,7 +666,7 @@ func root_most_child_bodies():
 			continue
 		
 		if (b != null):
-			var root_most_body: RefFrameNode = b #.root_most_body()
+			var root_most_body: RefFrameNode = b
 			var append: bool = not (root_most_body in bodies)
 			if append:
 				bodies.push_back( root_most_body )
@@ -691,7 +687,7 @@ func parent_bodies():
 		if body == null:
 			continue
 		
-		body = body.root_most_body()
+		body = body.get_ref_frame_root_most_body()
 		if not (body in bodies):
 			bodies.push_back( body )
 	

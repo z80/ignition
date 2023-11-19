@@ -175,7 +175,7 @@ func process_user_input( input: Dictionary ):
 	# Call user input for the upper most body.
 	# It is supposed to distribute the same controls 
 	# to all sub-bodies.
-	var sb: RefFrameNode = body.root_most_body()
+	var sb: RefFrameNode = body.get_ref_frame_root_most_body()
 	sb.process_user_input_2( input )
 
 

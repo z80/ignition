@@ -233,11 +233,12 @@ func hide_shock_wave_visual():
 func gui_classes( mode: Array ):
 	var classes = []
 	
-	var sb: Node = get_assembly()
+	var sb: Node = get_ref_frame_assembly()
 	if (sb != null) and (sb != self):
-		var s_classes = sb.gui_classes( mode )
-		for cl in s_classes:
-			classes.push_back( cl )
+		if sb.has_method( "gui_classes" ):
+			var s_classes = sb.gui_classes( mode )
+			for cl in s_classes:
+				classes.push_back( cl )
 	
 	var empty: bool = mode.is_empty()
 	if empty:
@@ -255,20 +256,13 @@ func gui_classes( mode: Array ):
 # Defines GUI classes to be shown.
 func gui_mode():
 	var ret: Array = []
-	var sb: Node = get_assembly()
+	var sb: Node = get_ref_frame_assembly()
 	if (sb != null) and (sb != self):
-		var more: Array = sb.gui_mode()
-		for m in more:
-			ret.push_back( m )
+		if sb.has_method( "gui_mode" ):
+			var more: Array = sb.gui_mode()
+			for m in more:
+				ret.push_back( m )
 	return ret
-
-
-# Returns the root most body.
-func root_most_body():
-	var sb = get_assembly()
-	if sb != null:
-		return sb
-	return self
 
 
 func has_player_control():
@@ -319,8 +313,8 @@ func update_state_from_physics( delta ):
 		# Directly assign transform only if there is no assembly.
 		# If assembly exists, it overrides transforms using se3_in_physics 
 		# and its own transform.
-		var ass: RefFrameAssemblyNode = get_assembly()
-		if ass == null:
+		var root: RefFrameBodyNode = get_ref_frame_root_most_body()
+		if root == self:
 			self.set_t( t )
 			self.set_v( v )
 			self.set_w( w )
@@ -452,9 +446,9 @@ func remove_physical():
 func _change_parent( p: Node, recursive_call: bool ):
 	if recursive_call:
 		return
-	var assembly: Node = get_assembly()
-	if (assembly != null) and is_instance_valid( assembly ):
-		assembly.change_parent( p )
+	var root: Node = get_ref_frame_root_most_body()
+	if (root != null) and is_instance_valid( root ):
+		root.change_parent( p )
 
 
 
@@ -466,7 +460,7 @@ func process_user_input_2( input: Dictionary ):
 
 # It permits or not showing the window with all the little panels.
 func show_click_container():
-	var sb: Node = get_assembly()
+	var sb: Node = get_ref_frame_root_most_body()
 	if sb != null:
 		var res: bool = sb.show_click_container()
 		return res

@@ -20,7 +20,7 @@ func _ready():
 
 
 func _on_Grab_pressed():
-	var s = _target_obj.root_most_body()
+	var s = _target_obj.get_ref_frame_root_most_body()
 	s.activate_grab( _target_obj )
 	_parent_gui.queue_free()
 

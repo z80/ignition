@@ -106,7 +106,7 @@ static func filter_top_hierarchy( src: Array ) -> Array:
 	var qty: int = src.size()
 	for i in range( qty ):
 		var body: RefFrameNode = src[i]
-		var b = body.root_most_body()
+		var b = body.get_ref_frame_root_most_body()
 		var ind: int = dest.find( b )
 		if ( ind < 0 ):
 			dest.push_back( b )

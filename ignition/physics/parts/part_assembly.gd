@@ -147,10 +147,6 @@ func process_user_input_2( input: Dictionary ):
 
 
 
-func root_most_body():
-	return self
-
-
 func show_click_container():
 	return true
 

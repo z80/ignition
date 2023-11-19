@@ -122,7 +122,7 @@ func _process_destruction():
 		return
 	
 	# Destroying the part and the assembly.
-	var sb: Node = get_assembly()
+	var sb: Node = get_ref_frame_root_most_body()
 	if (sb != null) and ( is_instance_valid(sb) ):
 		sb.queue_free()
 	
@@ -188,15 +188,7 @@ func deactivate( root_call: bool = true ):
 	super.deactivate(root_call)
 	
 	deactivate_nodes( true )
-	
-	# Need to make sure that not in a construction mode.
-	# In construction mode super body is provided externally 
-	# And provides additional context menu GUIs.
-	if root_call and (body_state != BodyState.CONSTRUCTION):
-		var sb: Node = get_assembly()
-		if sb != null:
-			sb.queue_free()
-			sb = null
+
 
 
 
