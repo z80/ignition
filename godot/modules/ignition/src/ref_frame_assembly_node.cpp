@@ -23,13 +23,12 @@ RefFrameAssemblyNode::~RefFrameAssemblyNode()
 
 void RefFrameAssemblyNode::ign_process( real_t delta )
 {
-	// The base class' method.
 	const int qty = get_child_count();
 	bool applied = false;
 	SE3 inv_se3_in_physics;
 	for ( int i=0; i<qty; i++ )
 	{
-		Node * ch = get_child( 0 );
+		Node * ch = get_child( i );
 		RefFrameBodyNode * body = Object::cast_to<RefFrameBodyNode>( ch );
 		if ( body != nullptr )
 		{
@@ -47,6 +46,7 @@ void RefFrameAssemblyNode::ign_process( real_t delta )
 			body->set_se3_raw( body_se3 );
 		}
 	}
+	// The base class' method.
 	RefFrameNode::ign_process( delta );
 }
 

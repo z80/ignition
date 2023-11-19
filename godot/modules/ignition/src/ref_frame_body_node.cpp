@@ -17,9 +17,6 @@ void RefFrameBodyNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("set_se3_in_physics", "se3"), &RefFrameBodyNode::set_se3_in_physics );
 	ClassDB::bind_method( D_METHOD("get_se3_in_physics"),        &RefFrameBodyNode::get_se3_in_physics );
 
-	ClassDB::bind_method( D_METHOD("get_assembly"),          &RefFrameBodyNode::get_assembly );
-	ClassDB::bind_method( D_METHOD("get_ref_frame_physics"), &RefFrameBodyNode::get_ref_frame_physics );
-
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "acceleration" ),  "set_acceleration", "get_acceleration" );
 }
@@ -67,31 +64,43 @@ const SE3 & RefFrameBodyNode::get_se3_in_physics_raw() const
 	return se3_in_physics_;
 }
 
-Node * RefFrameBodyNode::get_assembly()
+
+void RefFrameBodyNode::ign_process( real_t delta )
 {
-	Node * p = get_parent();
-	if ( p == nullptr )
-		return nullptr;
-	RefFrameAssemblyNode * a = Object::cast_to<RefFrameAssemblyNode>( p );
-	return a;
+	// The base class' method.
+	const int qty = get_child_count();
+	SE3 se3_in_physics = get_se3_in_physics_raw();
+	SE3 inv_se3_in_physics = se3_in_physics.inverse();
+	for ( int i=0; i<qty; i++ )
+	{
+		Node * ch = get_child( i );
+		RefFrameBodyNode * body = Object::cast_to<RefFrameBodyNode>( ch );
+		if ( body != nullptr )
+		{
+			// For each child body compute transform relative to this body.
+			SE3 body_se3 = body->get_se3_in_physics_raw();
+			body_se3 = inv_se3_in_physics * body_se3;
+			body->set_se3_raw( body_se3 );
+		}
+	}
+	RefFrameNode::ign_process( delta );
 }
 
-Node * RefFrameBodyNode::get_ref_frame_physics()
+void RefFrameBodyNode::on_parent_jumped()
 {
-	Node * p = get_parent();
-	if ( p == nullptr )
-		return nullptr;
+	RefFrameNode::on_parent_jumped();
 
-	RefFrameNonInertialNode * a = Object::cast_to<RefFrameNonInertialNode>( p );
-	if ( a != nullptr )
-		return a;
-
-	p = p->get_parent();
-	if ( p == nullptr )
-		return nullptr;
-
-	a = Object::cast_to<RefFrameNonInertialNode>( p );
-	return a;
+	// Let all children know recursively.
+	const int qty = get_child_count();
+	for ( int i=0; i<qty; i++ )
+	{
+		Node * ch = get_child( i );
+		RefFrameNode * rf = Object::cast_to<RefFrameNode>( ch );
+		if ( rf != nullptr )
+		{
+			rf->on_parent_jumped();
+		}
+	}
 }
 
 

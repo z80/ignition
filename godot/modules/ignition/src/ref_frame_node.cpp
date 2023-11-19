@@ -1,5 +1,9 @@
 
 #include "ref_frame_node.h"
+#include "ref_frame_body_node.h"
+#include "ref_frame_assembly_node.h"
+#include "ref_frame_non_inertial_node.h"
+
 #include "core/string/print_string.h"
 #include "scene/scene_string_names.h"
 
@@ -63,6 +67,11 @@ void RefFrameNode::_bind_methods()
 	GDVIRTUAL_BIND(_serialize, "data");
 	ClassDB::bind_method( D_METHOD("deserialize", "data"), &RefFrameNode::deserialize, Variant::BOOL );
 	GDVIRTUAL_BIND(_deserialize, "data");
+
+	ClassDB::bind_method( D_METHOD("get_ref_frame_root_most_body"), &RefFrameNode::get_ref_frame_root_most_body );
+	ClassDB::bind_method( D_METHOD("get_ref_frame_assembly"),       &RefFrameNode::get_ref_frame_assembly );
+	ClassDB::bind_method( D_METHOD("get_ref_frame_physics"),        &RefFrameNode::get_ref_frame_physics );
+
 
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM3D, "transform" ),        "set_t", "t" );
@@ -669,6 +678,60 @@ bool RefFrameNode::deserialize( const Dictionary & data_arg )
 	}
 
 	return true;
+}
+
+
+Node * RefFrameNode::get_ref_frame_root_most_body()
+{
+	Node * p = this;
+	while (p != nullptr)
+	{
+		Node * p_new = p->get_parent();
+		if ( p_new == nullptr )
+			return p;
+
+		RefFrameBodyNode * b = Object::cast_to<RefFrameBodyNode>( p_new );
+		if ( b == nullptr )
+			return p;
+
+		p = p_new;
+	}
+	return nullptr;
+}
+
+Node * RefFrameNode::get_ref_frame_assembly()
+{
+	Node * p = this;
+	while (p != nullptr)
+	{
+		Node * p_new = p->get_parent();
+		if ( p_new == nullptr )
+			return nullptr;
+
+		RefFrameAssemblyNode * a = Object::cast_to<RefFrameAssemblyNode>( p_new );
+		if ( a != nullptr )
+			return a;
+
+		p = p_new;
+	}
+	return nullptr;
+}
+
+Node * RefFrameNode::get_ref_frame_physics()
+{
+	Node * p = this;
+	while (p != nullptr)
+	{
+		p = p->get_parent();
+		if ( p == nullptr )
+			return nullptr;
+
+		RefFrameNonInertialNode * a = Object::cast_to<RefFrameNonInertialNode>( p );
+		if ( a != nullptr )
+			return a;
+
+	}
+	return nullptr;
 }
 
 

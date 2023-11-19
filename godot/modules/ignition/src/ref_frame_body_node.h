@@ -31,8 +31,9 @@ public:
 
 	SE3 se3_in_physics_;
 
-	Node * get_assembly();
-	Node * get_ref_frame_physics();
+	virtual void ign_process( real_t delta ) override;
+
+	virtual void on_parent_jumped() override;
 
 public:
 	Vector3d acc;

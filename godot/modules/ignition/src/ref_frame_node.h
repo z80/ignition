@@ -132,6 +132,10 @@ public:
 	GDVIRTUAL1(_serialize, Dictionary);
 	virtual bool deserialize( const Dictionary & data );
 	GDVIRTUAL1R(bool, _deserialize, Dictionary);
+
+	Node * get_ref_frame_root_most_body();
+	Node * get_ref_frame_assembly();
+	Node * get_ref_frame_physics();
 };
 
 }
