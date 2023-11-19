@@ -631,7 +631,7 @@ func self_delete_if_unused():
 
 # Only derivatives of "PhysicsBodyBase" for applying forces.
 func child_physics_bodies():
-	var children = get_children()
+	var children = get_ref_frame_all()
 	var bodies: Array = []
 	for ch in children:
 		var b: PhysicsBodyBase = ch as PhysicsBodyBase
@@ -645,13 +645,11 @@ func child_physics_bodies():
 
 
 func child_bodies():
-	var children: Array = get_children()
+	var children: Array = get_ref_frame_all()
 	var bodies: Array = []
 	for ch in children:
 		var b = ch as RefFrameBodyNode
-		var a = ch as RefFrameAssemblyNode
-		var include: bool = (b != null) and (a == null)
-		if include:
+		if b != null:
 			bodies.push_back( b )
 	
 	return bodies
@@ -662,14 +660,8 @@ func root_most_child_bodies():
 	var bodies = []
 	for ch in children:
 		var b: RefFrameNode = ch as RefFrameBodyNode
-		if b == null:
-			continue
-		
 		if (b != null):
-			var root_most_body: RefFrameNode = b
-			var append: bool = not (root_most_body in bodies)
-			if append:
-				bodies.push_back( root_most_body )
+			bodies.push_back( b )
 	
 	return bodies
 
