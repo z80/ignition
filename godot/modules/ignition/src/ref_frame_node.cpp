@@ -71,6 +71,7 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_ref_frame_root_most_body"), &RefFrameNode::get_ref_frame_root_most_body );
 	ClassDB::bind_method( D_METHOD("get_ref_frame_assembly"),       &RefFrameNode::get_ref_frame_assembly );
 	ClassDB::bind_method( D_METHOD("get_ref_frame_physics"),        &RefFrameNode::get_ref_frame_physics );
+	ClassDB::bind_method( D_METHOD("get_ref_frame_all"),            &RefFrameNode::get_ref_frame_all );
 
 
 	ADD_GROUP( "Ignition", "" );
@@ -732,6 +733,28 @@ Node * RefFrameNode::get_ref_frame_physics()
 
 	}
 	return nullptr;
+}
+
+static void _add_nodes_recursively( Node * node, Array & ret )
+{
+	RefFrameNode * rf = Object::cast_to<RefFrameNode>( node );
+	if ( rf == nullptr )
+		return;
+	ret.push_back( rf );
+
+	const int qty = rf->get_child_count();
+	for ( int i=0; i<qty; i++ )
+	{
+		Node * ch = node->get_child( i );
+		_add_nodes_recursively( ch, ret );
+	}
+}
+
+Array RefFrameNode::get_ref_frame_all()
+{
+	Array ret;
+	_add_nodes_recursively( this, ret );
+	return ret;
 }
 
 
