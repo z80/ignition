@@ -12,7 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://b716hij8htvor" path="res://physics/bodies/construction_new/construction.tscn" id="10_puedo"]
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="11"]
 
-[sub_resource type="Resource" id="Resource_ccqii"]
+[sub_resource type="Resource" id="Resource_5gwcm"]
 resource_local_to_scene = true
 script = ExtResource("11")
 override_material = ExtResource("8")
@@ -31,7 +31,7 @@ RefFramePhysicsScene = ExtResource("9")
 
 [node name="Sun" parent="." instance=ExtResource("6")]
 human_readable_name = "Sun"
-surface_source = SubResource("Resource_ccqii")
+surface_source = SubResource("Resource_5gwcm")
 
 [node name="Translation" parent="Sun" instance=ExtResource("3")]
 human_readable_name = "PlanetTranslation"
@@ -49,13 +49,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 503, 2, 0)
 editor_description = "Bla-bla-bla"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
 
-[node name="RefFrameAssemblyNode" type="RefFrameAssemblyNode" parent="Sun/Translation/Rotation/RefFramePhysics"]
-human_readable_name = "Assembly for the character"
-
-[node name="Character" parent="Sun/Translation/Rotation/RefFramePhysics/RefFrameAssemblyNode" instance=ExtResource("2")]
+[node name="Character" parent="Sun/Translation/Rotation/RefFramePhysics" instance=ExtResource("2")]
 needs_relative_to_camera = true
 
-[node name="PlayerCamera" parent="Sun/Translation/Rotation/RefFramePhysics/RefFrameAssemblyNode/Character" instance=ExtResource("7")]
+[node name="PlayerCamera" parent="Sun/Translation/Rotation/RefFramePhysics/Character" instance=ExtResource("7")]
 map_mode = true
 
 [node name="RootUi" parent="." instance=ExtResource("5")]
