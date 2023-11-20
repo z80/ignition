@@ -382,6 +382,18 @@ void RefFrameNode::on_parent_jumped()
 {
 	if (GDVIRTUAL_IS_OVERRIDDEN_PTR(this, _parent_jumped) )
 		GDVIRTUAL_CALL_PTR(this, _parent_jumped);
+
+	// Recursively call for all children. It is needed if a ref. frame
+	// of a complicated hierarchy has jumped.
+	const int qty = get_child_count();
+	for ( int i=0; i<qty; i++ )
+	{
+		Node * n = get_child( i );
+		RefFrameNode * rf = Object::cast_to<RefFrameNode>( n );
+		if ( rf == nullptr )
+			continue;
+		rf->on_parent_jumped();
+	}
 }
 
 
