@@ -407,12 +407,13 @@ func _create_physical( Physical: PackedScene ):
 	var p: RigidBody3D = Physical.instantiate()
 	
 	#p.visible = false
+	var se3: Se3Ref = self.relative_to( parent_rf )
 	
-	var t: Transform3D = self.t()
+	var t: Transform3D = se3.transform
 	p.transform = t
-	var v: Vector3 = self.v()
+	var v: Vector3 = se3.v
 	p.linear_velocity = v
-	var w: Vector3 = self.w()
+	var w: Vector3 = se3.w
 	p.angular_velocity = w
 	
 	parent_rf.add_physics_body( p )
@@ -539,8 +540,7 @@ func set_process_physics( en: bool ):
 
 func _parent_physics_ref_frame():
 	# Check if parent is RefFramePhysics
-	var parent_node: Node = get_parent()
-	var rf: RefFrameNonInertialNode = parent_node as RefFrameNonInertialNode
+	var rf: RefFrameNonInertialNode = get_ref_frame_physics() as RefFrameNonInertialNode
 	return rf
 
 

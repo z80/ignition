@@ -182,11 +182,13 @@ func process_ref_frames( celestial_bodies: Array ):
 
 func _apply_forces():
 	var rot: RefFrameNode = rotation_rf()
-	var bodies: Array = get_all_physics_bodies( rot )
+	var rf_body_pairs: Array = get_all_physics_bodies( rot )
 	
-	set_local_up( bodies, rot )
+	set_local_up( rf_body_pairs, rot )
 	
-	for b in bodies:
+	for rf_body in rf_body_pairs:
+		var rf: RefFrameNode = rf_body[0]
+		var b: RefFrameNode  = rf_body[1]
 #		var debug: bool = (b.name == "fuel_tank_2m_1m")
 #		if debug:
 #			rot.debug = true
@@ -195,8 +197,8 @@ func _apply_forces():
 		var se3_rel_to_body: Se3Ref = rot.relative_to( b )
 		if debug:
 			rot.debug = false
-		var se3_local: Se3Ref       = b.get_se3()
-		var q: Quaternion                 = se3_local.q
+		var se3_local: Se3Ref = b.relative_to( rf )
+		var q: Quaternion     = se3_local.q
 		
 		# Apply gravity and rotational forces.
 		var acc: Vector3 = b.acceleration

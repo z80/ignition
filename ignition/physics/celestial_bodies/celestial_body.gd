@@ -68,8 +68,8 @@ func init_forces():
 # celestial body. Need to compute influence and change parent or allow/disallow orbiting.
 func process_ref_frames( celestial_bodies: Array ):
 	# Apply gravity to physics bodies here.
-	var bodies: Array = get_all_physics_bodies( self, true, false )
-	set_local_up( bodies, self )
+	var rf_body_pairs: Array = get_all_physics_bodies( self, true, false )
+	set_local_up( rf_body_pairs, self )
 
 
 # Returns all physics ref frames for a node.
@@ -98,12 +98,14 @@ func get_ref_frames( n: Node, certain_ones: bool = false, orbiting: bool = false
 
 func get_all_physics_bodies( n: Node, certain_ones: bool = false, orbiting: bool = false ):
 	var ref_frames: Array = get_ref_frames( n, certain_ones, orbiting )
-	var physics_bodies: Array = []
+	var rf_body_pairs: Array = []
 	for rf in ref_frames:
 		var bodies: Array = rf.child_physics_bodies()
-		physics_bodies += bodies
+		for b in bodies:
+			var rf_body_pair: Array = [rf, b]
+			rf_body_pairs.push_back( rf_body_pair )
 	
-	return physics_bodies
+	return rf_body_pairs
 
 
 
@@ -129,11 +131,13 @@ func _deserialize( data: Dictionary ):
 
 
 
-func set_local_up( physics_bodies: Array, force_origin: RefFrameNode ):
+func set_local_up( rf_body__pairs: Array, force_origin: RefFrameNode ):
 	# For each body apply the force source.
-	for b in physics_bodies:
+	for rf_body in rf_body__pairs:
+		var rf: RefFrameNode = rf_body[0]
+		var b: RefFrameNode  = rf_body[1]
 		var se3_rel_to_origin: Se3Ref = self.relative_to( b )
-		var se3_local: Se3Ref = b.get_se3()
+		var se3_local: Se3Ref = b.relative_to( rf )
 		var q: Quaternion = se3_local.q
 		
 		var r: Vector3 = -se3_rel_to_origin.r
