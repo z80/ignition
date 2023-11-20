@@ -230,17 +230,28 @@ void RefFrameNonInertialNode::_refresh_force_source_nodes()
 	}
 }
 
+static void _traverse_body_nodes( Node * node, Vector<RefFrameBodyNode *> & bodies )
+{
+	RefFrameBodyNode * body = Object::cast_to<RefFrameBodyNode>( node );
+	if ( body != nullptr )
+		bodies.push_back( body );
+
+	const int qty = node->get_child_count();
+	for ( int i=0; i<qty; i++ )
+	{
+		Node * ch = body->get_child( i );
+		_traverse_body_nodes( ch, bodies );
+	}
+}
+
 void RefFrameNonInertialNode::_refresh_body_nodes()
 {
 	all_bodies.clear();
 	const int qty = get_child_count();
 	for ( int i=0; i<qty; i++ )
 	{
-		Node * node = get_child( i );
-		// Only pick bodies.
-		RefFrameBodyNode * body = Object::cast_to<RefFrameBodyNode>( node );
-		if ( body != nullptr )
-			all_bodies.push_back( body );
+		Node * ch = get_child( i );
+		_traverse_body_nodes( ch, all_bodies );
 	}
 }
 
@@ -325,7 +336,7 @@ void RefFrameNonInertialNode::_compute_all_accelerations( const Vector3d & combi
 void RefFrameNonInertialNode::_compute_one_accelearation(  const Vector3d & combined_orbital_acc, RefFrameBodyNode * body )
 {
 	const SE3 & rf_se3   = this->se3_;
-	const SE3 & body_se3 = body->se3_;
+	const SE3 & body_se3 = body->relative_( this );
 	const Quaterniond inv_rf_q = rf_se3.q_.Inverse();
 
 	Vector3d total_acc = combined_orbital_acc;
