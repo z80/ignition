@@ -233,13 +233,14 @@ void RefFrameNonInertialNode::_refresh_force_source_nodes()
 static void _traverse_body_nodes( Node * node, Vector<RefFrameBodyNode *> & bodies )
 {
 	RefFrameBodyNode * body = Object::cast_to<RefFrameBodyNode>( node );
-	if ( body != nullptr )
-		bodies.push_back( body );
+	if ( body == nullptr )
+		return;
 
+	bodies.push_back( body );
 	const int qty = node->get_child_count();
 	for ( int i=0; i<qty; i++ )
 	{
-		Node * ch = body->get_child( i );
+		Node * ch = node->get_child( i );
 		_traverse_body_nodes( ch, bodies );
 	}
 }
