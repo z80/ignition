@@ -328,12 +328,14 @@ func update_physics_from_state():
 	
 	# There might be a body without physical, right?
 	# So need to check if it exists even after create_physical() call.
-	if _physical != null:
-		var t: Transform3D = self.t()
+	if (_physical != null) and ( is_instance_valid(_physical) ):
+		var rf: RefFrameNonInertialNode = get_ref_frame_physics()
+		var se3: Se3Ref = self.relative_to( rf )
+		var t: Transform3D = se3.transform
 		_physical.transform = t
-		var v: Vector3 = self.v()
+		var v: Vector3 = se3.v
 		_physical.set_linear_velocity( v )
-		var w: Vector3 = self.w()
+		var w: Vector3 = se3.w
 		_physical.set_angular_velocity( w )
 
 

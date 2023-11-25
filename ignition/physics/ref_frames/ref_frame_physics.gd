@@ -263,7 +263,7 @@ func jump_if_needed():
 	
 	# Compute center of all bodies in the ref frame.
 	# But not assemblies.
-	var bodies: Array = child_bodies()
+	var bodies: Array = root_most_child_bodies()
 	var qty: int =  bodies.size()
 	if qty < 1:
 		return

@@ -181,6 +181,8 @@ func process_ref_frames( celestial_bodies: Array ):
 
 
 func _apply_forces():
+	return
+	
 	var rot: RefFrameNode = rotation_rf()
 	var rf_body_pairs: Array = get_all_physics_bodies( rot )
 	

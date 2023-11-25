@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://b5ljlddno6gt5"]
+[gd_scene load_steps=13 format=3 uid="uid://b5ljlddno6gt5"]
 
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://4qxv1iovjiyw" path="res://physics/parts/characters/central/central.tscn" id="2"]
@@ -9,9 +9,10 @@
 [ext_resource type="Material" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_override.tres" id="8"]
 [ext_resource type="PackedScene" uid="uid://dkuexll5bw41" path="res://physics/ref_frames/ref_frame_physics.tscn" id="9"]
 [ext_resource type="Material" uid="uid://b1fyq1lssmtkk" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/material_liquid.tres" id="10"]
+[ext_resource type="PackedScene" path="res://physics/parts/thrusters/atmospheric/atmospheric.tscn" id="10_aeouo"]
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="11"]
 
-[sub_resource type="Resource" id="Resource_8ffm1"]
+[sub_resource type="Resource" id="Resource_81eyp"]
 resource_local_to_scene = true
 script = ExtResource("11")
 override_material = ExtResource("8")
@@ -30,7 +31,7 @@ RefFramePhysicsScene = ExtResource("9")
 
 [node name="Sun" parent="." instance=ExtResource("6")]
 human_readable_name = "Sun"
-surface_source = SubResource("Resource_8ffm1")
+surface_source = SubResource("Resource_81eyp")
 
 [node name="Translation" parent="Sun" instance=ExtResource("3")]
 human_readable_name = "PlanetTranslation"
@@ -50,8 +51,8 @@ needs_relative_to_camera = true
 [node name="PlayerCamera" parent="Sun/Translation/Rotation/RefFramePhysics/Character" instance=ExtResource("7")]
 map_mode = true
 
-[node name="AnotherCharacter" parent="Sun/Translation/Rotation/RefFramePhysics/Character" instance=ExtResource("2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, -5, 0)
+[node name="Thruster" parent="Sun/Translation/Rotation/RefFramePhysics/Character" instance=ExtResource("10_aeouo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 5, 0)
 
 [node name="RootUi" parent="." instance=ExtResource("5")]
 offset_right = 0.0
