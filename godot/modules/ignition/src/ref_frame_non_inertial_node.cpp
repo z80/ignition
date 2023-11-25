@@ -142,6 +142,9 @@ void RefFrameNonInertialNode::ign_physics_pre_process( real_t delta )
 
 	_compute_relative_se3s();
 	const Vector3d combined_centrifugal_acc = _compute_combined_acc();
+	// It assigns accelerations to all the bodies recursively.
+	// All accelerations are in this ref. frame.
+	// It is NOT in body or body parent's ref. frame!!!!!
 	_compute_all_accelerations( combined_centrifugal_acc );
 
 	if ( !physics_mode )
@@ -337,8 +340,7 @@ void RefFrameNonInertialNode::_compute_all_accelerations( const Vector3d & combi
 void RefFrameNonInertialNode::_compute_one_accelearation(  const Vector3d & combined_orbital_acc, RefFrameBodyNode * body )
 {
 	const SE3 & rf_se3   = this->se3_;
-	const SE3 & body_se3 = body->relative_( this );
-	const Quaterniond inv_rf_q = rf_se3.q_.Inverse();
+	const SE3 & body_in_rf_se3 = body->relative_( this );
 
 	Vector3d total_acc = combined_orbital_acc;
 
@@ -347,14 +349,17 @@ void RefFrameNonInertialNode::_compute_one_accelearation(  const Vector3d & comb
 		for ( int i=0; i<qty; i++ )
 		{
 			RotationPair & p = parent_rots.ptrw()[i];
-			RefFrameRotationNode * node = p.node;
+			RefFrameRotationNode * rot_node = p.node;
 			const SE3 & rot_se3 = p.se3;
+			const Quaterniond to_rot_q = rot_se3.q_.Inverse();
+			const Quaterniond rot_to_rf_q = rot_se3.q_ * to_rot_q;
 
-			const Vector3d negative_r = rot_se3.r_ - body_se3.r_;
+			const Vector3d negative_r = rot_se3.r_ - body_in_rf_se3.r_;
 
-			const Vector3d w = inv_rf_q * node->se3_.w_;
+			// Convert from rot parent's to current ref. frame.
+			const Vector3d w = rot_to_rf_q * rot_node->se3_.w_;
 
-			const Vector3d negative_v = rot_se3.v_ - body_se3.v_;
+			const Vector3d negative_v = rot_se3.v_ - body_in_rf_se3.v_;
 
 			const Vector3d centrifugal_acc = w.CrossProduct( w.CrossProduct( negative_r ) );
 			const Vector3d coriolis_acc    = 2.0 * ( w.CrossProduct( negative_v ) );
@@ -374,7 +379,7 @@ void RefFrameNonInertialNode::_compute_one_accelearation(  const Vector3d & comb
 
 			const Float gm = node->cm.own_gm;
 
-			const Vector3d r = gm_se3.r_ - body_se3.r_;
+			const Vector3d r = gm_se3.r_ - body_in_rf_se3.r_;
 			const Float abs_r = r.Length();
 
 			const Vector3d acc = (gm/(abs_r*abs_r*abs_r)) * r;
@@ -383,6 +388,7 @@ void RefFrameNonInertialNode::_compute_one_accelearation(  const Vector3d & comb
 		}
 	}
 
+	// Acceleration is in this ref. frame, not in bodie's ref. frame.
 	body->acc = total_acc;
 }
 
