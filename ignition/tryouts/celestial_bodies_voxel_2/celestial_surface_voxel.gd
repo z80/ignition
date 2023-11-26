@@ -454,7 +454,6 @@ func _create_orbit_visualizer():
 		orbit_visualizer.queue_free()
 	var Vis = load( "res://physics/celestial_bodies/orbit_visualizer.tscn" )
 	orbit_visualizer = Vis.instantiate()
-	self.add_child( orbit_visualizer )
 	
 	var layer: Node3D = RootScene.get_visual_layer_space()
 	layer.add_child( orbit_visualizer )

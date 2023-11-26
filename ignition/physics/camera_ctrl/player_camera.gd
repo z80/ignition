@@ -665,7 +665,7 @@ func _draw_broad_tree_faces():
 	if body == null:
 		return
 	
-	var rf: RefFramePhysics = body.get_parent() as RefFramePhysics
+	var rf: RefFramePhysics = body.get_ref_frame_physics() as RefFrameNonInertialNode
 	if rf == null:
 		return
 	

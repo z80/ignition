@@ -275,11 +275,14 @@ func create_ref_frame_physics():
 
 
 func get_player_ref_frame():
-	var body: PhysicsBodyBase = self.player_control
+	var c: RefFrameNode = get_camera_node()
+	if (c == null) or (not is_instance_valid(c)):
+		return null
+	var body: RefFrameBodyNode = c.get_parent() as RefFrameBodyNode
 	if (body == null) or (not is_instance_valid(body)):
 		return null
-	var p: Node = body.get_parent()
-	var rf_p: RefFramePhysics = p as RefFramePhysics
+	
+	var rf_p: RefFrameNonInertialNode = body.get_ref_frame_physics()
 	
 	return rf_p
 

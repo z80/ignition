@@ -77,7 +77,7 @@ func compute_force( body: RefFrameNode, se3: Se3Ref ):
 	var forward: Vector3 = -v.normalized()
 	forward = body_q * (forward)
 	
-	var rf_physics: RefFrameNode = body.get_parent()
+	var rf_physics: RefFrameNode = body.get_ref_frame_physics()
 	var broad_tree: BroadTreeGd = rf_physics.get_broad_tree()
 	
 	for i in range(qty):
