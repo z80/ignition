@@ -449,9 +449,9 @@ func remove_physical():
 func _change_parent( p: Node, recursive_call: bool ):
 	if recursive_call:
 		return
-	var root: Node = get_ref_frame_root_most_body()
+	var root: RefFrameNode = get_ref_frame_root_most_body()
 	if (root != null) and is_instance_valid( root ):
-		root.change_parent( p )
+		root.change_parent( p, true )
 
 
 
