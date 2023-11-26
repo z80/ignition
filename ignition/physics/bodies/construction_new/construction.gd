@@ -24,7 +24,6 @@ func _ready():
 
 
 
-
 func process_inner(delta):
 	super.process_inner(delta)
 	
@@ -44,7 +43,7 @@ func process_inner(delta):
 
 func init():
 	super.init()
-	_apply_default_orientation()
+	call_deferred( "_apply_default_orientation" )
 	#var t: Transform = Transform.IDENTITY
 	#t.origin = Vector3( 0.0, 1.0, 0.0 )
 	#set_t( t )
