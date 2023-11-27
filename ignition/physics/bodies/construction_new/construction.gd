@@ -193,11 +193,14 @@ func _activate_parts():
 		# Own super body will be created on the first request.
 		#for pt in parts:
 		#	pt.set_assembly( null )
-		while true:
-			var qty: int = get_child_count()
-			if qty < 1:
-				break
-			var part: Part = get_child(0)
+		var qty: int = get_child_count()
+		var parts: Array = []
+		for i in range(qty):
+			var part: RefFrameNode = get_child(0) as RefFrameNode
+			if part != null:
+				parts.push_back( part )
+		
+		for part in parts:
 			var rf: RefFrameNode = self.get_ref_frame_physics()
 			part.change_parent( rf, true )
 			part.activate()
@@ -263,6 +266,8 @@ func create_block( block_desc: Resource ):
 	var block: PhysicsBodyBase = block_desc.create( self, se3 )
 	if block == null:
 		return
+	
+	block.debug = true
 	
 	var is_static_block: bool = block_desc.is_static()
 	

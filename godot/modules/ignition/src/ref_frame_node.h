@@ -43,6 +43,8 @@ public:
 	Vector3 w() const;
 
 	virtual void set_se3_raw( const SE3 & se3 );
+	GDVIRTUAL1(_set_se3_raw, const Ref<Se3Ref> &);
+
 	void set_se3( const Ref<Se3Ref> & se3 );
 	GDVIRTUAL1(_set_se3, const Ref<Se3Ref> &);
 	Ref<Se3Ref> get_se3() const;

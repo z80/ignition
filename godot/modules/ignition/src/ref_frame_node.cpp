@@ -28,6 +28,7 @@ void RefFrameNode::_bind_methods()
 
 	ClassDB::bind_method( D_METHOD("set_se3", "se3"), &RefFrameNode::set_se3 );
 	GDVIRTUAL_BIND(_set_se3, "se3");
+	GDVIRTUAL_BIND(_set_se3_raw, "se3");
 	ClassDB::bind_method( D_METHOD("get_se3"),        &RefFrameNode::get_se3 );
 
 	ClassDB::bind_method( D_METHOD("relative_to", "origin"), &RefFrameNode::relative_to );
@@ -157,6 +158,16 @@ Vector3 RefFrameNode::w() const
 
 void RefFrameNode::set_se3_raw( const SE3 & se3 )
 {
+	if ( debug_ )
+	{
+		if ( GDVIRTUAL_IS_OVERRIDDEN( _set_se3_raw ) )
+		{
+			Ref<Se3Ref> se3_ref;
+			se3_ref.instantiate();
+			se3_ref->se3 = se3;
+			GDVIRTUAL_CALL( _set_se3_raw, se3_ref );
+		}
+	}
 	se3_ = se3;
 }
 

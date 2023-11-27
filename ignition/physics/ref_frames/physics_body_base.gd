@@ -107,6 +107,10 @@ func _set_se3( se3 ):
 
 
 
+func _set_se3_raw( se3 ):
+	print( "I'm here!" )
+
+
 func _relative_to_camera( root_node, camera_node, se3 ):
 	if (_visual != null) and ( is_instance_valid(_visual) ):
 		var t: Transform3D = se3.transform
