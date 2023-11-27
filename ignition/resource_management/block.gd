@@ -44,8 +44,8 @@ func create_internal( scene: PackedScene, parent: RefFrameNode, se3: Se3Ref ):
 	var inst: Node = scene.instantiate()
 	if parent == null:
 		parent = RootScene.get_root_for_bodies()
+	inst.change_parent( parent, true )
 	inst.init()
-	inst.change_parent( parent, false )
 	inst.set_se3( se3 )
 	return inst
 

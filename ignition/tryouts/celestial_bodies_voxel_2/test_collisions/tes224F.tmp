@@ -26,7 +26,15 @@ focus_depth = 40.0
 materials_solid = [ExtResource("10")]
 materials_liquid = [ExtResource("10")]
 
-[node name="RefFrameRoot" type="RefFrameRootNode"]
+[node name="RefFrameRoot" type="RefFrameRoot"]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+editor_description = ""
+RefFramePhysicsScene = ExtResource("9")
 script = ExtResource("1")
 RefFramePhysicsScene = ExtResource("9")
 

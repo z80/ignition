@@ -213,7 +213,7 @@ func _get_show_orbit():
 
 
 func _process_visualize_orbits():
-	var root: RefFrameRoot = get_ref_frame_root()
+	var root: RefFrameRootNode = get_ref_frame_root()
 	var new_state: bool = root.visualize_orbits
 	var current_state: bool = self.show_orbit
 	if current_state != new_state:
@@ -250,9 +250,4 @@ func on_delete():
 	#	if is_instance_valid( b ):
 	#		remove_sub_body( b )
 
-
-
-func get_ref_frame_root():
-	var rf: RefFrameNode = RootScene.ref_frame_root
-	return rf
 

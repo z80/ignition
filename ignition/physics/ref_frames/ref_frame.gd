@@ -113,10 +113,6 @@ func _force_source_recursive( n: Node ):
 	return _force_source_recursive( p )
 
 
-func get_ref_frame_root():
-	var rf: RefFrameNode = RootScene.ref_frame_root
-	return rf
-
 
 
 

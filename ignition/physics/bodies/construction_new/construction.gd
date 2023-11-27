@@ -8,7 +8,7 @@ var t_elapsed: float = 0.0
 var counter: int = 0
 
 # String describing editing mode.
-var activated_mode = null
+var activated_mode: String = ""
 
 # Target being edited.
 var edited_target: RefFrameNode = null
@@ -122,16 +122,16 @@ func construction_activate():
 
 
 func construction_deactivate():
-	if activated_mode != null:
+	if activated_mode.length() > 1:
 		finish_editing()
 		
 		#$PanelParts.visible = false
 		if (panel_parts != null) and ( is_instance_valid(panel_parts) ):
 			panel_parts.queue_free()
 		
-		activated_mode = null
+		activated_mode = ""
 		
-		_create_assembly()
+		_activate_parts()
 		dynamic_blocks.clear()
 		
 		_activate_static_blocks()
@@ -188,7 +188,7 @@ func finish_editing():
 
 
 
-func _create_assembly():
+func _activate_parts():
 	var qty = dynamic_blocks.size()
 	if qty > 0:
 		# Pick any one.
@@ -215,8 +215,8 @@ func _create_assembly():
 		
 		# Assign null as a superbody.
 		# Own super body will be created on the first request.
-		for pt in parts:
-			pt.set_assembly( null )
+		#for pt in parts:
+		#	pt.set_assembly( null )
 		part.activate()
 	
 	
@@ -274,19 +274,17 @@ func create_block( block_desc: Resource ):
 	se3.v = Vector3.ZERO
 	se3.w = Vector3.ZERO
 	
-	var p: Node = self.get_parent()
-	
-	se3 = p.relative_to_se3( player, se3 )
+	se3 = self.relative_to_se3( player, se3 )
 	se3 = se3.inverse()
-
-	var block: PhysicsBodyBase = block_desc.create( p, se3 )
+	
+	var block: PhysicsBodyBase = block_desc.create( self, se3 )
 	if block == null:
 		return
 	
 	var is_static_block: bool = block_desc.is_static()
 	
 	# This one makes it not delete superbody on activation.
-	block.body_state         = PhysicsBodyBase.BodyState.CONSTRUCTION
+	block.body_state  = PhysicsBodyBase.BodyState.CONSTRUCTION
 	
 	block.set_se3( se3 )
 	
@@ -299,12 +297,8 @@ func create_block( block_desc: Resource ):
 	else:
 		dynamic_blocks.push_back( block )
 	
-	
 	# Disable physics to prevent blocks from flying around.
 	block.deactivate()
-	
-	# Add the block as a child of the assembly.
-	block.change_parent( self, false )
 
 
 func delete_block( block: PhysicsBodyBase ):

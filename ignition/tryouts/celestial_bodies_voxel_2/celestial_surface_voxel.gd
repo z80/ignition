@@ -134,7 +134,7 @@ func get_visual_space():
 
 
 func _process_geometry( force_player_rf: RefFrameNode = null ):
-	var root: RefFrameRoot = RootScene.ref_frame_root
+	var root: RefFrameRootNode = RootScene.ref_frame_root
 	
 	# For player ref frame rebuild mesh if needed
 	# Generate visual appearance based on camera.

@@ -1,5 +1,5 @@
 
-extends RefFrameRoot
+extends RefFrameRootNode
 
 @export var RefFramePhysicsScene: PackedScene = null
 

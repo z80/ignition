@@ -3,7 +3,7 @@ extends Node
 
 var vp_container: Node = null
 
-var ref_frame_root: RefFrameRoot = null
+var ref_frame_root: RefFrameRootNode = null
 
 var _visual_root_space: Node3D = null
 var _visual_root_near: Node3D = null

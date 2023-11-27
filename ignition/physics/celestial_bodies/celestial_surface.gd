@@ -170,7 +170,7 @@ func process_motion( delta ):
 
 
 func process_geometry( force_player_rf: RefFrameNode = null ):
-	var root: RefFrameRoot = RootScene.ref_frame_root
+	var root: RefFrameRootNode = get_ref_frame_root()
 	var _player_rf: RefFrameNode
 	var _player_ctrl: RefFrameNode
 	if force_player_rf != null:
@@ -540,7 +540,7 @@ func _get_show_orbit():
 
 
 func _process_visualize_orbits():
-	var root: RefFrameRoot = get_ref_frame_root()
+	var root: RefFrameRootNode = get_ref_frame_root()
 	var new_state: bool = root.visualize_orbits
 	var current_state: bool = self.show_orbit
 	if current_state != new_state:
@@ -574,10 +574,6 @@ func air_pressure( se3_rel: Se3Ref ):
 	var p: float = air_pressure_surface * ( 1.0 - (d / atm_height_km) )
 	return p
 
-
-func get_ref_frame_root():
-	var rf: RefFrameNode = RootScene.ref_frame_root
-	return rf
 
 
 

@@ -296,7 +296,7 @@ func jump_if_needed():
 func exclude_too_far_bodies():
 	var max_dist: float = Constants.BODY_EXCLUDE_DIST
 	var bodies: Array = root_most_child_bodies()
-	var root: RefFrameRoot = get_ref_frame_root()
+	var root: RefFrameRootNode = get_ref_frame_root()
 	var player_control = root.player_control
 	var pt: Node = self.get_parent()
 	
@@ -333,7 +333,7 @@ func include_close_enough_bodies():
 func print_all_ref_frames():
 	DDD.important()
 	DDD.print( "All ref frames" )
-	var root: RefFrameRoot = self.get_ref_frame_root()
+	var root: RefFrameRootNode = get_ref_frame_root()
 	var player_rf: RefFrameNode = root.get_player_ref_frame()
 	if (player_rf != null) and ( is_instance_valid(player_rf) ):
 		DDD.print( "player rf: " + player_rf.name )
@@ -396,7 +396,7 @@ func split_if_needed_space() -> bool:
 	# At this point both arrays are not empty and if player ref frame is here, 
 	# it is in bodies_a.
 	var p: Node = get_parent()
-	var root: RefFrameRoot = get_ref_frame_root()
+	var root: RefFrameRootNode = get_ref_frame_root()
 	var rf: RefFramePhysics = root.create_ref_frame_physics()
 	rf.change_parent( p, false )
 #	var orig_se3: Se3Ref = self.get_se3()
@@ -475,7 +475,7 @@ func split_if_needed_surface() -> bool:
 		if inside:
 			bodies_b.push_back( body )
 	
-	var root: RefFrameRoot = get_ref_frame_root()
+	var root: RefFrameRootNode = get_ref_frame_root()
 	var rf: RefFramePhysics = root.create_ref_frame_physics()
 	rf.change_parent( rot, false )
 	var current_rf_se3: Se3Ref = self.get_se3()
@@ -495,7 +495,7 @@ func _post_split_surface( new_rf: RefFrameNode, nodes: Array, bodies: Array ):
 
 
 func merge_if_needed_space():
-	var root: RefFrameRoot = get_ref_frame_root()
+	var root: RefFrameRootNode = get_ref_frame_root()
 	var ref_frames: Array = root.physics_ref_frames()
 	for rf in ref_frames:
 		if rf == self:
@@ -859,11 +859,6 @@ func _force_source_recursive( n: Node ):
 	
 	var p: Node = n.get_parent()
 	return _force_source_recursive( p )
-
-
-func get_ref_frame_root():
-	var rf: RefFrameNode = RootScene.ref_frame_root
-	return rf
 
 
 

@@ -13,7 +13,7 @@
 [ext_resource type="Script" path="res://tryouts/celestial_bodies_voxel_2/surface_sources/test_planet/surface_sources/surface_source.gd" id="11"]
 [ext_resource type="PackedScene" uid="uid://b716hij8htvor" path="res://physics/bodies/construction_new/construction.tscn" id="11_6obv6"]
 
-[sub_resource type="Resource" id="Resource_y678s"]
+[sub_resource type="Resource" id="Resource_5u4qn"]
 resource_local_to_scene = true
 script = ExtResource("11")
 override_material = ExtResource("8")
@@ -26,13 +26,13 @@ focus_depth = 40.0
 materials_solid = [ExtResource("10")]
 materials_liquid = [ExtResource("10")]
 
-[node name="RefFrameRoot" type="RefFrameRootNode"]
+[node name="RefFrameRoot" type="RefFrameRoot"]
 script = ExtResource("1")
 RefFramePhysicsScene = ExtResource("9")
 
 [node name="Sun" parent="." instance=ExtResource("6")]
 human_readable_name = "Sun"
-surface_source = SubResource("Resource_y678s")
+surface_source = SubResource("Resource_5u4qn")
 
 [node name="Translation" parent="Sun" instance=ExtResource("3")]
 human_readable_name = "PlanetTranslation"

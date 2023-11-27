@@ -266,7 +266,7 @@ func gui_mode():
 
 
 func has_player_control():
-	var root: RefFrameRoot = get_ref_frame_root()
+	var root: RefFrameRootNode = get_ref_frame_root()
 	var pc = root.player_control
 	var ret: bool = (self == pc)
 	return ret
@@ -616,16 +616,16 @@ static func unique_child_name( n: Node, name: String ):
 
 
 
-func get_ref_frame_root():
-	var rf: RefFrameNode = self
-	while rf != null:
-		var root: RefFrameRoot = rf as RefFrameRoot
-		if root != null:
-			return root
-		
-		rf = rf.get_parent() as RefFrameNode
-	
-	return null
+#func get_ref_frame_root():
+#	var rf: RefFrameNode = self
+#	while rf != null:
+#		var root: RefFrameRoot = rf as RefFrameRoot
+#		if root != null:
+#			return root
+#
+#		rf = rf.get_parent() as RefFrameNode
+#
+#	return null
 
 
 
