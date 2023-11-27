@@ -1,23 +1,23 @@
 
-#ifndef __REF_FRAME_ROOT_H_
-#define __REF_FRAME_ROOT_H_
+#ifndef __REF_FRAME_ROOT_NODE_H_
+#define __REF_FRAME_ROOT_NODE_H_
 
 #include "ref_frame_node.h"
 
 namespace Ign
 {
 
-class RefFrameRoot: public RefFrameNode
+class RefFrameRootNode: public RefFrameNode
 {
-	GDCLASS(RefFrameRoot, RefFrameNode);
+	GDCLASS(RefFrameRootNode, RefFrameNode);
 	//OBJ_CATEGORY("Ignition");
 
 protected:
 	static void _bind_methods();
 
 public:
-	RefFrameRoot();
-	virtual ~RefFrameRoot();
+	RefFrameRootNode();
+	virtual ~RefFrameRootNode();
 
 	void set_time_dilation( real_t gain );
 	real_t get_time_dilation() const;

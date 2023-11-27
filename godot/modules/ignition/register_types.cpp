@@ -7,7 +7,7 @@
 #include "broad_tree_gd.h"
 
 #include "ref_frame_node.h"
-#include "ref_frame_root.h"
+#include "ref_frame_root_node.h"
 #include "ref_frame_motion_node.h"
 #include "ref_frame_rotation_node.h"
 #include "ref_frame_non_inertial_node.h"
@@ -65,7 +65,7 @@ void initialize_ignition_module( ModuleInitializationLevel p_level )
         ClassDB::register_class<Ign::BroadTreeGd>();
 
         ClassDB::register_class<Ign::RefFrameNode>();
-        ClassDB::register_class<Ign::RefFrameRoot>();
+        ClassDB::register_class<Ign::RefFrameRootNode>();
         ClassDB::register_class<Ign::RefFrameMotionNode>();
         ClassDB::register_class<Ign::RefFrameRotationNode>();
         ClassDB::register_class<Ign::RefFrameNonInertialNode>();

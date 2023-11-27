@@ -136,6 +136,7 @@ public:
 	Node * get_ref_frame_root_most_body();
 	Node * get_ref_frame_assembly();
 	Node * get_ref_frame_physics();
+	Node * get_ref_frame_root();
 	Array  get_ref_frame_all();
 };
 

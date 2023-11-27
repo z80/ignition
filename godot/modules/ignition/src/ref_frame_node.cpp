@@ -3,6 +3,7 @@
 #include "ref_frame_body_node.h"
 #include "ref_frame_assembly_node.h"
 #include "ref_frame_non_inertial_node.h"
+#include "ref_frame_root_node.h"
 
 #include "core/string/print_string.h"
 #include "scene/scene_string_names.h"
@@ -71,6 +72,7 @@ void RefFrameNode::_bind_methods()
 	ClassDB::bind_method( D_METHOD("get_ref_frame_root_most_body"), &RefFrameNode::get_ref_frame_root_most_body );
 	ClassDB::bind_method( D_METHOD("get_ref_frame_assembly"),       &RefFrameNode::get_ref_frame_assembly );
 	ClassDB::bind_method( D_METHOD("get_ref_frame_physics"),        &RefFrameNode::get_ref_frame_physics );
+	ClassDB::bind_method( D_METHOD("get_ref_frame_root"),           &RefFrameNode::get_ref_frame_root );
 	ClassDB::bind_method( D_METHOD("get_ref_frame_all"),            &RefFrameNode::get_ref_frame_all );
 
 
@@ -740,6 +742,23 @@ Node * RefFrameNode::get_ref_frame_physics()
 			return nullptr;
 
 		RefFrameNonInertialNode * a = Object::cast_to<RefFrameNonInertialNode>( p );
+		if ( a != nullptr )
+			return a;
+
+	}
+	return nullptr;
+}
+
+Node * RefFrameNode::get_ref_frame_root()
+{
+	Node * p = this;
+	while (p != nullptr)
+	{
+		p = p->get_parent();
+		if ( p == nullptr )
+			return nullptr;
+
+		RefFrameRootNode * a = Object::cast_to<RefFrameRootNode>( p );
 		if ( a != nullptr )
 			return a;
 

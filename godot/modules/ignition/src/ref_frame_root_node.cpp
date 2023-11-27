@@ -1,24 +1,24 @@
 
-#include "ref_frame_root.h"
+#include "ref_frame_root_node.h"
 #include "core/config/engine.h"
 
 namespace Ign
 {
 
-void RefFrameRoot::_bind_methods()
+void RefFrameRootNode::_bind_methods()
 {
-	ClassDB::bind_method( D_METHOD( "set_time_dilation", "en" ), &RefFrameRoot::set_time_dilation );
-	ClassDB::bind_method( D_METHOD( "get_time_dilation" ),       &RefFrameRoot::get_time_dilation );
+	ClassDB::bind_method( D_METHOD( "set_time_dilation", "en" ), &RefFrameRootNode::set_time_dilation );
+	ClassDB::bind_method( D_METHOD( "get_time_dilation" ),       &RefFrameRootNode::get_time_dilation );
 
-	ClassDB::bind_method( D_METHOD( "set_camera_node", "camera_node" ), &RefFrameRoot::set_camera_node );
-	ClassDB::bind_method( D_METHOD( "get_camera_node" ),                &RefFrameRoot::get_camera_node );
+	ClassDB::bind_method( D_METHOD( "set_camera_node", "camera_node" ), &RefFrameRootNode::set_camera_node );
+	ClassDB::bind_method( D_METHOD( "get_camera_node" ),                &RefFrameRootNode::get_camera_node );
 
 	ADD_GROUP( "Ignition", "" );
 	ADD_PROPERTY( PropertyInfo( Variant::FLOAT, "time_dilation" ), "set_time_dilation", "get_time_dilation" );
 
 }
 
-RefFrameRoot::RefFrameRoot()
+RefFrameRootNode::RefFrameRootNode()
 	: RefFrameNode()
 {
 	time_dilation = 1.0;
@@ -28,31 +28,31 @@ RefFrameRoot::RefFrameRoot()
 	set_physics_process( true );
 }
 
-RefFrameRoot::~RefFrameRoot()
+RefFrameRootNode::~RefFrameRootNode()
 {
 }
 
-void RefFrameRoot::set_time_dilation( real_t gain )
+void RefFrameRootNode::set_time_dilation( real_t gain )
 {
 	time_dilation = gain;
 }
 
-real_t RefFrameRoot::get_time_dilation() const
+real_t RefFrameRootNode::get_time_dilation() const
 {
 	return time_dilation;
 }
 
-void RefFrameRoot::set_camera_node( Node * node )
+void RefFrameRootNode::set_camera_node( Node * node )
 {
 	camera_node_ = Object::cast_to<RefFrameNode>( node );
 }
 
-Node * RefFrameRoot::get_camera_node() const
+Node * RefFrameRootNode::get_camera_node() const
 {
 	return camera_node_;
 }
 
-void RefFrameRoot::_notification( int p_notification )
+void RefFrameRootNode::_notification( int p_notification )
 {
 	const bool is_editor = Engine::get_singleton()->is_editor_hint();
 	if ( is_editor )
@@ -82,7 +82,7 @@ void RefFrameRoot::_notification( int p_notification )
 	}
 }
 
-void RefFrameRoot::pre_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRootNode::pre_process_children( RefFrameNode * ref_frame, real_t delta )
 {
 	ref_frame->ign_pre_process( delta );
 
@@ -96,7 +96,7 @@ void RefFrameRoot::pre_process_children( RefFrameNode * ref_frame, real_t delta 
 	}
 }
 
-void RefFrameRoot::process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRootNode::process_children( RefFrameNode * ref_frame, real_t delta )
 {
 	ref_frame->ign_process( delta );
 
@@ -110,7 +110,7 @@ void RefFrameRoot::process_children( RefFrameNode * ref_frame, real_t delta )
 	}
 }
 
-void RefFrameRoot::post_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRootNode::post_process_children( RefFrameNode * ref_frame, real_t delta )
 {
 	ref_frame->ign_post_process( delta );
 
@@ -135,7 +135,7 @@ void RefFrameRoot::post_process_children( RefFrameNode * ref_frame, real_t delta
 	}
 }
 
-void RefFrameRoot::physics_pre_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRootNode::physics_pre_process_children( RefFrameNode * ref_frame, real_t delta )
 {
 	ref_frame->ign_physics_pre_process( delta );
 
@@ -149,7 +149,7 @@ void RefFrameRoot::physics_pre_process_children( RefFrameNode * ref_frame, real_
 	}
 }
 
-void RefFrameRoot::physics_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRootNode::physics_process_children( RefFrameNode * ref_frame, real_t delta )
 {
 	ref_frame->ign_physics_process( delta );
 
@@ -163,7 +163,7 @@ void RefFrameRoot::physics_process_children( RefFrameNode * ref_frame, real_t de
 	}
 }
 
-void RefFrameRoot::physics_post_process_children( RefFrameNode * ref_frame, real_t delta )
+void RefFrameRootNode::physics_post_process_children( RefFrameNode * ref_frame, real_t delta )
 {
 	ref_frame->ign_physics_post_process( delta );
 
@@ -177,15 +177,15 @@ void RefFrameRoot::physics_post_process_children( RefFrameNode * ref_frame, real
 	}
 }
 
-//void RefFrameRoot::_ign_pre_process( real_t delta )
+//void RefFrameRootNode::_ign_pre_process( real_t delta )
 //{
 //}
 //
-//void RefFrameRoot::_ign_process( real_t delta )
+//void RefFrameRootNode::_ign_process( real_t delta )
 //{
 //}
 //
-//void RefFrameRoot::_ign_post_process( real_t delta )
+//void RefFrameRootNode::_ign_post_process( real_t delta )
 //{
 //}
 
