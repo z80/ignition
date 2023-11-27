@@ -189,35 +189,18 @@ func finish_editing():
 
 
 func _activate_parts():
-	var qty = dynamic_blocks.size()
-	if qty > 0:
-		# Pick any one.
-		var part: Part = dynamic_blocks[0]
-		# And call Dfs to find the root one.
-		var parts: Array = Part.dfs_search( part )
-		part = parts[0]
-		
-		
-		# For debugging check the size of the DFS result and if 
-		# it is smaller than 3, repeat the process in order to see why.
-		var dbg_qty: int = parts.size()
-		if dbg_qty < 3:
-			parts = Part.dfs_search( part )
-		
-		
-		
-		# Destroy parts which are not a part of the assembly.
-		for i in range(qty):
-			var p: Part = dynamic_blocks[i]
-			var has: bool = parts.has( p )
-			if not has:
-				p.queue_free()
-		
 		# Assign null as a superbody.
 		# Own super body will be created on the first request.
 		#for pt in parts:
 		#	pt.set_assembly( null )
-		part.activate()
+		while true:
+			var qty: int = get_child_count()
+			if qty < 1:
+				break
+			var part: Part = get_child(0)
+			var rf: RefFrameNode = self.get_ref_frame_physics()
+			part.change_parent( rf, true )
+			part.activate()
 	
 	
 
@@ -265,7 +248,7 @@ func check_if_deactivate():
 
 
 func create_block( block_desc: Resource ):
-	var player: RefFrameNode = RootScene.ref_frame_root.player_camera.get_parent()
+	var player: RefFrameNode = get_ref_frame_root().player_camera.get_parent()
 	
 	var t: Transform3D = Transform3D.IDENTITY
 	t.origin = Constants.CONSTRUCTION_CREATE_AT
@@ -286,8 +269,6 @@ func create_block( block_desc: Resource ):
 	# This one makes it not delete superbody on activation.
 	block.body_state  = PhysicsBodyBase.BodyState.CONSTRUCTION
 	
-	block.set_se3( se3 )
-	
 	# Make it selected to be able to move it.
 	RootScene.ref_frame_root.player_select = block
 	
@@ -299,6 +280,8 @@ func create_block( block_desc: Resource ):
 	
 	# Disable physics to prevent blocks from flying around.
 	block.deactivate()
+	se3.transform.origin = Vector3( 0.0, 10.0, 0.0 )
+	block.set_se3( se3 )
 
 
 func delete_block( block: PhysicsBodyBase ):

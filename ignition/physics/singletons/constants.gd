@@ -44,7 +44,7 @@ const CONSTRUCTION_ACTIVATE_DIST: float = 15.0
 const CONSTRUCTION_DEACTIVATE_DIST: float = 20.0
 
 # Where create new blocks relative to player.
-const CONSTRUCTION_CREATE_AT: Vector3 = Vector3( 0.0, 0.5, -7.0 )
+const CONSTRUCTION_CREATE_AT: Vector3 = Vector3( 0.0, 1.5, -7.0 )
 
 
 
