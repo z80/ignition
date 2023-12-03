@@ -31,9 +31,8 @@
 #include "environment.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
+#include "scene/resources/gradient_texture.h"
 #include "servers/rendering_server.h"
-#include "texture.h"
 
 RID Environment::get_rid() const {
 	return environment;
@@ -1004,9 +1003,7 @@ void Environment::set_adjustment_color_correction(Ref<Texture> p_color_correctio
 	adjustment_color_correction = p_color_correction;
 	Ref<GradientTexture1D> grad_tex = p_color_correction;
 	if (grad_tex.is_valid()) {
-		if (!grad_tex->is_connected(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment))) {
-			grad_tex->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Environment::_update_adjustment));
-		}
+		grad_tex->connect_changed(callable_mp(this, &Environment::_update_adjustment));
 	}
 	Ref<Texture2D> adjustment_texture_2d = adjustment_color_correction;
 	if (adjustment_texture_2d.is_valid()) {
@@ -1175,7 +1172,7 @@ void Environment::_bind_methods() {
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), "set_sky_custom_fov", "get_sky_custom_fov");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians"), "set_sky_rotation", "get_sky_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees"), "set_sky_rotation", "get_sky_rotation");
 
 	// Ambient light
 

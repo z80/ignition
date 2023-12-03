@@ -64,6 +64,8 @@ public:
 	TypedArray<RID> map_get_obstacles(RID p_map) const override { return TypedArray<RID>(); }
 	void map_force_update(RID p_map) override {}
 	RID region_create() override { return RID(); }
+	void region_set_enabled(RID p_region, bool p_enabled) override {}
+	bool region_get_enabled(RID p_region) const override { return false; }
 	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}
 	bool region_get_use_edge_connections(RID p_region) const override { return false; }
 	void region_set_enter_cost(RID p_region, real_t p_enter_cost) override {}
@@ -79,13 +81,17 @@ public:
 	uint32_t region_get_navigation_layers(RID p_region) const override { return 0; }
 	void region_set_transform(RID p_region, Transform3D p_transform) override {}
 	void region_set_navigation_mesh(RID p_region, Ref<NavigationMesh> p_navigation_mesh) override {}
+#ifndef DISABLE_DEPRECATED
 	void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) override {}
+#endif // DISABLE_DEPRECATED
 	int region_get_connections_count(RID p_region) const override { return 0; }
 	Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override { return Vector3(); }
 	Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override { return Vector3(); }
 	RID link_create() override { return RID(); }
 	void link_set_map(RID p_link, RID p_map) override {}
 	RID link_get_map(RID p_link) const override { return RID(); }
+	void link_set_enabled(RID p_link, bool p_enabled) override {}
+	bool link_get_enabled(RID p_link) const override { return false; }
 	void link_set_bidirectional(RID p_link, bool p_bidirectional) override {}
 	bool link_is_bidirectional(RID p_link) const override { return false; }
 	void link_set_navigation_layers(RID p_link, uint32_t p_navigation_layers) override {}
@@ -139,11 +145,15 @@ public:
 	void obstacle_set_position(RID p_obstacle, Vector3 p_position) override {}
 	void obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) override {}
 	void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) override {}
-	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override {}
-	void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
+	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override {}
+	void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
+	void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
 	void free(RID p_object) override {}
 	void set_active(bool p_active) override {}
 	void process(real_t delta_time) override {}
+	void init() override {}
+	void sync() override {}
+	void finish() override {}
 	NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override { return NavigationUtilities::PathQueryResult(); }
 	int get_process_info(ProcessInfo p_info) const override { return 0; }
 	void set_debug_enabled(bool p_enabled) {}

@@ -40,6 +40,9 @@ msgstr "Nimi Lokaliseeritud"
 msgid "Description"
 msgstr "Kirjeldus"
 
+msgid "Version"
+msgstr "Versioon"
+
 msgid "Run"
 msgstr "Käivita"
 
@@ -141,6 +144,9 @@ msgstr "2D Kerimise Tugevus"
 
 msgid "3D Panning Strength"
 msgstr "3D Kerimise Tugevus"
+
+msgid "iOS"
+msgstr "iOS"
 
 msgid "Editor"
 msgstr "Redaktor"
@@ -258,9 +264,6 @@ msgstr "Vaikimisi Tekstuuri Kordus"
 
 msgid "Low Processor Usage Mode"
 msgstr "Protsessori Madala Võimsuse Režiim"
-
-msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "Protsessori Madala Võimsuse Režiimi Puhkeaeg (µsek)"
 
 msgid "Delta Smoothing"
 msgstr "Delta Silumine"
@@ -622,12 +625,6 @@ msgstr "Parool"
 msgid "Default Feature Profile"
 msgstr "Vaikimisi funktsiooniprofiil"
 
-msgid "Version Hash"
-msgstr "Versiooni Räsi"
-
-msgid "Classes"
-msgstr "Klassid"
-
 msgid "Text Editor"
 msgstr "Tekstiredaktor"
 
@@ -894,6 +891,24 @@ msgstr "Kuvamisrežiim"
 
 msgid "Thumbnail Size"
 msgstr "Pisipildi Suurus"
+
+msgid "Import"
+msgstr "Import"
+
+msgid "Blender 3 Path"
+msgstr "Blender 3 Asukoht"
+
+msgid "RPC Port"
+msgstr "RPC Port"
+
+msgid "RPC Server Uptime"
+msgstr "RPC Serveri Aktiivaeg"
+
+msgid "FBX"
+msgstr "FBX"
+
+msgid "FBX2glTF Path"
+msgstr "FBX2glTF Asukoht"
 
 msgid "Docks"
 msgstr "Dokid"
@@ -1236,9 +1251,6 @@ msgstr "Näita Eelmist Kontuuri"
 
 msgid "Autorename Animation Tracks"
 msgstr "Animatsiooniradade Automaatne Ümbernimetamine"
-
-msgid "Confirm Insert Track"
-msgstr "Kinnitage Raja Lisamine"
 
 msgid "Default Create Bezier Tracks"
 msgstr "Loo Bezier Radu Vaikimisi"
@@ -1636,14 +1648,14 @@ msgstr "Kogus"
 msgid "Generate Tangents"
 msgstr "Genereeri Puutujad"
 
-msgid "Import"
-msgstr "Import"
-
 msgid "NavMesh"
 msgstr "NavMesh"
 
 msgid "Body Type"
 msgstr "Keha Tüüp"
+
+msgid "Layer"
+msgstr "Kiht"
 
 msgid "Advanced"
 msgstr "Täpsem"
@@ -1873,6 +1885,9 @@ msgstr "Kuva Vaateava Pööramise Gizmo"
 msgid "Show Viewport Navigation Gizmo"
 msgstr "Kuva Vaateava Navigeerimise Gizmo"
 
+msgid "Gizmo Settings"
+msgstr "Gizmo Sätted"
+
 msgid "Auto Reload and Parse Scripts on Save"
 msgstr "Automatiseeri Skriptide Uuesti Laadimine Ja Analüüsimine Salvestamisel"
 
@@ -1905,9 +1920,6 @@ msgstr "Skelett"
 
 msgid "Selected Bone"
 msgstr "Valitud Kont"
-
-msgid "Gizmo Settings"
-msgstr "Gizmo Sätted"
 
 msgid "Bone Axis Length"
 msgstr "Kondi Telje Pikkus"
@@ -2050,6 +2062,9 @@ msgstr "V-Sync"
 msgid "V-Sync Mode"
 msgstr "V-Sync Režiim"
 
+msgid "Output Latency"
+msgstr "Väljund Viivitus"
+
 msgid "stdout"
 msgstr "Standardväljund"
 
@@ -2064,9 +2079,6 @@ msgstr "Kaadri Viivitus Millisekundites"
 
 msgid "Low Processor Mode"
 msgstr "Madal Protsessorirežiim"
-
-msgid "iOS"
-msgstr "iOS"
 
 msgid "Allow High Refresh Rate"
 msgstr "Luba Kõrge Värskendussagedus"
@@ -2130,6 +2142,9 @@ msgstr "Emuleerige Puudutust Hiirest"
 
 msgid "Emulate Mouse From Touch"
 msgstr "Emuleerige Hiirt Puudutusest"
+
+msgid "Android"
+msgstr "Android"
 
 msgid "Mouse Cursor"
 msgstr "Hiire Kursor"
@@ -2281,6 +2296,9 @@ msgstr "Peamine Versioon"
 msgid "Minor Version"
 msgstr "Alamversioon"
 
+msgid "Copyright"
+msgstr "Autoriõigus"
+
 msgid "Buffers"
 msgstr "Puhvrid"
 
@@ -2322,21 +2340,6 @@ msgstr "Loo Animatsioone"
 
 msgid "Animations"
 msgstr "Animatsioonid"
-
-msgid "RPC Port"
-msgstr "RPC Port"
-
-msgid "RPC Server Uptime"
-msgstr "RPC Serveri Aktiivaeg"
-
-msgid "Blender 3 Path"
-msgstr "Blender 3 Asukoht"
-
-msgid "FBX"
-msgstr "FBX"
-
-msgid "FBX2glTF Path"
-msgstr "FBX2glTF Asukoht"
 
 msgid "Buffer View"
 msgstr "Puhvri Vaade"
@@ -2383,9 +2386,6 @@ msgstr "Valgus"
 msgid "Physics Material"
 msgstr "Füüsika Materjal"
 
-msgid "Layer"
-msgstr "Kiht"
-
 msgid "Priority"
 msgstr "Prioriteet"
 
@@ -2421,9 +2421,6 @@ msgstr "Ultra Kvaliteediga Sond Kiirte Arv"
 
 msgid "Max Rays per Probe Pass"
 msgstr "Maksimaalne Kiirte Arv Ühe Passi Kohta"
-
-msgid "Texel Size"
-msgstr "Texeli Suurus"
 
 msgid "BPM"
 msgstr "BPM"
@@ -2590,14 +2587,14 @@ msgstr "IGD Teenuse Tüüp"
 msgid "IGD Status"
 msgstr "IGD Olek"
 
-msgid "Write Mode"
-msgstr "Kirjutusrežiim"
-
 msgid "WebRTC"
 msgstr "WebRTC"
 
 msgid "Max Channel in Buffer (KB)"
 msgstr "Max Kanal Puhvris (KB)"
+
+msgid "Write Mode"
+msgstr "Kirjutusrežiim"
 
 msgid "Supported Protocols"
 msgstr "Toetatud Protokollid"
@@ -2625,9 +2622,6 @@ msgstr "Nõutavad Funktsioonid"
 
 msgid "Optional Features"
 msgstr "Valikulised Funktsioonid"
-
-msgid "Android"
-msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Android SDK Tee"
@@ -2680,9 +2674,6 @@ msgstr "Release Kasutaja"
 msgid "Release Password"
 msgstr "Release Parool"
 
-msgid "Version"
-msgstr "Versioon"
-
 msgid "Code"
 msgstr "Kood"
 
@@ -2712,15 +2703,6 @@ msgstr "XR Funktsionaalsus"
 
 msgid "XR Mode"
 msgstr "XR Režiim"
-
-msgid "Hand Tracking"
-msgstr "Käe Jälgimine"
-
-msgid "Hand Tracking Frequency"
-msgstr "Käe Jälgimise Sagedus"
-
-msgid "Passthrough"
-msgstr "Läbipääs"
 
 msgid "Immersive Mode"
 msgstr "Kaasahaarav Režiim"
@@ -2838,9 +2820,6 @@ msgstr "rcodesign"
 
 msgid "Distribution Type"
 msgstr "Levitamise Tüüp"
-
-msgid "Copyright"
-msgstr "Autoriõigus"
 
 msgid "Copyright Localized"
 msgstr "Lokaliseeritud Autoriõigus"
@@ -3013,72 +2992,6 @@ msgstr "Eemaldatavate Ketaste Kasutamise Kirjeldus"
 msgid "Removable Volumes Usage Description Localized"
 msgstr "Eemaldatavate Ketaste Kasutamise Kirjeldus Lokaliseeritud"
 
-msgid "UWP"
-msgstr "UWP"
-
-msgid "signtool"
-msgstr "signtool"
-
-msgid "Debug Certificate"
-msgstr "Silumise Sertifikaat"
-
-msgid "Debug Algorithm"
-msgstr "Silumise Algoritm"
-
-msgid "Display Name"
-msgstr "Kuvatav Nimi"
-
-msgid "Short Name"
-msgstr "Lühinimi"
-
-msgid "Publisher"
-msgstr "Väljaandja"
-
-msgid "Publisher Display Name"
-msgstr "Väljaandja Kuvatav Nimi"
-
-msgid "Product GUID"
-msgstr "Toote GUID"
-
-msgid "Publisher GUID"
-msgstr "Väljaandja GUID"
-
-msgid "Signing"
-msgstr "Allkirjastamine"
-
-msgid "Certificate"
-msgstr "Sertifikaat"
-
-msgid "Algorithm"
-msgstr "Algoritm"
-
-msgid "Major"
-msgstr "Põhi"
-
-msgid "Minor"
-msgstr "Väikeversion"
-
-msgid "Build"
-msgstr "Järk"
-
-msgid "Landscape"
-msgstr "Horisontaal"
-
-msgid "Portrait"
-msgstr "Vertikaal"
-
-msgid "Landscape Flipped"
-msgstr "Horisontaal Peegelpildis"
-
-msgid "Portrait Flipped"
-msgstr "Vertikaal Peegelpildis"
-
-msgid "Store Logo"
-msgstr "Kaupluse Logo"
-
-msgid "Splash Screen"
-msgstr "Käivitusekraan"
-
 msgid "Web"
 msgstr "Veeb"
 
@@ -3123,6 +3036,9 @@ msgstr "Kohandatud HTML-kest"
 
 msgid "Windows"
 msgstr "Windows"
+
+msgid "signtool"
+msgstr "signtool"
 
 msgid "Frame"
 msgstr "Kaader"
@@ -3175,6 +3091,9 @@ msgstr "Väljalõikamis mask"
 msgid "Modulate"
 msgstr "Moduleeri"
 
+msgid "End"
+msgstr "End"
+
 msgid "Text"
 msgstr "Tekst"
 
@@ -3192,9 +3111,6 @@ msgstr "Kondid"
 
 msgid "Target"
 msgstr "Sihtmärk"
-
-msgid "End"
-msgstr "End"
 
 msgid "Pose"
 msgstr "Poos"
@@ -3219,9 +3135,6 @@ msgstr "Stiilid"
 
 msgid "Localization"
 msgstr "Lokaliseerimine"
-
-msgid "Use Snap"
-msgstr "Kasuta Naksamist"
 
 msgid "Select Mode"
 msgstr "Valimisrežiim"
@@ -3253,26 +3166,17 @@ msgstr "2D Füüsika"
 msgid "3D Physics"
 msgstr "3D Füüsika"
 
+msgid "Pause"
+msgstr "Paus"
+
+msgid "Atlas"
+msgstr "Atlas"
+
 msgid "Format"
 msgstr "Formaat"
 
-msgid "Clear"
-msgstr "Puhasta"
-
-msgid "Close"
-msgstr "Sulge"
-
-msgid "Reload"
-msgstr "Lae Uuesti"
-
-msgid "File"
-msgstr "Fail"
-
-msgid "Submenu"
-msgstr "Alammenüü"
-
-msgid "Node"
-msgstr "Sõlm"
+msgid "Camera Is Active"
+msgstr "Kaamera On Aktiivne"
 
 msgid "Sky"
 msgstr "Taevas"
@@ -3325,15 +3229,6 @@ msgstr "All Parem"
 msgid "Bottom Left"
 msgstr "All Vasak"
 
-msgid "Atlas"
-msgstr "Atlas"
-
-msgid "Pause"
-msgstr "Paus"
-
-msgid "Camera Is Active"
-msgstr "Kaamera On Aktiivne"
-
 msgid "Terrains"
 msgstr "Maastikud"
 
@@ -3355,20 +3250,35 @@ msgstr "Y-Sordi Päritolu"
 msgid "Probability"
 msgstr "Võimalus"
 
+msgid "File"
+msgstr "Fail"
+
 msgid "Constant"
 msgstr "Konstant"
 
 msgid "Function"
 msgstr "Funktsioon"
 
+msgid "Clear"
+msgstr "Puhasta"
+
+msgid "Close"
+msgstr "Sulge"
+
+msgid "Reload"
+msgstr "Lae Uuesti"
+
+msgid "Submenu"
+msgstr "Alammenüü"
+
+msgid "Node"
+msgstr "Sõlm"
+
 msgid "Custom"
 msgstr "Kohandatud"
 
 msgid "Pan"
 msgstr "Nihe"
-
-msgid "Output Latency"
-msgstr "Väljund Viivitus"
 
 msgid "Output Device"
 msgstr "Väljundseade"
@@ -3396,6 +3306,9 @@ msgstr "Puhvri Suurus"
 
 msgid "Update Speed"
 msgstr "Uuendamise Kiirus"
+
+msgid "Texel Size"
+msgstr "Texeli Suurus"
 
 msgid "Max Renderable Elements"
 msgstr "Max Renderdatavaid Elemente"

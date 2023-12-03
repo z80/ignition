@@ -50,6 +50,7 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/font.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
@@ -343,7 +344,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				gr_nodes[i]->notification(p_notification);
+				gr_nodes[i]->notification(p_notification, true);
 			} else {
 				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
 			}
@@ -444,9 +445,8 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 
 void SceneTree::initialize() {
 	ERR_FAIL_NULL(root);
-	initialized = true;
-	root->_set_tree(this);
 	MainLoop::initialize();
+	root->_set_tree(this);
 }
 
 bool SceneTree::physics_process(double p_time) {
@@ -514,6 +514,10 @@ bool SceneTree::process(double p_time) {
 	root_lock--;
 
 	_flush_delete_queue();
+
+	if (unlikely(pending_new_scene)) {
+		_flush_scene_change();
+	}
 
 	process_timers(p_time, false); //go through timers
 
@@ -618,20 +622,18 @@ void SceneTree::finalize() {
 
 	_flush_ugc();
 
-	initialized = false;
-
-	MainLoop::finalize();
-
 	if (root) {
 		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
 		root = nullptr;
+
+		// In case deletion of some objects was queued when destructing the `root`.
+		// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
+		_flush_delete_queue();
 	}
 
-	// In case deletion of some objects was queued when destructing the `root`.
-	// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
-	_flush_delete_queue();
+	MainLoop::finalize();
 
 	// Cleanup timers.
 	for (Ref<SceneTreeTimer> &timer : timers) {
@@ -787,6 +789,7 @@ Ref<Material> SceneTree::get_debug_paths_material() {
 	_debug_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	_debug_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	_debug_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	_debug_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	_debug_material->set_albedo(get_debug_paths_color());
 
 	debug_paths_material = _debug_material;
@@ -806,6 +809,7 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	line_material->set_albedo(get_debug_collisions_color());
 
 	collision_material = line_material;
@@ -827,6 +831,7 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	mat->set_albedo(get_debug_collision_contact_color());
 
 	Vector3 diamond[6] = {
@@ -1378,27 +1383,16 @@ Node *SceneTree::get_current_scene() const {
 	return current_scene;
 }
 
-void SceneTree::_change_scene(Node *p_to) {
-	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Changing scene can only be done from the main thread.");
-	if (current_scene) {
-		memdelete(current_scene);
-		current_scene = nullptr;
+void SceneTree::_flush_scene_change() {
+	if (prev_scene) {
+		memdelete(prev_scene);
+		prev_scene = nullptr;
 	}
-
-	// If we're quitting, abort.
-	if (unlikely(_quit)) {
-		if (p_to) { // Prevent memory leak.
-			memdelete(p_to);
-		}
-		return;
-	}
-
-	if (p_to) {
-		current_scene = p_to;
-		root->add_child(p_to);
-		// Update display for cursor instantly.
-		root->update_mouse_cursor_state();
-	}
+	current_scene = pending_new_scene;
+	root->add_child(pending_new_scene);
+	pending_new_scene = nullptr;
+	// Update display for cursor instantly.
+	root->update_mouse_cursor_state();
 }
 
 Error SceneTree::change_scene_to_file(const String &p_path) {
@@ -1417,7 +1411,22 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = p_scene->instantiate();
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
-	call_deferred(SNAME("_change_scene"), new_scene);
+	// If called again while a change is pending.
+	if (pending_new_scene) {
+		queue_delete(pending_new_scene);
+		pending_new_scene = nullptr;
+	}
+
+	prev_scene = current_scene;
+
+	if (current_scene) {
+		// Let as many side effects as possible happen or be queued now,
+		// so they are run before the scene is actually deleted.
+		root->remove_child(current_scene);
+	}
+	DEV_ASSERT(!current_scene);
+
+	pending_new_scene = new_scene;
 	return OK;
 }
 
@@ -1477,15 +1486,18 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 
 Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	ERR_FAIL_COND_V_MSG(!Thread::is_main_thread(), Ref<MultiplayerAPI>(), "Multiplayer can only be manipulated from the main thread.");
-	Ref<MultiplayerAPI> out = multiplayer;
+	if (p_for_path.is_empty()) {
+		return multiplayer;
+	}
+
+	const Vector<StringName> tnames = p_for_path.get_names();
+	const StringName *nptr = tnames.ptr();
 	for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
 		const Vector<StringName> snames = E.key.get_names();
-		const Vector<StringName> tnames = p_for_path.get_names();
 		if (tnames.size() < snames.size()) {
 			continue;
 		}
 		const StringName *sptr = snames.ptr();
-		const StringName *nptr = tnames.ptr();
 		bool valid = true;
 		for (int i = 0; i < snames.size(); i++) {
 			if (sptr[i] != nptr[i]) {
@@ -1494,11 +1506,11 @@ Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const
 			}
 		}
 		if (valid) {
-			out = E.value;
-			break;
+			return E.value;
 		}
 	}
-	return out;
+
+	return multiplayer;
 }
 
 void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path) {
@@ -1513,10 +1525,30 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 	} else {
 		if (custom_multiplayers.has(p_root_path)) {
 			custom_multiplayers[p_root_path]->object_configuration_remove(nullptr, p_root_path);
+		} else if (p_multiplayer.is_valid()) {
+			const Vector<StringName> tnames = p_root_path.get_names();
+			const StringName *nptr = tnames.ptr();
+			for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
+				const Vector<StringName> snames = E.key.get_names();
+				if (tnames.size() < snames.size()) {
+					continue;
+				}
+				const StringName *sptr = snames.ptr();
+				bool valid = true;
+				for (int i = 0; i < snames.size(); i++) {
+					if (sptr[i] != nptr[i]) {
+						valid = false;
+						break;
+					}
+				}
+				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + p_root_path + "' in '" + E.key + "'.");
+			}
 		}
 		if (p_multiplayer.is_valid()) {
 			custom_multiplayers[p_root_path] = p_multiplayer;
 			p_multiplayer->object_configuration_add(nullptr, p_root_path);
+		} else {
+			custom_multiplayers.erase(p_root_path);
 		}
 	}
 }
@@ -1594,8 +1626,6 @@ void SceneTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
 	ClassDB::bind_method(D_METHOD("unload_current_scene"), &SceneTree::unload_current_scene);
-
-	ClassDB::bind_method(D_METHOD("_change_scene"), &SceneTree::_change_scene);
 
 	ClassDB::bind_method(D_METHOD("set_multiplayer", "multiplayer", "root_path"), &SceneTree::set_multiplayer, DEFVAL(NodePath()));
 	ClassDB::bind_method(D_METHOD("get_multiplayer", "for_path"), &SceneTree::get_multiplayer, DEFVAL(NodePath()));
@@ -1729,6 +1759,9 @@ SceneTree::SceneTree() {
 	const bool transparent_background = GLOBAL_DEF("rendering/viewport/transparent_background", false);
 	root->set_transparent_background(transparent_background);
 
+	const bool use_hdr_2d = GLOBAL_DEF_RST_BASIC("rendering/viewport/hdr_2d", false);
+	root->set_use_hdr_2d(use_hdr_2d);
+
 	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), 0);
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
@@ -1814,7 +1847,7 @@ SceneTree::SceneTree() {
 					ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
 				} else {
 					// File was erased, notify user.
-					ERR_PRINT(RTR("Default Environment as specified in the project setting \"rendering/environment/defaults/default_environment\" could not be loaded."));
+					ERR_PRINT("Default Environment as specified in the project setting \"rendering/environment/defaults/default_environment\" could not be loaded.");
 				}
 			}
 		}
@@ -1835,6 +1868,14 @@ SceneTree::SceneTree() {
 }
 
 SceneTree::~SceneTree() {
+	if (prev_scene) {
+		memdelete(prev_scene);
+		prev_scene = nullptr;
+	}
+	if (pending_new_scene) {
+		memdelete(pending_new_scene);
+		pending_new_scene = nullptr;
+	}
 	if (root) {
 		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();

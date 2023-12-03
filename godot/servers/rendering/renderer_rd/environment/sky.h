@@ -53,8 +53,9 @@ public:
 		SKY_SET_MATERIAL,
 		SKY_SET_TEXTURES,
 		SKY_SET_FOG,
-		SKY_SET_MAX
 	};
+
+	const int SAMPLERS_BINDING_FIRST_INDEX = 4;
 
 	// Skys need less info from Directional Lights than the normal shaders
 	struct SkyDirectionalLightData {
@@ -68,9 +69,6 @@ public:
 
 private:
 	RD::DataFormat texture_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-
-	RID index_buffer;
-	RID index_array;
 
 	enum SkyTextureSetVersion {
 		SKY_TEXTURE_SET_BACKGROUND,
@@ -296,7 +294,7 @@ public:
 	void set_texture_format(RD::DataFormat p_texture_format);
 	~SkyRD();
 
-	void setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
+	void setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, uint32_t p_view_count, const Projection *p_view_projections, const Vector3 *p_view_eye_offsets, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const Size2i p_screen_size, Vector2 p_jitter, RendererSceneRenderRD *p_scene_render);
 	void update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, const Vector3 &p_global_pos, double p_time, float p_luminance_multiplier = 1.0);
 	void update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, double p_time, float p_luminance_multiplier = 1.0);
 	void draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, RID p_fb, double p_time, float p_luminance_multiplier = 1.0);

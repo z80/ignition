@@ -12,13 +12,14 @@
 # D āvis <dlektauers@gmail.com>, 2022.
 # Agnis Aldiņš <agnis16@gmail.com>, 2023.
 # Andrejs <ledaviskylv@gmail.com>, 2023.
+# Peter Lauris <peterlauris@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-09-23 21:22+0000\n"
-"Last-Translator: Andrejs <ledaviskylv@gmail.com>\n"
+"PO-Revision-Date: 2023-11-16 07:52+0000\n"
+"Last-Translator: Peter Lauris <peterlauris@gmail.com>\n"
 "Language-Team: Latvian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/lv/>\n"
 "Language: lv\n"
@@ -27,7 +28,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n % 10 == 0 || n % 100 >= 11 && n % 100 <= "
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2\n"
+
+msgid "Main Thread"
+msgstr "Galvenais Pavediens"
 
 msgid "Unset"
 msgstr "Neiestatīts"
@@ -448,9 +452,6 @@ msgstr "Atcelt Visu Atslēgu Atlasi"
 msgid "Animation Change Transition"
 msgstr "Animācija Izmainīt Pāreju"
 
-msgid "Animation Change %s"
-msgstr "Animācijas Maiņa %s"
-
 msgid "Animation Change Keyframe Value"
 msgstr "Animācija Izmainīt Atslēgkadra Vērtību"
 
@@ -459,9 +460,6 @@ msgstr "Animācija Izmainīt Izsaukumu"
 
 msgid "Animation Multi Change Transition"
 msgstr "Animācija Vairākkārt Izmainīt Pāreju"
-
-msgid "Animation Multi Change %s"
-msgstr "Animācija Vairākkārtējas Izmaiņas %s"
 
 msgid "Animation Multi Change Keyframe Value"
 msgstr "Animācija Vairākkārt Izmainīt Atslēgkadra Vērtību"
@@ -705,12 +703,12 @@ msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr "Šī iespēja nestrādā ar Bazjē rediģēšanu, jo tai ir tikai viens celiņš."
 
-msgid "Warning: Editing imported animation"
-msgstr "Brīdinājums: Rediģējat importēto animāciju"
-
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
 "Izvēlieties 'AnimationPlayer' mezglu, lai izveidotu un rediģētu animācijas."
+
+msgid "Warning: Editing imported animation"
+msgstr "Brīdinājums: Rediģējat importēto animāciju"
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Rādīt celiņus tikai no mezgliem izvēlētajā kokā."
@@ -930,12 +928,6 @@ msgstr "Aizvērt"
 msgid "Connect"
 msgstr "Savienot"
 
-msgid "Signal:"
-msgstr "Signāls:"
-
-msgid "No description."
-msgstr "Nav apraksta."
-
 msgid "Connect '%s' to '%s'"
 msgstr "Savienot '%s' pie '%s'"
 
@@ -970,6 +962,9 @@ msgstr "Filtrēt Signālus"
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
 "Vai esat drošs(ša), ka vēlaties noņemt visus savienojumus no šī signāla?"
+
+msgid "Open Documentation"
+msgstr "Atvērt dokumentāciju"
 
 msgid "Disconnect All"
 msgstr "Atvienot visu"
@@ -1232,21 +1227,6 @@ msgstr "Zelta Sponsori"
 msgid "Silver Sponsors"
 msgstr "Sudraba Sponsors"
 
-msgid "Bronze Sponsors"
-msgstr "Bronzas Sponsors"
-
-msgid "Mini Sponsors"
-msgstr "Mini Sponsori"
-
-msgid "Gold Donors"
-msgstr "Zelta Donors"
-
-msgid "Silver Donors"
-msgstr "Sudraba Donors"
-
-msgid "Bronze Donors"
-msgstr "Bronzas Donors"
-
 msgid "Donors"
 msgstr "Ziedotāji"
 
@@ -1282,12 +1262,6 @@ msgstr "Kļūme atverot pakotnes failu \"%s\" (nav ZIP formātā)."
 msgid "%s (already exists)"
 msgstr "%s (jau eksistē)"
 
-msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr "Pakotnes \"%s\" saturs - %d fails(-i) konfliktē ar tavu projektu:"
-
-msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr "Pakotnes \"%s\" saturs - Neviens fails nekonfliktē ar tavu projektu:"
-
 msgid "Uncompressing Assets"
 msgstr "Nekompresēti Līdzekļi"
 
@@ -1305,9 +1279,6 @@ msgstr "Mērķis sasniegts!"
 
 msgid "Install"
 msgstr "Ieinstalēt"
-
-msgid "Asset Installer"
-msgstr "Paketes Instalētājs"
 
 msgid "Speakers"
 msgstr "Skaļruņi"
@@ -1740,6 +1711,12 @@ msgstr ""
 msgid "Method Descriptions"
 msgstr "Metožu Apraksts"
 
+msgid "Property:"
+msgstr "Parametrs:"
+
+msgid "Signal:"
+msgstr "Signāls:"
+
 msgid "%d match."
 msgstr "%d sakritība."
 
@@ -1797,16 +1774,10 @@ msgstr "Mainīgais"
 msgid "Theme Property"
 msgstr "Motīva Mainīgais"
 
-msgid "Property:"
-msgstr "Parametrs:"
-
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "Vērtības piespraušana liek to saglabāt, pat ja tā ir vienāda ar noklusējuma "
 "vērtību."
-
-msgid "Open Documentation"
-msgstr "Atvērt dokumentāciju"
 
 msgid "Move Up"
 msgstr "Bīdīt augšup"
@@ -1819,9 +1790,6 @@ msgstr "Mainīt Masīva Lielumu"
 
 msgid "Set %s"
 msgstr "Likt %s"
-
-msgid "Set Multiple:"
-msgstr "Uzlikt vairākus:"
 
 msgid "Pinned %s"
 msgstr "Piesprausts %s"
@@ -1846,9 +1814,6 @@ msgstr "Notīrīt Izeju"
 
 msgid "Copy Selection"
 msgstr "Kopēt Izvēlēto"
-
-msgid "New Window"
-msgstr "Jauns logs"
 
 msgid "Unnamed Project"
 msgstr "Nenosaukts Projekts"
@@ -2140,30 +2105,6 @@ msgstr "Noklusējuma"
 msgid "Save & Close"
 msgstr "Saglabāt & aizvērt"
 
-msgid "Save changes to '%s' before closing?"
-msgstr "Saglabāt izmaiņas '%s' pirms aizvēršanas ?"
-
-msgid "Show in FileSystem"
-msgstr "Parādīt failu sistēmā"
-
-msgid "Play This Scene"
-msgstr "Spēlēt šo ainu"
-
-msgid "Close Tab"
-msgstr "Aizvērt Cilni"
-
-msgid "Undo Close Tab"
-msgstr "Atcelt Cilnes Aizvēršanu"
-
-msgid "Close Other Tabs"
-msgstr "Aizvērt pārējās cilnes"
-
-msgid "Close Tabs to the Right"
-msgstr "Aizvērt cilnes pa labi"
-
-msgid "Close All Tabs"
-msgstr "Aizvērt Visas Cilnes"
-
 msgid "%d more files or folders"
 msgstr "%d vēl faili vai mapes"
 
@@ -2176,9 +2117,6 @@ msgstr "%d vēl faili"
 msgid "Dock Position"
 msgstr "Doka pozīcija"
 
-msgid "Add a new scene."
-msgstr "Pievienot jaunu ainu."
-
 msgid "Distraction Free Mode"
 msgstr "Traucējumu brīvs režīms"
 
@@ -2190,9 +2128,6 @@ msgstr "Aina"
 
 msgid "Operations with scene files."
 msgstr "Darbības ar ainas failiem."
-
-msgid "Go to previously opened scene."
-msgstr "Iet uz iepriekš atvērto ainu."
 
 msgid "Copy Text"
 msgstr "Kopēt Tekstu"
@@ -2296,6 +2231,9 @@ msgstr "Tiešsaistes Dokumentācija"
 msgid "Questions & Answers"
 msgstr "Jautājumi & Atbildes"
 
+msgid "Community"
+msgstr "Komūna"
+
 msgid "Report a Bug"
 msgstr "Ziņot par kļūmi"
 
@@ -2304,9 +2242,6 @@ msgstr "Ieteikt Iespēju"
 
 msgid "Send Docs Feedback"
 msgstr "Sūtīt dokumentu atsauksmi"
-
-msgid "Community"
-msgstr "Komūna"
 
 msgid "About Godot"
 msgstr "Par Godot"
@@ -2446,6 +2381,12 @@ msgstr "Jauna atslēga:"
 
 msgid "New Value:"
 msgstr "Jauna vērtība:"
+
+msgid "Save As..."
+msgstr "Saglabāt kā..."
+
+msgid "Show in FileSystem"
+msgstr "Parādīt failu sistēmā"
 
 msgid "Convert to %s"
 msgstr "Konvertēt uz %s"
@@ -2613,9 +2554,6 @@ msgstr "Skatīt lietas kā sarakstu."
 msgid "Error moving:"
 msgstr "Kļūda parvietojot:"
 
-msgid "Set As Main Scene"
-msgstr "Iestatīt Kā Galveno Ainu"
-
 msgid "Open Scenes"
 msgstr "Atvērt Ainas"
 
@@ -2624,6 +2562,9 @@ msgstr "Pievienot Favorītiem"
 
 msgid "Remove from Favorites"
 msgstr "Noņemt no Favorītiem"
+
+msgid "Reimport"
+msgstr "Reimportēt"
 
 msgid "Open in File Manager"
 msgstr "Atvērt Failu Pārlūkā"
@@ -2796,11 +2737,32 @@ msgstr "Ātri palaist ainu..."
 msgid "Run Project"
 msgstr "Palaist Projektu"
 
+msgid "Play This Scene"
+msgstr "Spēlēt šo ainu"
+
+msgid "Close Tab"
+msgstr "Aizvērt Cilni"
+
+msgid "Undo Close Tab"
+msgstr "Atcelt Cilnes Aizvēršanu"
+
+msgid "Close Other Tabs"
+msgstr "Aizvērt pārējās cilnes"
+
+msgid "Close Tabs to the Right"
+msgstr "Aizvērt cilnes pa labi"
+
+msgid "Close All Tabs"
+msgstr "Aizvērt Visas Cilnes"
+
+msgid "New Window"
+msgstr "Jauns logs"
+
+msgid "Add a new scene."
+msgstr "Pievienot jaunu ainu."
+
 msgid "(Connecting From)"
 msgstr "(Savienojas No)"
-
-msgid "Reimport"
-msgstr "Reimportēt"
 
 msgid "Saving..."
 msgstr "Saglabā..."
@@ -2810,9 +2772,6 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
-
-msgid "Select Importer"
-msgstr "Izvēlēties importētāju"
 
 msgid "%d Files"
 msgstr "%d Failā"
@@ -2831,9 +2790,6 @@ msgstr "Kopēt iestatījumus"
 
 msgid "Paste Properties"
 msgstr "Ielīmēt iestatījumus"
-
-msgid "Save As..."
-msgstr "Saglabāt kā..."
 
 msgid "Open documentation for this object."
 msgstr "Atvērt dokumentāciju šim objektam."
@@ -3038,9 +2994,6 @@ msgstr "Noņemt Horizontālo Vadotni"
 
 msgid "Grouped"
 msgstr "Grupēts"
-
-msgid "Add Node Here"
-msgstr "Pievienot mezglu šeit"
 
 msgid "Group Selected"
 msgstr "Grupa Izvēlēta"
@@ -3607,9 +3560,6 @@ msgstr "Transformēt konstanti."
 msgid "Vector function."
 msgstr "Vektora funkcija."
 
-msgid "Edit Visual Property:"
-msgstr "Rediģēt vizuālo mainīgo:"
-
 msgid "Error opening package file (it's not in ZIP format)."
 msgstr "Kļūme atverot paketes failu (tā nav ZIP formātā)."
 
@@ -3649,9 +3599,6 @@ msgstr "Līdzekļu bibliotēkas projekti"
 msgid "Remove this project from the list?"
 msgstr "Noņemt šo projektu no saraksta?"
 
-msgid "Loading, please wait..."
-msgstr "Ielādē, lūdzu uzgaidi..."
-
 msgid "New Project"
 msgstr "Jauns projekts"
 
@@ -3663,6 +3610,9 @@ msgstr "Skenēt"
 
 msgid "Scan Projects"
 msgstr "Skenēt Projektu"
+
+msgid "Loading, please wait..."
+msgstr "Ielādē, lūdzu uzgaidi..."
 
 msgid "Edit Project"
 msgstr "Rediģēt Projektu"
@@ -3773,15 +3723,6 @@ msgstr "Izgriezt mezglu(s)"
 msgid "Change type of node(s)"
 msgstr "Mezgla(-u) tipa maiņa"
 
-msgid "Paste Node(s)"
-msgstr "Ielīmēt mezglu(s)"
-
-msgid "Add Child Node"
-msgstr "Pievienot bērna mezglu"
-
-msgid "Change Type"
-msgstr "Mainīt tipu"
-
 msgid "Reparent to New Node"
 msgstr "Pakļaut zem jauna mezgla"
 
@@ -3806,20 +3747,14 @@ msgstr "Šablons:"
 msgid "Invalid path."
 msgstr "Nederīgs ceļš."
 
-msgid "Invalid class name."
-msgstr "Nederīgs klases nosaukums."
+msgid "Will load an existing script file."
+msgstr "Ielādēs eksistējošu skriptu."
 
 msgid "Script path/name is valid."
 msgstr "Skripta ceļš/nosaukums ir derīgs."
 
 msgid "Will create a new script file."
 msgstr "Izveidos jaunu skripta failu."
-
-msgid "Will load an existing script file."
-msgstr "Ielādēs eksistējošu skriptu."
-
-msgid "Class Name:"
-msgstr "Klases nosaukums:"
 
 msgid "Built-in Script:"
 msgstr "Iebūvētais skripts:"
@@ -3851,9 +3786,6 @@ msgstr "Griezt izvēlēto"
 
 msgid "Fill Selection"
 msgstr "Aizpildīt izvēlni"
-
-msgid "Build Solution"
-msgstr "Būvēt risinājumu"
 
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Nepietiekams skaits baitu lai dekodētu baitus vai nepareizs formāts."
@@ -3895,32 +3827,8 @@ msgstr "Nederīgs Identifikators:"
 msgid "Invalid bundle identifier:"
 msgstr "Nederīgs bunduļa identifikators:"
 
-msgid "Invalid package short name."
-msgstr "Nederīgs paketes īsais nosaukums."
-
-msgid "Invalid package unique name."
-msgstr "Nederīgs paketes unikālais nosaukums."
-
-msgid "Invalid package publisher display name."
-msgstr "Nederīgs paketes izdevēja displeja vārds."
-
-msgid "Invalid product GUID."
-msgstr "Nederīgs produkta GUID."
-
-msgid "Invalid publisher GUID."
-msgstr "Nederīgs izdevēja GUID."
-
-msgid "Invalid background color."
-msgstr "Nederīga fona krāsa."
-
 msgid "Animation not found: '%s'"
 msgstr "Animācija netika atrasta: '%s'"
-
-msgid "In node '%s', invalid animation: '%s'."
-msgstr "Mezglā '%s', nederīga animācija: '%s'."
-
-msgid "Invalid animation: '%s'."
-msgstr "Nederīga animācija: '%s'."
 
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nekas nav savienots ar ieeju '%s' mezglam '%s'."
@@ -3933,9 +3841,6 @@ msgstr "Brīdinājums!"
 
 msgid "Please Confirm..."
 msgstr "Lūdzu apstipriniet..."
-
-msgid "Enable grid minimap."
-msgstr "Iespējot režģa minikarti."
 
 msgid "(Other)"
 msgstr "(Cits(i))"

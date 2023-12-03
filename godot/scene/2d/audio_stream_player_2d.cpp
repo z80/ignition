@@ -116,10 +116,10 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 	//check if any area is diverting sound into a bus
 	Ref<World2D> world_2d = get_world_2d();
-	ERR_FAIL_COND_V(world_2d.is_null(), SNAME("Master"));
+	ERR_FAIL_COND_V(world_2d.is_null(), SceneStringNames::get_singleton()->Master);
 
 	PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
-	ERR_FAIL_COND_V(space_state == nullptr, SNAME("Master"));
+	ERR_FAIL_NULL_V(space_state, SceneStringNames::get_singleton()->Master);
 	PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 	PhysicsDirectSpaceState2D::PointParameters point_params;
@@ -316,7 +316,7 @@ StringName AudioStreamPlayer2D::get_bus() const {
 			return default_bus;
 		}
 	}
-	return SNAME("Master");
+	return SceneStringNames::get_singleton()->Master;
 }
 
 void AudioStreamPlayer2D::set_autoplay(bool p_enable) {
@@ -352,10 +352,6 @@ void AudioStreamPlayer2D::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = options;
 	}
-}
-
-void AudioStreamPlayer2D::_bus_layout_changed() {
-	notify_property_list_changed();
 }
 
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
@@ -426,6 +422,14 @@ float AudioStreamPlayer2D::get_panning_strength() const {
 	return panning_strength;
 }
 
+void AudioStreamPlayer2D::_on_bus_layout_changed() {
+	notify_property_list_changed();
+}
+
+void AudioStreamPlayer2D::_on_bus_renamed(int p_bus_index, const StringName &p_old_name, const StringName &p_new_name) {
+	notify_property_list_changed();
+}
+
 void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer2D::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer2D::get_stream);
@@ -490,7 +494,8 @@ void AudioStreamPlayer2D::_bind_methods() {
 }
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {
-	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer2D::_bus_layout_changed));
+	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer2D::_on_bus_layout_changed));
+	AudioServer::get_singleton()->connect("bus_renamed", callable_mp(this, &AudioStreamPlayer2D::_on_bus_renamed));
 	cached_global_panning_strength = GLOBAL_GET("audio/general/2d_panning_strength");
 	set_hide_clip_children(true);
 }

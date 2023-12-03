@@ -72,7 +72,7 @@ Dependency *Fog::fog_volume_get_dependency(RID p_fog_volume) const {
 
 void Fog::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
-	ERR_FAIL_COND(!fog_volume);
+	ERR_FAIL_NULL(fog_volume);
 
 	if (p_shape == fog_volume->shape) {
 		return;
@@ -84,7 +84,7 @@ void Fog::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {
 
 void Fog::fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
-	ERR_FAIL_COND(!fog_volume);
+	ERR_FAIL_NULL(fog_volume);
 
 	fog_volume->size = p_size;
 	fog_volume->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
@@ -92,27 +92,27 @@ void Fog::fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) {
 
 void Fog::fog_volume_set_material(RID p_fog_volume, RID p_material) {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
-	ERR_FAIL_COND(!fog_volume);
+	ERR_FAIL_NULL(fog_volume);
 	fog_volume->material = p_material;
 }
 
 RID Fog::fog_volume_get_material(RID p_fog_volume) const {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
-	ERR_FAIL_COND_V(!fog_volume, RID());
+	ERR_FAIL_NULL_V(fog_volume, RID());
 
 	return fog_volume->material;
 }
 
 RS::FogVolumeShape Fog::fog_volume_get_shape(RID p_fog_volume) const {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
-	ERR_FAIL_COND_V(!fog_volume, RS::FOG_VOLUME_SHAPE_BOX);
+	ERR_FAIL_NULL_V(fog_volume, RS::FOG_VOLUME_SHAPE_BOX);
 
 	return fog_volume->shape;
 }
 
 AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
 	FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
-	ERR_FAIL_COND_V(!fog_volume, AABB());
+	ERR_FAIL_NULL_V(fog_volume, AABB());
 
 	switch (fog_volume->shape) {
 		case RS::FOG_VOLUME_SHAPE_ELLIPSOID:
@@ -133,7 +133,7 @@ AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
 
 Vector3 Fog::fog_volume_get_size(RID p_fog_volume) const {
 	const FogVolume *fog_volume = fog_volume_owner.get_or_null(p_fog_volume);
-	ERR_FAIL_COND_V(!fog_volume, Vector3());
+	ERR_FAIL_NULL_V(fog_volume, Vector3());
 	return fog_volume->size;
 }
 
@@ -143,7 +143,7 @@ Vector3 Fog::fog_volume_get_size(RID p_fog_volume) const {
 bool Fog::FogMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	uniform_set_updated = true;
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, Fog::get_singleton()->volumetric_fog.shader.version_get_shader(shader_data->version, 0), VolumetricFogShader::FogSet::FOG_SET_MATERIAL, true);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, Fog::get_singleton()->volumetric_fog.shader.version_get_shader(shader_data->version, 0), VolumetricFogShader::FogSet::FOG_SET_MATERIAL, true, true);
 }
 
 Fog::FogMaterialData::~FogMaterialData() {
@@ -190,10 +190,11 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
 	{
+		String defines = "#define SAMPLERS_BINDING_FIRST_INDEX " + itos(SAMPLERS_BINDING_FIRST_INDEX) + "\n";
 		// Initialize local fog shader
 		Vector<String> volumetric_fog_modes;
 		volumetric_fog_modes.push_back("");
-		volumetric_fog.shader.initialize(volumetric_fog_modes);
+		volumetric_fog.shader.initialize(volumetric_fog_modes, defines);
 
 		material_storage->shader_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_shader_funcs);
 		material_storage->material_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_material_funcs);
@@ -221,7 +222,6 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 		actions.usage_defines["ALBEDO"] = "#define ALBEDO_USED\n";
 		actions.usage_defines["EMISSION"] = "#define EMISSION_USED\n";
 
-		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = VolumetricFogShader::FogSet::FOG_SET_MATERIAL;
 		actions.base_uniform_string = "material.";
@@ -257,27 +257,6 @@ ALBEDO = vec3(1.0);
 		Vector<RD::Uniform> uniforms;
 
 		{
-			Vector<RID> ids;
-			ids.resize(12);
-			RID *ids_ptr = ids.ptrw();
-			ids_ptr[0] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[1] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[2] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[3] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[4] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[5] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[6] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[7] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[8] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[9] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[10] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[11] = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-
-			RD::Uniform u(RD::UNIFORM_TYPE_SAMPLER, 1, ids);
-			uniforms.push_back(u);
-		}
-
-		{
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 2;
@@ -285,8 +264,11 @@ ALBEDO = vec3(1.0);
 			uniforms.push_back(u);
 		}
 
+		uniforms.append_array(material_storage->samplers_rd_get_default().get_uniforms(SAMPLERS_BINDING_FIRST_INDEX));
+
 		volumetric_fog.base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.default_shader_rd, VolumetricFogShader::FogSet::FOG_SET_BASE);
 	}
+
 	{
 		String defines = "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(p_max_directional_lights) + "\n";
 		defines += "\n#define MAX_SKY_LOD " + itos(p_roughness_layers - 1) + ".0\n";
@@ -388,7 +370,7 @@ RS::ShaderNativeSourceCode Fog::FogShaderData::get_native_source_code() const {
 
 Fog::FogShaderData::~FogShaderData() {
 	Fog *fog_singleton = Fog::get_singleton();
-	ERR_FAIL_COND(!fog_singleton);
+	ERR_FAIL_NULL(fog_singleton);
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
 		fog_singleton->volumetric_fog.shader.version_free(version);
@@ -645,7 +627,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 		for (int i = 0; i < (int)p_fog_volumes.size(); i++) {
 			FogVolumeInstance *fog_volume_instance = fog_volume_instance_owner.get_or_null(p_fog_volumes[i]);
-			ERR_FAIL_COND(!fog_volume_instance);
+			ERR_FAIL_NULL(fog_volume_instance);
 			RID fog_volume = fog_volume_instance->volume;
 
 			RID fog_material = RendererRD::Fog::get_singleton()->fog_volume_get_material(fog_volume);
@@ -664,11 +646,11 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 				material = static_cast<FogMaterialData *>(material_storage->material_get_data(fog_material, RendererRD::MaterialStorage::SHADER_TYPE_FOG));
 			}
 
-			ERR_FAIL_COND(!material);
+			ERR_FAIL_NULL(material);
 
 			FogShaderData *shader_data = material->shader_data;
 
-			ERR_FAIL_COND(!shader_data);
+			ERR_FAIL_NULL(shader_data);
 
 			any_uses_time |= shader_data->uses_time;
 

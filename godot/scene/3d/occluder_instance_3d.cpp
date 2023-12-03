@@ -31,7 +31,6 @@
 #include "occluder_instance_3d.h"
 
 #include "core/config/project_settings.h"
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/triangulate.h"
@@ -441,14 +440,14 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 	}
 
 	if (occluder.is_valid()) {
-		occluder->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &OccluderInstance3D::_occluder_changed));
+		occluder->disconnect_changed(callable_mp(this, &OccluderInstance3D::_occluder_changed));
 	}
 
 	occluder = p_occluder;
 
 	if (occluder.is_valid()) {
 		set_base(occluder->get_rid());
-		occluder->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &OccluderInstance3D::_occluder_changed));
+		occluder->connect_changed(callable_mp(this, &OccluderInstance3D::_occluder_changed));
 	} else {
 		set_base(RID());
 	}
@@ -459,7 +458,7 @@ void OccluderInstance3D::set_occluder(const Ref<Occluder3D> &p_occluder) {
 #ifdef TOOLS_ENABLED
 	// PolygonOccluder3D is edited via an editor plugin, this ensures the plugin is shown/hidden when necessary
 	if (Engine::get_singleton()->is_editor_hint()) {
-		EditorNode::get_singleton()->call_deferred(SNAME("edit_current"));
+		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_current).call_deferred();
 	}
 #endif
 }

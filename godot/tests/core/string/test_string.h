@@ -1388,8 +1388,8 @@ TEST_CASE("[String] Ensuring empty string into parse_utf8 passes empty string") 
 }
 
 TEST_CASE("[String] Cyrillic to_lower()") {
-	String upper = String::utf8("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ");
-	String lower = String::utf8("абвгдеёжзийклмнопрстуфхцчшщъыьэюя");
+	String upper = U"АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ";
+	String lower = U"абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
 
 	String test = upper.to_lower();
 
@@ -1625,6 +1625,11 @@ TEST_CASE("[String] Repeat") {
 	CHECK(t == s);
 }
 
+TEST_CASE("[String] Reverse") {
+	String s = "Abcd";
+	CHECK(s.reverse() == "dcbA");
+}
+
 TEST_CASE("[String] SHA1/SHA256/MD5") {
 	String s = "Godot";
 	String sha1 = "a1e91f39b9fce6a9998b14bdbe2aa2b39dc2d201";
@@ -1711,12 +1716,12 @@ TEST_CASE("[String] validate_identifier") {
 	CHECK(empty_string.validate_identifier() == "_");
 
 	String numeric_only = "12345";
-	CHECK(numeric_only.validate_identifier() == "_2345");
+	CHECK(numeric_only.validate_identifier() == "_12345");
 
 	String name_with_spaces = "Name with spaces";
 	CHECK(name_with_spaces.validate_identifier() == "Name_with_spaces");
 
-	String name_with_invalid_chars = String::utf8("Invalid characters:@*#&世界");
+	String name_with_invalid_chars = U"Invalid characters:@*#&世界";
 	CHECK(name_with_invalid_chars.validate_identifier() == "Invalid_characters_______");
 }
 

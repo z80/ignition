@@ -98,6 +98,7 @@ public:
 	enum Scaling3DMode {
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
+		SCALING_3D_MODE_FSR2,
 		SCALING_3D_MODE_MAX
 	};
 
@@ -167,6 +168,7 @@ public:
 		DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
 		DEBUG_DRAW_OCCLUDERS,
 		DEBUG_DRAW_MOTION_VECTORS,
+		DEBUG_DRAW_INTERNAL_BUFFER,
 	};
 
 	enum DefaultCanvasItemTextureFilter {
@@ -245,6 +247,7 @@ private:
 	Rect2 last_vp_rect;
 
 	bool transparent_bg = false;
+	bool use_hdr_2d = false;
 	bool gen_mipmaps = false;
 
 	bool snap_controls_to_pixels = true;
@@ -340,6 +343,7 @@ private:
 	struct SubWindow {
 		Window *window = nullptr;
 		RID canvas_item;
+		Rect2i parent_safe_rect;
 	};
 
 	// VRS
@@ -347,8 +351,6 @@ private:
 	Ref<Texture2D> vrs_texture;
 
 	struct GUI {
-		// info used when this is a window
-
 		bool forced_mouse_focus = false; //used for menu buttons
 		bool mouse_in_viewport = true;
 		bool key_event_accepted = false;
@@ -359,11 +361,15 @@ private:
 		BitField<MouseButtonMask> mouse_focus_mask;
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
+		LocalVector<Control *> mouse_over_hierarchy;
+		Window *subwindow_over = nullptr; // mouse_over and subwindow_over are mutually exclusive. At all times at least one of them is nullptr.
+		Window *windowmanager_window_over = nullptr; // Only used in root Viewport.
 		Control *drag_mouse_over = nullptr;
 		Vector2 drag_mouse_over_pos;
 		Control *tooltip_control = nullptr;
 		Window *tooltip_popup = nullptr;
 		Label *tooltip_label = nullptr;
+		String tooltip_text;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;
 		Point2 drag_accum;
@@ -424,6 +430,7 @@ private:
 
 	void _gui_remove_control(Control *p_control);
 	void _gui_hide_control(Control *p_control);
+	void _gui_update_mouse_over();
 
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
@@ -450,7 +457,7 @@ private:
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
 	void _canvas_layer_remove(CanvasLayer *p_canvas_layer);
 
-	void _drop_mouse_over();
+	void _drop_mouse_over(Control *p_until_control = nullptr);
 	void _drop_mouse_focus();
 	void _drop_physics_mouseover(bool p_paused_only = false);
 
@@ -463,9 +470,13 @@ private:
 	void _sub_window_update(Window *p_window);
 	void _sub_window_grab_focus(Window *p_window);
 	void _sub_window_remove(Window *p_window);
-	int _sub_window_find(Window *p_window);
+	int _sub_window_find(Window *p_window) const;
 	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
+
+	void _update_mouse_over();
+	virtual void _update_mouse_over(Vector2 p_pos);
+	virtual void _mouse_leave_viewport();
 
 	virtual bool _can_consume_input_events() const { return true; }
 	uint64_t event_count = 0;
@@ -485,6 +496,7 @@ protected:
 
 public:
 	void canvas_parent_mark_dirty(Node *p_node);
+	void canvas_item_top_level_changed();
 
 	uint64_t get_processed_events_count() const { return event_count; }
 
@@ -521,6 +533,9 @@ public:
 
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;
+
+	void set_use_hdr_2d(bool p_enable);
+	bool is_using_hdr_2d() const;
 
 	Ref<ViewportTexture> get_texture() const;
 
@@ -646,6 +661,9 @@ public:
 
 	void set_embedding_subwindows(bool p_embed);
 	bool is_embedding_subwindows() const;
+	TypedArray<Window> get_embedded_subwindows() const;
+	void subwindow_set_popup_safe_rect(Window *p_window, const Rect2i &p_rect);
+	Rect2i subwindow_get_popup_safe_rect(Window *p_window) const;
 
 	Viewport *get_parent_viewport() const;
 	Window *get_base_window() const;
@@ -664,6 +682,8 @@ public:
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
 	virtual bool is_directly_attached_to_screen() const { return false; };
+	virtual bool is_attached_in_viewport() const { return false; };
+	virtual bool is_sub_viewport() const { return false; };
 
 #ifndef _3D_DISABLED
 	bool use_xr = false;
@@ -796,6 +816,8 @@ public:
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
 	virtual bool is_directly_attached_to_screen() const override;
+	virtual bool is_attached_in_viewport() const override;
+	virtual bool is_sub_viewport() const override { return true; };
 
 	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();

@@ -31,7 +31,6 @@
 #include "camera_3d.h"
 
 #include "collision_object_3d.h"
-#include "core/core_string_names.h"
 #include "core/math/projection.h"
 #include "scene/main/viewport.h"
 
@@ -430,7 +429,7 @@ void Camera3D::set_attributes(const Ref<CameraAttributes> &p_attributes) {
 	if (attributes.is_valid()) {
 		CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
 		if (physical_attributes) {
-			attributes->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Camera3D::_attributes_changed));
+			attributes->disconnect_changed(callable_mp(this, &Camera3D::_attributes_changed));
 		}
 	}
 
@@ -439,7 +438,7 @@ void Camera3D::set_attributes(const Ref<CameraAttributes> &p_attributes) {
 	if (attributes.is_valid()) {
 		CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
 		if (physical_attributes) {
-			attributes->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Camera3D::_attributes_changed));
+			attributes->connect_changed(callable_mp(this, &Camera3D::_attributes_changed));
 			_attributes_changed();
 		}
 
@@ -558,7 +557,7 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov", PROPERTY_HINT_RANGE, "1,179,0.1,degrees"), "set_fov", "get_fov");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,16384,0.001,or_greater,suffix:m"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater,suffix:m"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_frustum_offset", "get_frustum_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "near", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater,exp,suffix:m"), "set_near", "get_near");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "far", PROPERTY_HINT_RANGE, "0.01,4000,0.01,or_greater,exp,suffix:m"), "set_far", "get_far");

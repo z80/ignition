@@ -31,6 +31,7 @@
 #ifndef SCRIPT_EDITOR_PLUGIN_H
 #define SCRIPT_EDITOR_PLUGIN_H
 
+#include "core/object/script_language.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/panel_container.h"
@@ -202,6 +203,10 @@ typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resou
 class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
 class FindInFilesPanel;
+
+#ifdef MINGW_ENABLED
+#undef FILE_OPEN
+#endif
 
 class ScriptEditor : public PanelContainer {
 	GDCLASS(ScriptEditor, PanelContainer);
@@ -377,7 +382,6 @@ class ScriptEditor : public PanelContainer {
 
 	bool pending_auto_reload;
 	bool auto_reload_running_scripts;
-	void _trigger_live_script_reload();
 	void _live_auto_reload_running_scripts();
 
 	void _update_selected_editor_menu();
@@ -395,6 +399,7 @@ class ScriptEditor : public PanelContainer {
 	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
 	bool convert_indent_on_save;
+	bool external_editor_active;
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
@@ -515,6 +520,7 @@ public:
 
 	void get_breakpoints(List<String> *p_breakpoints);
 
+	PackedStringArray get_unsaved_scripts() const;
 	void save_current_script();
 	void save_all_scripts();
 
@@ -535,6 +541,8 @@ public:
 	void update_doc(const String &p_name);
 	void clear_docs_from_script(const Ref<Script> &p_script);
 	void update_docs_from_script(const Ref<Script> &p_script);
+
+	void trigger_live_script_reload();
 
 	bool can_take_away_focus() const;
 
@@ -575,6 +583,7 @@ public:
 	virtual void make_visible(bool p_visible) override;
 	virtual void selected_notify() override;
 
+	virtual String get_unsaved_status(const String &p_for_scene) const override;
 	virtual void save_external_data() override;
 	virtual void apply_changes() override;
 

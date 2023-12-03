@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for all other classes in the engine.
 	</brief_description>
@@ -270,6 +270,59 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="_validate_property" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="property" type="Dictionary" />
+			<description>
+				Override this method to customize existing properties. Every property info goes through this method. The dictionary contents is the same as in [method _get_property_list].
+				[codeblocks]
+				[gdscript]
+				@tool
+				extends Node
+
+				@export var is_number_editable: bool:
+				    set(value):
+				        is_number_editable = value
+				        notify_property_list_changed()
+				@export var number: int
+
+				func _validate_property(property: Dictionary):
+				    if property.name == "number" and not is_number_editable:
+				        property.usage |= PROPERTY_USAGE_READ_ONLY
+				[/gdscript]
+				[csharp]
+				[Tool]
+				public partial class MyNode : Node
+				{
+				    private bool _isNumberEditable;
+
+				    [Export]
+				    public bool IsNumberEditable
+				    {
+				        get =&gt; _isNumberEditable;
+				        set
+				        {
+				            _isNumberEditable = value;
+				            NotifyPropertyListChanged();
+				        }
+				    }
+
+				    [Export]
+				    public int Number { get; set; }
+
+				    public override void _ValidateProperty(Godot.Collections.Dictionary property)
+				    {
+				        if (property["name"].AsStringName() == PropertyName.Number &amp;&amp; IsNumberEditable)
+				        {
+				            var usage = property["usage"].As&gt;PropertyUsageFlags&lt;() | PropertyUsageFlags.ReadOnly;
+				            property["usage"] = (int)usage;
+				        }
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="add_user_signal">
 			<return type="void" />
 			<param index="0" name="signal" type="String" />
@@ -435,7 +488,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
-				[b][code]Object.connect()[/code] or [code]Signal.connect()[/code]?[/b]
+				[b][code skip-lint]Object.connect()[/code] or [code skip-lint]Signal.connect()[/code]?[/b]
 				As seen above, the recommended method to connect signals is not [method Object.connect]. The code block below shows the four options for connecting signals, using either this legacy method or the recommended [method Signal.connect], and using either an implicit [Callable] or a manually defined one.
 				[codeblocks]
 				[gdscript]
@@ -619,8 +672,8 @@
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
 				Returns the object's metadata value for the given entry [param name]. If the entry does not exist, returns [param default]. If [param default] is [code]null[/code], an error is also generated.
-				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
@@ -652,6 +705,7 @@
 				- [code]hint[/code] is [i]how[/i] the property is meant to be edited (see [enum PropertyHint]);
 				- [code]hint_string[/code] depends on the hint (see [enum PropertyHint]);
 				- [code]usage[/code] is a combination of [enum PropertyUsageFlags].
+				[b]Note:[/b] In GDScript, all class members are treated as properties. In C# and GDExtension, it may be necessary to explicitly mark class members as Godot properties using decorators or attributes.
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
@@ -665,7 +719,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [param signal] name. Each connection is represented as a [Dictionary] that contains three entries:
-				- [code]signal[/code] is a reference to the [Signal];
+				- [code skip-lint]signal[/code] is a reference to the [Signal];
 				- [code]callable[/code] is a reference to the connected [Callable];
 				- [code]flags[/code] is a combination of [enum ConnectFlags].
 			</description>
@@ -682,8 +736,8 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a metadata entry is found with the given [param name]. See also [method get_meta], [method set_meta] and [method remove_meta].
-				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
@@ -810,8 +864,8 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Removes the given entry [param name] from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
-				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="set">
@@ -910,8 +964,8 @@
 			<description>
 				Adds or changes the entry [param name] inside the object's metadata. The metadata [param value] can be any [Variant], although some types cannot be serialized correctly.
 				If [param value] is [code]null[/code], the entry is removed. This is the equivalent of using [method remove_meta]. See also [method has_meta] and [method get_meta].
-				[b]Note:[/b] A metadata's [param name] must be a valid identifier as per [method StringName.is_valid_identifier] method.
-				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
+				[b]Note:[/b] A metadata's name must be a valid identifier as per [method StringName.is_valid_identifier] method.
+				[b]Note:[/b] Metadata that has a name starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector and should not be edited, although it can still be found by this method.
 			</description>
 		</method>
 		<method name="set_script">

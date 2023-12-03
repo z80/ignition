@@ -7,9 +7,9 @@ from os.path import normpath, basename
 
 base_folder_path = str(Path(__file__).parent) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
-_verbose = False
-_is_release_build = False
+_verbose = True  # Set manually for debug prints
 _scu_folders = set()
+_max_includes_per_scu = 1024
 
 
 def clear_out_existing_files(output_folder, extension):
@@ -35,7 +35,7 @@ def find_files_in_folder(folder, sub_folder, include_list, extension, sought_exc
     abs_folder = base_folder_path + folder + "/" + sub_folder
 
     if not os.path.isdir(abs_folder):
-        print("ERROR " + abs_folder + " not found.")
+        print("SCU: ERROR: %s not found." % abs_folder)
         return include_list, found_exceptions
 
     os.chdir(abs_folder)
@@ -67,9 +67,10 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
         # create
         os.mkdir(output_folder)
         if not os.path.isdir(output_folder):
-            print("ERROR " + output_folder + " could not be created.")
+            print("SCU: ERROR: %s could not be created." % output_folder)
             return
-        print("CREATING folder " + output_folder)
+        if _verbose:
+            print("SCU: Creating folder: %s" % output_folder)
 
     file_text = ""
 
@@ -79,8 +80,6 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
             li = line + "\n"
             file_text += li
 
-    # print(file_text)
-
     num_string = ""
     if file_count > 0:
         num_string = "_" + str(file_count)
@@ -88,7 +87,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
     short_filename = output_filename_prefix + num_string + ".gen." + extension
     output_filename = output_folder + "/" + short_filename
     if _verbose:
-        print("generating: " + short_filename)
+        print("SCU: Generating: %s" % short_filename)
 
     output_path = Path(output_filename)
     output_path.write_text(file_text, encoding="utf8")
@@ -97,7 +96,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
 def write_exception_output_file(file_count, exception_string, output_folder, output_filename_prefix, extension):
     output_folder = os.path.abspath(output_folder)
     if not os.path.isdir(output_folder):
-        print("ERROR " + output_folder + " does not exist.")
+        print("SCU: ERROR: %s does not exist." % output_folder)
         return
 
     file_text = exception_string + "\n"
@@ -110,10 +109,8 @@ def write_exception_output_file(file_count, exception_string, output_folder, out
     output_filename = output_folder + "/" + short_filename
 
     if _verbose:
-        print("generating: " + short_filename)
+        print("SCU: Generating: " + short_filename)
 
-    # print("text: " + file_text)
-    # return
     output_path = Path(output_filename)
     output_path.write_text(file_text, encoding="utf8")
 
@@ -197,13 +194,14 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
 
     # adjust number of output files according to whether DEV or release
     num_output_files = 1
-    if _is_release_build:
-        # always have a maximum in release
-        includes_per_scu = 8
-        num_output_files = max(math.ceil(total_lines / float(includes_per_scu)), 1)
+
+    if includes_per_scu == 0:
+        includes_per_scu = _max_includes_per_scu
     else:
-        if includes_per_scu > 0:
-            num_output_files = max(math.ceil(total_lines / float(includes_per_scu)), 1)
+        if includes_per_scu > _max_includes_per_scu:
+            includes_per_scu = _max_includes_per_scu
+
+    num_output_files = max(math.ceil(total_lines / float(includes_per_scu)), 1)
 
     lines_per_file = math.ceil(total_lines / float(num_output_files))
     lines_per_file = max(lines_per_file, 1)
@@ -241,15 +239,15 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
         )
 
 
-def generate_scu_files(verbose, is_release_build):
+def generate_scu_files(max_includes_per_scu):
     print("=============================")
     print("Single Compilation Unit Build")
     print("=============================")
-    print("Generating SCU build files")
-    global _verbose
-    _verbose = verbose
-    global _is_release_build
-    _is_release_build = is_release_build
+
+    global _max_includes_per_scu
+    _max_includes_per_scu = max_includes_per_scu
+
+    print("SCU: Generating build files... (max includes per SCU: %d)" % _max_includes_per_scu)
 
     curr_folder = os.path.abspath("./")
 
@@ -287,7 +285,6 @@ def generate_scu_files(verbose, is_release_build):
     process_folder(["platform/ios/export"])
     process_folder(["platform/linuxbsd/export"])
     process_folder(["platform/macos/export"])
-    process_folder(["platform/uwp/export"])
     process_folder(["platform/web/export"])
     process_folder(["platform/windows/export"])
 
@@ -333,5 +330,8 @@ def generate_scu_files(verbose, is_release_build):
 
     # Finally change back the path to the calling folder
     os.chdir(curr_folder)
+
+    if _verbose:
+        print("SCU: Processed folders: %s" % sorted(_scu_folders))
 
     return _scu_folders

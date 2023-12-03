@@ -380,7 +380,7 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 		queue_redraw();
 		accept_event();
 
-		if (shortcut_feedback) {
+		if (shortcut_feedback && is_inside_tree()) {
 			if (shortcut_feedback_timer == nullptr) {
 				shortcut_feedback_timer = memnew(Timer);
 				shortcut_feedback_timer->set_one_shot(true);
@@ -468,12 +468,12 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
 
 	GDVIRTUAL_BIND(_pressed);
-	GDVIRTUAL_BIND(_toggled, "button_pressed");
+	GDVIRTUAL_BIND(_toggled, "toggled_on");
 
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("button_up"));
 	ADD_SIGNAL(MethodInfo("button_down"));
-	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
+	ADD_SIGNAL(MethodInfo("toggled", PropertyInfo(Variant::BOOL, "toggled_on")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");

@@ -131,6 +131,7 @@ public:
 	void set_mode(Mode p_mode);
 	void set_project_path(const String &p_path);
 
+	void ask_for_path_and_show();
 	void show_dialog();
 
 	ProjectDialog();
@@ -349,7 +350,7 @@ class ProjectManager : public Control {
 	Button *erase_missing_btn = nullptr;
 	Button *about_btn = nullptr;
 
-	HBoxContainer *local_projects_hb = nullptr;
+	VBoxContainer *local_projects_vb = nullptr;
 	EditorAssetLibrary *asset_library = nullptr;
 
 	Ref<StyleBox> tag_stylebox;
@@ -439,6 +440,7 @@ class ProjectManager : public Control {
 	void _on_order_option_changed(int p_idx);
 	void _on_tab_changed(int p_tab);
 	void _on_search_term_changed(const String &p_term);
+	void _on_search_term_submitted(const String &p_text);
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
 	static Ref<Texture2D> _file_dialog_get_thumbnail(const String &p_path);

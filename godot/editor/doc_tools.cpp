@@ -36,9 +36,9 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
 #include "core/string/translation.h"
-#include "core/version.h"
 #include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
 #include "scene/resources/theme.h"
@@ -355,20 +355,27 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 	return default_value;
 }
 
-void DocTools::generate(bool p_basic_types) {
+void DocTools::generate(BitField<GenerateFlags> p_flags) {
+	// This may involve instantiating classes that are only usable from the main thread
+	// (which is in fact the case of the core API).
+	ERR_FAIL_COND(!Thread::is_main_thread());
+
 	// Add ClassDB-exposed classes.
 	{
 		List<StringName> classes;
-		ClassDB::get_class_list(&classes);
-		classes.sort_custom<StringName::AlphCompare>();
-		// Move ProjectSettings, so that other classes can register properties there.
-		classes.move_to_back(classes.find("ProjectSettings"));
+		if (p_flags.has_flag(GENERATE_FLAG_EXTENSION_CLASSES_ONLY)) {
+			ClassDB::get_extensions_class_list(&classes);
+		} else {
+			ClassDB::get_class_list(&classes);
+			// Move ProjectSettings, so that other classes can register properties there.
+			classes.move_to_back(classes.find("ProjectSettings"));
+		}
 
 		bool skip_setter_getter_methods = true;
 
 		// Populate documentation data for each exposed class.
 		while (classes.size()) {
-			String name = classes.front()->get();
+			const String &name = classes.front()->get();
 			if (!ClassDB::is_class_exposed(name)) {
 				print_verbose(vformat("Class '%s' is not exposed, skipping.", name));
 				classes.pop_front();
@@ -387,7 +394,13 @@ void DocTools::generate(bool p_basic_types) {
 			List<PropertyInfo> properties;
 			List<PropertyInfo> own_properties;
 
-			// Special case for editor and project settings, so they can be documented.
+			// Special cases for editor/project settings, and ResourceImporter classes,
+			// we have to rely on Object's property list to get settings and import options.
+			// Otherwise we just use ClassDB's property list (pure registered properties).
+
+			bool properties_from_instance = true; // To skip `script`, etc.
+			bool import_option = false; // Special case for default value.
+			HashMap<StringName, Variant> import_options_default;
 			if (name == "EditorSettings") {
 				// We don't create the full blown EditorSettings (+ config file) with `create()`,
 				// instead we just make a local instance to get default values.
@@ -397,7 +410,20 @@ void DocTools::generate(bool p_basic_types) {
 			} else if (name == "ProjectSettings") {
 				ProjectSettings::get_singleton()->get_property_list(&properties);
 				own_properties = properties;
+			} else if (ClassDB::is_parent_class(name, "ResourceImporter") && name != "EditorImportPlugin" && ClassDB::can_instantiate(name)) {
+				import_option = true;
+				ResourceImporter *resimp = Object::cast_to<ResourceImporter>(ClassDB::instantiate(name));
+				List<ResourceImporter::ImportOption> options;
+				resimp->get_import_options("", &options);
+				for (int i = 0; i < options.size(); i++) {
+					const PropertyInfo &prop = options[i].option;
+					properties.push_back(prop);
+					import_options_default[prop.name] = options[i].default_value;
+				}
+				own_properties = properties;
+				memdelete(resimp);
 			} else if (name.begins_with("EditorExportPlatform") && ClassDB::can_instantiate(name)) {
+				properties_from_instance = false;
 				Ref<EditorExportPlatform> platform = Object::cast_to<EditorExportPlatform>(ClassDB::instantiate(name));
 				if (platform.is_valid()) {
 					List<EditorExportPlatform::ExportOption> options;
@@ -408,6 +434,7 @@ void DocTools::generate(bool p_basic_types) {
 					own_properties = properties;
 				}
 			} else {
+				properties_from_instance = false;
 				ClassDB::get_property_list(name, &properties);
 				ClassDB::get_property_list(name, &own_properties, true);
 			}
@@ -422,6 +449,13 @@ void DocTools::generate(bool p_basic_types) {
 				if (EO && EO->get() == E) {
 					inherited = false;
 					EO = EO->next();
+				}
+
+				if (properties_from_instance) {
+					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
+						// Don't include spurious properties from Object property list.
+						continue;
+					}
 				}
 
 				if (E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP || E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_INTERNAL || (E.type == Variant::NIL && E.usage & PROPERTY_USAGE_ARRAY)) {
@@ -443,22 +477,9 @@ void DocTools::generate(bool p_basic_types) {
 				bool default_value_valid = false;
 				Variant default_value;
 
-				if (name == "EditorSettings") {
-					if (E.name == "resource_local_to_scene" || E.name == "resource_name" || E.name == "resource_path" || E.name == "script") {
-						// Don't include spurious properties in the generated EditorSettings class reference.
-						continue;
-					}
-				}
-
-				if (name.begins_with("EditorExportPlatform")) {
-					if (E.name == "script") {
-						continue;
-					}
-				}
-
 				if (name == "ProjectSettings") {
 					// Special case for project settings, so that settings are not taken from the current project's settings
-					if (E.name == "script" || !ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
+					if (!ProjectSettings::get_singleton()->is_builtin_setting(E.name)) {
 						continue;
 					}
 					if (E.usage & PROPERTY_USAGE_EDITOR) {
@@ -467,6 +488,11 @@ void DocTools::generate(bool p_basic_types) {
 							default_value_valid = true;
 						}
 					}
+				} else if (name == "EditorSettings") {
+					// Special case for editor settings, to prevent hardware or OS specific settings to affect the result.
+				} else if (import_option) {
+					default_value = import_options_default[E.name];
+					default_value_valid = true;
 				} else {
 					default_value = get_documentation_default_value(name, E.name, default_value_valid);
 					if (inherited) {
@@ -605,66 +631,47 @@ void DocTools::generate(bool p_basic_types) {
 
 			// Theme items.
 			{
-				List<StringName> l;
+				List<ThemeDB::ThemeItemBind> theme_items;
+				ThemeDB::get_singleton()->get_class_own_items(cname, &theme_items);
+				Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
 
-				ThemeDB::get_singleton()->get_default_theme()->get_color_list(cname, &l);
-				for (const StringName &E : l) {
+				for (const ThemeDB::ThemeItemBind &theme_item : theme_items) {
 					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "Color";
-					tid.data_type = "color";
-					tid.default_value = DocData::get_default_value_string(ThemeDB::get_singleton()->get_default_theme()->get_color(E, cname));
-					c.theme_properties.push_back(tid);
-				}
+					tid.name = theme_item.item_name;
 
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_constant_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "int";
-					tid.data_type = "constant";
-					tid.default_value = itos(ThemeDB::get_singleton()->get_default_theme()->get_constant(E, cname));
-					c.theme_properties.push_back(tid);
-				}
+					switch (theme_item.data_type) {
+						case Theme::DATA_TYPE_COLOR:
+							tid.type = "Color";
+							tid.data_type = "color";
+							break;
+						case Theme::DATA_TYPE_CONSTANT:
+							tid.type = "int";
+							tid.data_type = "constant";
+							break;
+						case Theme::DATA_TYPE_FONT:
+							tid.type = "Font";
+							tid.data_type = "font";
+							break;
+						case Theme::DATA_TYPE_FONT_SIZE:
+							tid.type = "int";
+							tid.data_type = "font_size";
+							break;
+						case Theme::DATA_TYPE_ICON:
+							tid.type = "Texture2D";
+							tid.data_type = "icon";
+							break;
+						case Theme::DATA_TYPE_STYLEBOX:
+							tid.type = "StyleBox";
+							tid.data_type = "style";
+							break;
+						case Theme::DATA_TYPE_MAX:
+							break; // Can't happen, but silences warning.
+					}
 
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_font_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "Font";
-					tid.data_type = "font";
-					c.theme_properties.push_back(tid);
-				}
+					if (theme_item.data_type == Theme::DATA_TYPE_COLOR || theme_item.data_type == Theme::DATA_TYPE_CONSTANT) {
+						tid.default_value = DocData::get_default_value_string(default_theme->get_theme_item(theme_item.data_type, theme_item.item_name, cname));
+					}
 
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_font_size_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "int";
-					tid.data_type = "font_size";
-					c.theme_properties.push_back(tid);
-				}
-
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_icon_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "Texture2D";
-					tid.data_type = "icon";
-					c.theme_properties.push_back(tid);
-				}
-
-				l.clear();
-				ThemeDB::get_singleton()->get_default_theme()->get_stylebox_list(cname, &l);
-				for (const StringName &E : l) {
-					DocData::ThemeItemDoc tid;
-					tid.name = E;
-					tid.type = "StyleBox";
-					tid.data_type = "style";
 					c.theme_properties.push_back(tid);
 				}
 
@@ -675,17 +682,16 @@ void DocTools::generate(bool p_basic_types) {
 		}
 	}
 
+	if (p_flags.has_flag(GENERATE_FLAG_SKIP_BASIC_TYPES)) {
+		return;
+	}
+
 	// Add a dummy Variant entry.
 	{
 		// This allows us to document the concept of Variant even though
 		// it's not a ClassDB-exposed class.
 		class_list["Variant"] = DocData::ClassDoc();
 		class_list["Variant"].name = "Variant";
-	}
-
-	// If we don't want to populate basic types, break here.
-	if (!p_basic_types) {
-		return;
 	}
 
 	// Add Variant data types.
@@ -1482,7 +1488,6 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 				header += " is_experimental=\"true\"";
 			}
 		}
-		header += String(" version=\"") + VERSION_BRANCH + "\"";
 		if (p_include_xml_schema) {
 			// Reference the XML schema so editors can provide error checking.
 			// Modules are nested deep, so change the path to reference the same schema everywhere.

@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
@@ -521,17 +522,16 @@ EditorExportPlatformLinuxBSD::EditorExportPlatformLinuxBSD() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG img_loader;
-		img_loader.create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_logo_svg, EDSCALE, upsample, false);
 		set_logo(ImageTexture::create_from_image(img));
 
-		img_loader.create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
 #endif
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
-			stop_icon = theme->get_icon(SNAME("Stop"), SNAME("EditorIcons"));
+			stop_icon = theme->get_icon(SNAME("Stop"), EditorStringName(EditorIcons));
 		} else {
 			stop_icon.instantiate();
 		}
