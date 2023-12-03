@@ -41,6 +41,25 @@ Vector3 RefFrameBodyNode::get_acceleration() const
 	return ret;
 }
 
+void RefFrameBodyNode::set_se3( const Ref<Se3Ref> & se3 )
+{
+	Node * n_rf = get_ref_frame_physics();
+	Node * n_p = get_parent();
+	if ( n_rf != nullptr )
+	{
+		RefFrameNonInertialNode * rf = Object::cast_to<RefFrameNonInertialNode>( n_rf );
+		RefFrameNode * p = Object::cast_to<RefFrameNode>( n_p );
+		if ( (rf != nullptr) && (p != nullptr) )
+		{
+			const SE3 p_se3 = p->relative_( rf );
+			const SE3 se3_phys = p_se3 * se3->se3;
+			se3_in_physics_ = se3_phys;
+		}
+	}
+
+	RefFrameNode::set_se3( se3 );
+}
+
 void RefFrameBodyNode::set_se3_in_physics( const Ref<Se3Ref> & se3 )
 {
 	se3_in_physics_ = se3.ptr()->se3;
