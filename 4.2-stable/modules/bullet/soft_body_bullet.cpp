@@ -86,19 +86,25 @@ void SoftBodyBullet::update_visual_server(SoftBodyRenderingServerHandler *p_visu
 	const int nodes_count = nodes.size();
 
 	const Vector<int> *vs_indices;
-	const void *vertex_position;
-	const void *vertex_normal;
+	//const void *vertex_position;
+	//const void *vertex_normal;
 
 	for (int vertex_index = 0; vertex_index < nodes_count; ++vertex_index) {
-		vertex_position = reinterpret_cast<const void *>(&nodes[vertex_index].m_x);
-		vertex_normal = reinterpret_cast<const void *>(&nodes[vertex_index].m_n);
+		//vertex_position = reinterpret_cast<const void *>(&nodes[vertex_index].m_x);
+		//vertex_normal = reinterpret_cast<const void *>(&nodes[vertex_index].m_n);
+                const btVector3 bv = nodes[vertex_index].m_x;
+                const Vector3 v( bv.x(), bv.y(), bv.z() );
+                const btVector3 bn = nodes[vertex_index].m_n;
+                const Vector3 n( bn.x(), bn.y(), bn.z() );
 
 		vs_indices = &indices_table[vertex_index];
 
 		const int vs_indices_size(vs_indices->size());
 		for (int x = 0; x < vs_indices_size; ++x) {
-			p_visual_server_handler->set_vertex((*vs_indices)[x], vertex_position);
-			p_visual_server_handler->set_normal((*vs_indices)[x], vertex_normal);
+			//p_visual_server_handler->set_vertex((*vs_indices)[x], vertex_position);
+			p_visual_server_handler->set_vertex((*vs_indices)[x], v );
+			//p_visual_server_handler->set_normal((*vs_indices)[x], vertex_normal);
+			p_visual_server_handler->set_normal((*vs_indices)[x], n );
 		}
 	}
 
@@ -128,19 +134,26 @@ void SoftBodyBullet::update_rendering_server(class PhysicsServer3DRenderingServe
 	const int nodes_count = nodes.size();
 
 	const Vector<int> *vs_indices;
-	const void *vertex_position;
-	const void *vertex_normal;
+	//const void *vertex_position;
+	//const void *vertex_normal;
 
 	for (int vertex_index = 0; vertex_index < nodes_count; ++vertex_index) {
-		vertex_position = reinterpret_cast<const void *>(&nodes[vertex_index].m_x);
-		vertex_normal = reinterpret_cast<const void *>(&nodes[vertex_index].m_n);
+		//vertex_position = reinterpret_cast<const void *>(&nodes[vertex_index].m_x);
+		//vertex_normal = reinterpret_cast<const void *>(&nodes[vertex_index].m_n);
+                const btVector3 bv = nodes[vertex_index].m_x;
+                const Vector3 v( bv.x(), bv.y(), bv.z() );
+                const btVector3 bn = nodes[vertex_index].m_n;
+                const Vector3 n( bn.x(), bn.y(), bn.z() );
+
 
 		vs_indices = &indices_table[vertex_index];
 
 		const int vs_indices_size(vs_indices->size());
 		for (int x = 0; x < vs_indices_size; ++x) {
-			p_visual_server_handler->set_vertex((*vs_indices)[x], vertex_position);
-			p_visual_server_handler->set_normal((*vs_indices)[x], vertex_normal);
+			//p_visual_server_handler->set_vertex((*vs_indices)[x], vertex_position);
+			p_visual_server_handler->set_vertex((*vs_indices)[x], v );
+			//p_visual_server_handler->set_normal((*vs_indices)[x], vertex_normal);
+			p_visual_server_handler->set_normal((*vs_indices)[x], n );
 		}
 	}
 
