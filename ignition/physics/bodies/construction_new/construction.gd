@@ -1,6 +1,7 @@
 
 extends PhysicsBodyBase
 
+@export var DragScene: PackedScene = null
 
 var panel_parts: Control = null
 
@@ -20,7 +21,6 @@ var static_blocks: Array  = []
 
 func _ready():
 	super()
-	
 
 
 
@@ -141,8 +141,7 @@ func construction_deactivate():
 func activate_grab( body ):
 	if not is_instance_valid( body ):
 		return
-	var Grab = load( "res://physics/bodies/construction_new/manip_grab/manip_grab.tscn" )
-	var grab = Grab.instantiate()
+	var grab: Node = DragScene.instantiate()
 	RootScene.get_root_for_gui_popups().add_child( grab )
 	edited_target  = body
 	editing_widget = grab
