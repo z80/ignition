@@ -225,6 +225,7 @@ opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 
 # Thirdparty libraries
+opts.Add(BoolVariable("builtin_bullet", "Use the built-in Bullet library", True))
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
 opts.Add(BoolVariable("builtin_clipper2", "Use the built-in Clipper2 library", True))

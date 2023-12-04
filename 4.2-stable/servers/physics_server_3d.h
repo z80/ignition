@@ -239,6 +239,20 @@ protected:
 	static void _bind_methods();
 
 public:
+
+	struct SeparationResult
+	{
+		real_t collision_depth;
+		Vector3 collision_point;
+		Vector3 collision_normal;
+		Vector3 collider_velocity;
+		int collision_local_shape;
+		ObjectID collider_id;
+		RID collider;
+		int collider_shape;
+		Variant collider_metadata;
+	};
+
 	static PhysicsServer3D *get_singleton();
 
 	enum ShapeType {
