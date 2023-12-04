@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Ignition"
 run/main_scene="res://tryouts/celestial_bodies_voxel_2/test_collisions/test_collisions_2.tscn"
-config/features=PackedStringArray("4.1")
+config/features=PackedStringArray("4.2")
 config/icon="res://icon.png"
 
 [autoload]

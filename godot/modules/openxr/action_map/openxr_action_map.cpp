@@ -206,7 +206,8 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/waist,"
 			"/user/vive_tracker_htcx/role/chest,"
 			"/user/vive_tracker_htcx/role/camera,"
-			"/user/vive_tracker_htcx/role/keyboard");
+			"/user/vive_tracker_htcx/role/keyboard,"
+			"/user/eyes_ext");
 	Ref<OpenXRAction> aim_pose = action_set->add_new_action("aim_pose", "Aim pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip_pose = action_set->add_new_action("grip_pose", "Grip pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> palm_pose = action_set->add_new_action("palm_pose", "Palm pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
@@ -308,14 +309,14 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
 	add_interaction_profile(profile);
 
-	// Create our Pico 4 / Neo 3 controller profile
-	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/pico/neo3_controller");
+	// Create our Pico 4 controller profile.
+	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/bytedance/pico4_controller");
 	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
 	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
 	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
 	profile->add_new_binding(select_button, "/user/hand/left/input/system/click,/user/hand/right/input/system/click"); // system click may not be available
-	profile->add_new_binding(menu_button, "/user/hand/left/input/back/click,/user/hand/right/input/back/click"); // right hand back click may not be available
+	profile->add_new_binding(menu_button, "/user/hand/left/input/menu/click");
 	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand
 	profile->add_new_binding(ax_touch, "/user/hand/left/input/x/touch,/user/hand/right/input/a/touch");
 	profile->add_new_binding(by_button, "/user/hand/left/input/y/click,/user/hand/right/input/b/click"); // y on left hand, b on right hand
@@ -470,6 +471,7 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(primary_click, "/user/hand/left/input/trackpad/click,/user/hand/right/input/trackpad/click");
 	profile->add_new_binding(primary_touch, "/user/hand/left/input/trackpad/touch,/user/hand/right/input/trackpad/touch");
 	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
+	add_interaction_profile(profile);
 
 	// Create our HTC Vive tracker profile
 	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/htc/vive_tracker_htcx");
@@ -501,6 +503,11 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/chest/output/haptic,"
 			"/user/vive_tracker_htcx/role/camera/output/haptic,"
 			"/user/vive_tracker_htcx/role/keyboard/output/haptic");
+	add_interaction_profile(profile);
+
+	// Create our eye gaze interaction profile
+	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/ext/eye_gaze_interaction");
+	profile->add_new_binding(default_pose, "/user/eyes_ext/input/gaze_ext/pose");
 	add_interaction_profile(profile);
 }
 

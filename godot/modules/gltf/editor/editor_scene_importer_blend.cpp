@@ -40,9 +40,15 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
+
+#ifdef MINGW_ENABLED
+#define near
+#define far
+#endif
 
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>
@@ -129,8 +135,9 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	// Get global paths for source and sink.
 	// Escape paths to be valid Python strings to embed in the script.
 	const String source_global = ProjectSettings::get_singleton()->globalize_path(p_path).c_escape();
+	const String blend_basename = p_path.get_file().get_basename();
 	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(
-			vformat("%s-%s.gltf", p_path.get_file().get_basename(), p_path.md5_text()));
+			vformat("%s-%s.gltf", blend_basename, p_path.md5_text()));
 	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink).c_escape();
 
 	// Handle configuration options.
@@ -281,6 +288,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
 		base_dir = sink.get_base_dir();
 	}
+	state->set_scene_name(blend_basename);
 	err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
 	if (err != OK) {
 		if (r_err) {
@@ -381,10 +389,10 @@ void EditorFileSystemImportFormatSupportQueryBlend::_validate_path(String p_path
 	path_status->set_text(error);
 
 	if (success) {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), SNAME("Editor")));
+		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("success_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(false);
 	} else {
-		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		path_status->add_theme_color_override("font_color", path_status->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		configure_blender_dialog->get_ok_button()->set_disabled(true);
 	}
 }
