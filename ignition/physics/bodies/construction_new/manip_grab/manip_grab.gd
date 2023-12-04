@@ -1,5 +1,5 @@
 extends CanvasItem
-class_name ManipulatorGrab
+class_name ManipulatorGrabNew
 
 signal drag_started
 signal drag_finished
@@ -202,7 +202,8 @@ func _process(_delta):
 	
 	if do_redraw:
 		_draw_params = draw
-		update()
+		#update()
+		queue_redraw()
 
 
 
@@ -258,7 +259,7 @@ func _need_redraw( draw ):
 func _compute_draw_params():
 	if target == null:
 		return null
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport = get_viewport()
 	if vp == null:
 		return null
 	var cam = vp.get_camera_3d()
@@ -389,6 +390,7 @@ func _process_dragging():
 	
 	if r != _dragging.position:
 		_dragging.position = r
+		emit_signal( "position", r )
 
 
 
@@ -417,7 +419,7 @@ func _init_rotating( axis: Vector3 ):
 	
 	
 	
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
 	var camera: Camera3D = vp.get_camera_3d()
@@ -468,7 +470,7 @@ func _process_rotating():
 	euler.x = round( euler.x / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.y = round( euler.y / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
 	euler.z = round( euler.z / Constants.CONSTRUCTION_ROT_SNAP ) * Constants.CONSTRUCTION_ROT_SNAP
-	q = Quaternion( euler )
+	q = q.from_euler( euler )
 
 	#print( "rot_axis: ", a, "drag_axis: ", _dragging.drag_axis, ", mouse_at: ", _dragging.mouse_at, ", dr: ", dr, ", dot: ", dx, ", angle: ", angle, ", euler: ", euler )
 	
@@ -498,7 +500,7 @@ func _mouse_on_axis( mouse_start: Vector3, drag_axis: Vector3 ):
 
 
 func _mouse_intersection_line( axis_a: Vector3, axis_r: Vector3 ):
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
 	var camera: Camera3D = vp.get_camera_3d()
@@ -523,7 +525,7 @@ func _mouse_intersection_line( axis_a: Vector3, axis_r: Vector3 ):
 
 
 func _mouse_intersection_plane( plane_a: Vector3, plane_r: Vector3 ):
-	var vp: SubViewport = get_viewport()
+	var vp: Viewport = get_viewport()
 	var mouse_uv = vp.get_mouse_position()
 	
 	var camera: Camera3D = vp.get_camera_3d()
