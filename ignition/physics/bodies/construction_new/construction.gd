@@ -1,5 +1,6 @@
 
 extends PhysicsBodyBase
+class_name Construction
 
 @export var DragScene: PackedScene = null
 
@@ -138,11 +139,7 @@ func construction_deactivate():
 		static_blocks.clear()
 
 
-func activate_grab( body ):
-	if not is_instance_valid( body ):
-		return
-	var grab: Node = DragScene.instantiate()
-	RootScene.get_root_for_gui_popups().add_child( grab )
+func activate_grab( body, grab ):
 	edited_target  = body
 	editing_widget = grab
 	grab.target = body
@@ -266,7 +263,7 @@ func create_block( block_desc: Resource ):
 	if block == null:
 		return
 	
-	block.debug = true
+	#block.debug = true
 	
 	var is_static_block: bool = block_desc.is_static()
 	

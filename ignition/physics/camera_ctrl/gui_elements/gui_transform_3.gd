@@ -35,5 +35,21 @@ func _activate_grab( body ):
 	grab.target = body
 	
 	body.set_meta( "grab", grab )
+	
+	var c: Node = _find_construction( body )
+	c.activate_grab( body, grab )
 
+
+
+
+func _find_construction( object: Node ):
+	if object == null:
+		return null
+	var c: Construction = object as Construction
+	if c != null:
+		return c
+	
+	var p: Node = object.get_parent()
+	c = _find_construction( p )
+	return c
 
